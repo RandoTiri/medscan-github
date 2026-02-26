@@ -1,0 +1,19 @@
+﻿@page "/scanner"
+
+<PageTitle>Scanner</PageTitle>
+
+<h1>Scanner</h1>
+
+<p>To start scanning press the "Scan Medicine" button.</p>
+
+<button class="btn btn-primary" @onclick="ScanMed">Scan Medicine</button>
+<p>@textScanning</p> 
+
+
+@code {
+    private string textScanning = string.Empty;
+
+    private void ScanMed() {
+        textScanning = "Ready for Scanning!";
+    }
+}

@@ -11,7 +11,7 @@
     "deploy.result": "Success",
     "deploy.supports.fastdev": "True",
     "deploy.systemapp": "False",
-    "deploy.duration.ms": "82232",
+    "deploy.duration.ms": "2380",
     "pii.deploy.error": "",
     "pii.deploy.file": ""
   }

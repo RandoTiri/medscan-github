@@ -1,0 +1,67 @@
+﻿@page "/mymedicine"
+
+<PageTitle>My Medicine</PageTitle>
+
+<h1>My Medicine</h1>
+
+<p>This list shows all of your saved medicines.</p>
+
+@if (medicines == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Substance</th>
+                <th>Strength</th>
+                <th>Form</th>
+                <th>Expiring Date</th>               
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var medicine in medicines) {
+                <tr>
+                    <td>@medicine.Name</td>
+                    <td>@medicine.Substance</td>
+                    <td>@medicine.Strength</td>
+                    <td>@medicine.Form</td>
+                    <td>@medicine.ExpiringDate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Medicine[]? medicines;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate a loading indicator
+        await Task.Delay(500);
+
+        var expiringDate = DateOnly.FromDateTime(DateTime.Now);
+        var names = new[] { "Paracetamol","Ibuprofen","Aspirin","Amoxicillin","Metformin","Atorvastatin","Omeprazole" };
+        var substances = new[] { "Caffeine","Nicotine","Ethanol","Glucose","Sodium chloride","Acetone","Carbon dioxide","Methane" };
+        var forms = new[] { "Tablett", "Liquid", "Powder" };
+        medicines = Enumerable.Range(1,5).Select(index => new Medicine {
+            Name = names[Random.Shared.Next(names.Length)],
+            Substance = substances[Random.Shared.Next(substances.Length)],
+            Strength = Random.Shared.Next(100,500),
+            Form = forms[Random.Shared.Next(forms.Length)],
+            ExpiringDate = expiringDate.AddDays(index)
+        }).ToArray();
+    }
+
+    private class Medicine {
+        public string? Name { get; set; }
+        public string? Substance { get; set; }
+        public int? Strength { get; set; }
+        public string? Form { get; set; }
+        public DateOnly? ExpiringDate { get; set; }
+    }
+}

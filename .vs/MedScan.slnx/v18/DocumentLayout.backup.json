@@ -1,7 +1,44 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\tirir\\source\\repos\\MedScan\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan\\mainpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|solutionrelative:medscan\\medscan\\mainpage.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan\\mainpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|solutionrelative:medscan\\medscan\\mainpage.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan\\platforms\\ios\\info.plist||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|solutionrelative:medscan\\medscan\\platforms\\ios\\info.plist||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan\\platforms\\android\\androidmanifest.xml||{4E01A4BC-CFCF-452C-8C08-51352512D197}",
+      "RelativeMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|solutionrelative:medscan\\medscan\\platforms\\android\\androidmanifest.xml||{4E01A4BC-CFCF-452C-8C08-51352512D197}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|solutionrelative:medscan\\medscan\\mauiprogram.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{73CB156C-DCFA-0881-766A-BF60DC6B1DDD}|MedScan\\MedScan.Shared\\MedScan.Shared.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan.shared\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{73CB156C-DCFA-0881-766A-BF60DC6B1DDD}|MedScan\\MedScan.Shared\\MedScan.Shared.csproj|solutionrelative:medscan\\medscan.shared\\layout\\navmenu.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{B0DA8D2A-9DAE-D8BD-CD19-9F2AB333576E}|MedScan\\MedScan\\MedScan.csproj|solutionrelative:medscan\\medscan\\wwwroot\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{73CB156C-DCFA-0881-766A-BF60DC6B1DDD}|MedScan\\MedScan.Shared\\MedScan.Shared.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan.shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{73CB156C-DCFA-0881-766A-BF60DC6B1DDD}|MedScan\\MedScan.Shared\\MedScan.Shared.csproj|solutionrelative:medscan\\medscan.shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{73CB156C-DCFA-0881-766A-BF60DC6B1DDD}|MedScan\\MedScan.Shared\\MedScan.Shared.csproj|c:\\users\\tirir\\source\\repos\\medscan\\medscan\\medscan.shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{73CB156C-DCFA-0881-766A-BF60DC6B1DDD}|MedScan\\MedScan.Shared\\MedScan.Shared.csproj|solutionrelative:medscan\\medscan.shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,11 +46,126 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Info.plist",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\Platforms\\iOS\\Info.plist",
+              "RelativeDocumentMoniker": "MedScan\\MedScan\\Platforms\\iOS\\Info.plist",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\Platforms\\iOS\\Info.plist",
+              "RelativeToolTip": "MedScan\\MedScan\\Platforms\\iOS\\Info.plist",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAAAB8AAAA6AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-02-26T12:57:38.659Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AndroidManifest.xml",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\Platforms\\Android\\AndroidManifest.xml",
+              "RelativeDocumentMoniker": "MedScan\\MedScan\\Platforms\\Android\\AndroidManifest.xml",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\Platforms\\Android\\AndroidManifest.xml",
+              "RelativeToolTip": "MedScan\\MedScan\\Platforms\\Android\\AndroidManifest.xml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2026-02-26T12:55:36.826Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MauiProgram.cs",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\MauiProgram.cs",
+              "RelativeDocumentMoniker": "MedScan\\MedScan\\MauiProgram.cs",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\MauiProgram.cs",
+              "RelativeToolTip": "MedScan\\MedScan\\MauiProgram.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-26T12:54:49.055Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "MainPage.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\MainPage.xaml.cs",
+              "RelativeDocumentMoniker": "MedScan\\MedScan\\MainPage.xaml.cs",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\MainPage.xaml.cs",
+              "RelativeToolTip": "MedScan\\MedScan\\MainPage.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-02-26T12:51:30.274Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "MainPage.xaml",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\MainPage.xaml",
+              "RelativeDocumentMoniker": "MedScan\\MedScan\\MainPage.xaml",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\MainPage.xaml",
+              "RelativeToolTip": "MedScan\\MedScan\\MainPage.xaml",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAYwBIAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-02-26T12:51:17.177Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\wwwroot\\index.html",
+              "RelativeDocumentMoniker": "MedScan\\MedScan\\wwwroot\\index.html",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan\\wwwroot\\index.html",
+              "RelativeToolTip": "MedScan\\MedScan\\wwwroot\\index.html",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-02-26T12:45:20.227Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "bootstrap.min.css.map",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+              "RelativeDocumentMoniker": "MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+              "RelativeToolTip": "MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-02-26T12:44:59.736Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "bootstrap.min.css",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+              "RelativeDocumentMoniker": "MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+              "RelativeToolTip": "MedScan\\MedScan.Shared\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-02-26T12:44:55.769Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "NavMenu.razor",
+              "DocumentMoniker": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\Layout\\NavMenu.razor",
+              "RelativeDocumentMoniker": "MedScan\\MedScan.Shared\\Layout\\NavMenu.razor",
+              "ToolTip": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\Layout\\NavMenu.razor",
+              "RelativeToolTip": "MedScan\\MedScan.Shared\\Layout\\NavMenu.razor",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAAABAAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-02-26T12:44:07.558Z",
+              "EditorCaption": ""
             }
           ]
         }

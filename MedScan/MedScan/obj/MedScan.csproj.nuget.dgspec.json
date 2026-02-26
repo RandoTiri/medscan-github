@@ -54,6 +54,10 @@
             "Microsoft.AspNetCore.Components.Web": {
               "target": "Package",
               "version": "[10.0.0, )"
+            },
+            "ZXing.Net.Maui.Controls": {
+              "target": "Package",
+              "version": "[0.7.4, )"
             }
           },
           "imports": [
@@ -446,6 +450,10 @@
               "target": "Package",
               "version": "[10.0.3, )",
               "autoReferenced": true
+            },
+            "ZXing.Net.Maui.Controls": {
+              "target": "Package",
+              "version": "[0.7.4, )"
             }
           },
           "imports": [
@@ -766,6 +774,10 @@
               "target": "Package",
               "version": "[10.0.3, )",
               "autoReferenced": true
+            },
+            "ZXing.Net.Maui.Controls": {
+              "target": "Package",
+              "version": "[0.7.4, )"
             }
           },
           "imports": [
@@ -1086,6 +1098,10 @@
               "target": "Package",
               "version": "[10.0.3, )",
               "autoReferenced": true
+            },
+            "ZXing.Net.Maui.Controls": {
+              "target": "Package",
+              "version": "[0.7.4, )"
             }
           },
           "imports": [
@@ -1401,6 +1417,10 @@
             "Microsoft.Maui.Controls": {
               "target": "Package",
               "version": "[10.0.20, )"
+            },
+            "ZXing.Net.Maui.Controls": {
+              "target": "Package",
+              "version": "[0.7.4, )"
             }
           },
           "imports": [

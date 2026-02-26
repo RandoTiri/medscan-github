@@ -9,9 +9,10 @@
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.CAMERA" />
   <permission android:name="com.companyname.medscan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" android:protectionLevel="signature" />
   <uses-permission android:name="com.companyname.medscan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-  <application android:name="crc64038ea674dbc5ae31.MainApplication" android:allowBackup="true" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:debuggable="true" android:extractNativeLibs="true" android:icon="@mipmap/appicon" android:label="MedScan" android:roundIcon="@mipmap/appicon_round" android:supportsRtl="true">
+  <application android:name="crc64038ea674dbc5ae31.MainApplication" android:allowBackup="true" android:appComponentFactory="androidx.core.app.CoreComponentFactory" android:debuggable="true" android:extractNativeLibs="true" android:icon="@mipmap/appicon" android:label="MedScan" android:supportsRtl="true">
     <activity android:name="crc64038ea674dbc5ae31.MainActivity" android:configChanges="density|orientation|smallestScreenSize|screenLayout|screenSize|uiMode" android:exported="true" android:theme="@style/Maui.SplashTheme">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -49,5 +50,12 @@
     </receiver>
     <uses-library android:name="androidx.window.extensions" android:required="false" />
     <uses-library android:name="androidx.window.sidecar" android:required="false" />
+    <!--
+        Service for holding metadata. Cannot be instantiated.
+        Metadata will be merged from other manifests.
+        -->
+    <service android:name="androidx.camera.core.impl.MetadataHolderService" android:enabled="false" android:exported="false" tools:ignore="Instantiatable,MissingServiceExportedEqualsTrue" tools:node="merge">
+      <meta-data android:name="androidx.camera.core.impl.MetadataHolderService.DEFAULT_CONFIG_PROVIDER" android:value="androidx.camera.camera2.Camera2Config$DefaultProvider" />
+    </service>
   </application>
 </manifest>

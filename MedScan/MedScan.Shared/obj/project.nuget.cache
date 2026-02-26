@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "4Sxi0U+OwqU=",
+  "dgSpecHash": "ODb8H41UMzI=",
   "success": true,
   "projectFilePath": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\MedScan.Shared.csproj",
   "expectedPackageFiles": [
@@ -17,12 +17,26 @@
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.diagnostics\\10.0.0\\microsoft.extensions.diagnostics.10.0.0.nupkg.sha512",
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.diagnostics.abstractions\\10.0.0\\microsoft.extensions.diagnostics.abstractions.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.fileproviders.abstractions\\10.0.0\\microsoft.extensions.fileproviders.abstractions.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.hosting.abstractions\\10.0.0\\microsoft.extensions.hosting.abstractions.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.logging\\10.0.0\\microsoft.extensions.logging.10.0.0.nupkg.sha512",
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.0\\microsoft.extensions.logging.abstractions.10.0.0.nupkg.sha512",
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.options\\10.0.0\\microsoft.extensions.options.10.0.0.nupkg.sha512",
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.options.configurationextensions\\10.0.0\\microsoft.extensions.options.configurationextensions.10.0.0.nupkg.sha512",
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.0\\microsoft.extensions.primitives.10.0.0.nupkg.sha512",
     "C:\\Users\\tirir\\.nuget\\packages\\microsoft.extensions.validation\\10.0.0\\microsoft.extensions.validation.10.0.0.nupkg.sha512",
-    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.jsinterop\\10.0.0\\microsoft.jsinterop.10.0.0.nupkg.sha512"
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.jsinterop\\10.0.0\\microsoft.jsinterop.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls\\10.0.0\\microsoft.maui.controls.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls.build.tasks\\10.0.0\\microsoft.maui.controls.build.tasks.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls.core\\10.0.0\\microsoft.maui.controls.core.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls.xaml\\10.0.0\\microsoft.maui.controls.xaml.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.core\\10.0.0\\microsoft.maui.core.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.essentials\\10.0.0\\microsoft.maui.essentials.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.graphics\\10.0.0\\microsoft.maui.graphics.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.resizetizer\\10.0.0\\microsoft.maui.resizetizer.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\zxing.net\\0.16.11\\zxing.net.0.16.11.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\zxing.net.maui\\0.7.4\\zxing.net.maui.0.7.4.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\zxing.net.maui.controls\\0.7.4\\zxing.net.maui.controls.0.7.4.nupkg.sha512"
   ],
   "logs": []
 }

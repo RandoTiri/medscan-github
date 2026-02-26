@@ -17,7 +17,7 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>416</FileLength>
-      <LastWriteTime>Wed, 25 Feb 2026 11:10:48 GMT</LastWriteTime>
+      <LastWriteTime>Thu, 26 Feb 2026 10:59:52 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\app.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))">
@@ -37,28 +37,8 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <FileLength>775</FileLength>
-      <LastWriteTime>Wed, 25 Feb 2026 11:10:48 GMT</LastWriteTime>
+      <LastWriteTime>Thu, 26 Feb 2026 12:46:06 GMT</LastWriteTime>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MedScan.styles.css'))">
-      <SourceType>Package</SourceType>
-      <SourceId>MedScan</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>/</BasePath>
-      <RelativePath>MedScan.styles.css</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>CurrentProject</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName>ScopedCss</AssetTraitName>
-      <AssetTraitValue>ApplicationBundle</AssetTraitValue>
-      <Fingerprint>popmgbrwvs</Fingerprint>
-      <Integrity>dwhTNe0vPZqi9GbRkCxFesO8B+TPg4Ja6pyUrFO4IM0=</Integrity>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <FileLength>79</FileLength>
-      <LastWriteTime>Wed, 25 Feb 2026 11:15:25 GMT</LastWriteTime>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\MedScan.styles.css'))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\_framework\blazor.modules.json'))">
       <SourceType>Package</SourceType>

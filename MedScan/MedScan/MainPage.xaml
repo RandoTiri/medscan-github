@@ -1,15 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
              xmlns:local="clr-namespace:MedScan"
              xmlns:shared="clr-namespace:MedScan.Shared;assembly=MedScan.Shared"
              x:Class="MedScan.MainPage"
              BackgroundColor="{DynamicResource PageBackgroundColor}">
+
+        <zxing:CameraBarcodeReaderView
+                     x:Name="barcodeReader"
+                     CameraLocation="Rear"
+                     BarcodesDetected="barcodeReader_BarcodesDetected"/>
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>
             <RootComponent Selector="#app" ComponentType="{x:Type shared:Routes}" />
         </BlazorWebView.RootComponents>
     </BlazorWebView>
-
 </ContentPage>

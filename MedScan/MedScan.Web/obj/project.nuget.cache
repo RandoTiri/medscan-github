@@ -1,10 +1,21 @@
 {
   "version": 2,
-  "dgSpecHash": "c40sHNA2MdU=",
+  "dgSpecHash": "P48hOriaFl4=",
   "success": true,
   "projectFilePath": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Web\\MedScan.Web.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.3\\microsoft.aspnetcore.app.internal.assets.10.0.3.nupkg.sha512"
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.3\\microsoft.aspnetcore.app.internal.assets.10.0.3.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls\\10.0.0\\microsoft.maui.controls.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls.build.tasks\\10.0.0\\microsoft.maui.controls.build.tasks.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls.core\\10.0.0\\microsoft.maui.controls.core.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.controls.xaml\\10.0.0\\microsoft.maui.controls.xaml.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.core\\10.0.0\\microsoft.maui.core.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.essentials\\10.0.0\\microsoft.maui.essentials.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.graphics\\10.0.0\\microsoft.maui.graphics.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.maui.resizetizer\\10.0.0\\microsoft.maui.resizetizer.10.0.0.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\zxing.net\\0.16.11\\zxing.net.0.16.11.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\zxing.net.maui\\0.7.4\\zxing.net.maui.0.7.4.nupkg.sha512",
+    "C:\\Users\\tirir\\.nuget\\packages\\zxing.net.maui.controls\\0.7.4\\zxing.net.maui.controls.0.7.4.nupkg.sha512"
   ],
   "logs": []
 }

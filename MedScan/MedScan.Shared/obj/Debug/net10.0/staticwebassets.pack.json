@@ -1,10 +1,6 @@
 {
   "Files": [
     {
-      "Id": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\obj\\Debug\\net10.0\\scopedcss\\projectbundle\\MedScan.Shared.bundle.scp.css",
-      "PackagePath": "staticwebassets\\MedScan.Shared.vjdpy7ng2a.bundle.scp.css"
-    },
-    {
       "Id": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Shared\\wwwroot\\app.css",
       "PackagePath": "staticwebassets\\app.css"
     },

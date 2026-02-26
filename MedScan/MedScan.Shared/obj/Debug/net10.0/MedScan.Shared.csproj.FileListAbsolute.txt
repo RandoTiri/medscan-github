@@ -14,15 +14,10 @@ C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\Med
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\rjimswa.dswa.cache.json
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\scopedcss\Layout\MainLayout.razor.rz.scp.css
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\scopedcss\Layout\NavMenu.razor.rz.scp.css
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\scopedcss\bundle\MedScan.Shared.styles.css
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\scopedcss\projectbundle\MedScan.Shared.bundle.scp.css
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\compressed\vatmojo0f2-{0}-zxiz86ws8d-zxiz86ws8d.gz
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\compressed\y4ai2gjgi1-{0}-08mtdlppm0-08mtdlppm0.gz
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\compressed\bn4ae9v8yk-{0}-ca434j9tb9-ca434j9tb9.gz
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\compressed\57r9jkg2s0-{0}-vjdpy7ng2a-vjdpy7ng2a.gz
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\compressed\pq5vpkc3v6-{0}-vjdpy7ng2a-vjdpy7ng2a.gz
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\staticwebassets.build.json
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\staticwebassets.build.json.cache
 C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\obj\Debug\net10.0\staticwebassets.development.json

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MedScan.Shared")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db790324c161554de83675a1442750d3d71025d7")]
 [assembly: System.Reflection.AssemblyProductAttribute("MedScan.Shared")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MedScan.Shared")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
