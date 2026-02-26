@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "c40sHNA2MdU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\tirir\\source\\repos\\MedScan\\MedScan\\MedScan.Web\\MedScan.Web.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\tirir\\.nuget\\packages\\microsoft.aspnetcore.app.internal.assets\\10.0.3\\microsoft.aspnetcore.app.internal.assets.10.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

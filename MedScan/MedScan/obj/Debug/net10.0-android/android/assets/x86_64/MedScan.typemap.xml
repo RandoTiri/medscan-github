@@ -1,0 +1,10 @@
+<api type="debug" assembly-name="MedScan" mvid="6de0f4bb2099482e9a5390d004d969c0">
+  <java-to-managed>
+    <entry java-name="crc64038ea674dbc5ae31/MainActivity" managed-name="MedScan.MainActivity, MedScan" managed-type-token-id="33554441" />
+    <entry java-name="crc64038ea674dbc5ae31/MainApplication" managed-name="MedScan.MainApplication, MedScan" managed-type-token-id="33554442" />
+  </java-to-managed>
+  <managed-to-java>
+    <entry java-name="crc64038ea674dbc5ae31/MainActivity" managed-name="MedScan.MainActivity, MedScan" managed-type-token-id="33554441" />
+    <entry java-name="crc64038ea674dbc5ae31/MainApplication" managed-name="MedScan.MainApplication, MedScan" managed-type-token-id="33554442" />
+  </managed-to-java>
+</api>
