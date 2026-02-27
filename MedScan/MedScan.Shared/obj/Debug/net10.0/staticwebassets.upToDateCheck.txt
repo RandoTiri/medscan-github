@@ -1,7 +1,0 @@
-wwwroot\app.css
-wwwroot\favicon.png
-wwwroot\lib\bootstrap\dist\css\bootstrap.min.css
-wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\wwwroot\app.css
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css
-C:\Users\tirir\source\repos\MedScan\MedScan\MedScan.Shared\wwwroot\lib\bootstrap\dist\css\bootstrap.min.css.map

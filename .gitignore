@@ -87,6 +87,21 @@ coverage/
 *.coveragexml
 *.trx
 
+## Cache
+.cache/
+**/.cache/
+*.cache
+**/ServiceWorker/
+**/BundleConfig.json
+**/project.assets.json
+**/project.nuget.cache
+**/*.csproj.nuget.g.props
+**/*.csproj.nuget.g.targets
+**/.vs/
+**/node_modules/
+**/.sass-cache/
+**/StaticWebAssets/
+
 ## Temporary files
 *.tmp
 *.temp
