@@ -1,7 +1,6 @@
 ﻿using MedScan.Services;
 using MedScan.Shared.Services;
 using Microsoft.Extensions.Logging;
-using ZXing.Net.Maui.Controls;
 
 namespace MedScan {
     public static class MauiProgram {
@@ -11,8 +10,7 @@ namespace MedScan {
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts => {
                     fonts.AddFont("OpenSans-Regular.ttf","OpenSansRegular");
-                })
-                .UseBarcodeReader();
+                });
 
             // Add device-specific services used by the MedScan.Shared project
             builder.Services.AddSingleton<IFormFactor,FormFactor>();
