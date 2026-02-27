@@ -1,0 +1,93 @@
+## .NET / Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## Build outputs
+bin/
+obj/
+out/
+build/
+artifacts/
+
+## NuGet
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+!**/packages/repositories.config
+
+## MAUI / Android
+*.keystore
+*.apk
+*.aab
+*.ipa
+**/android/app/debug/
+**/android/app/release/
+
+## MAUI / iOS
+*.mobileprovision
+*.p12
+*.xcarchive
+**/ios/build/
+**/obj/
+Pods/
+*.xcworkspace/xcuserdata/
+
+## MAUI / Windows
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+
+## MAUI / macOS
+*.xcuserstate
+
+## .NET MAUI Hot Reload / caches
+.idea/
+.rider/
+
+## Rider
+*.DotSettings.user
+
+## VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+## Blazor / Web
+wwwroot/service-worker-assets.js
+**/wwwroot/_content/
+
+## Environment & secrets
+*.env
+*.env.local
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+**/Properties/launchSettings.json
+
+## OS-specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Logs
+*.log
+logs/
+
+## Test results
+TestResults/
+coverage/
+*.coveragexml
+*.trx
+
+## Temporary files
+*.tmp
+*.temp
+~$*
