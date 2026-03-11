@@ -1,0 +1,66 @@
+﻿@page "/register"
+@layout MedScan.Shared.Layout.AuthLayout
+@using MedScan.Shared.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Registreeru</PageTitle>
+
+<div class="auth-form">
+    <h1>Loo kasutaja</h1>
+    <p class="auth-subtitle">Tee endale MedScan konto.</p>
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="auth-error">@ErrorMessage</div>
+    }
+
+    <div class="form-group">
+        <label for="fullname">Nimi</label>
+        <input id="fullname" @bind="FullName" class="form-input" />
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input id="email" @bind="Email" class="form-input" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Parool</label>
+        <input id="password" type="password" @bind="Password" class="form-input" />
+    </div>
+
+    <button class="auth-button" @onclick="HandleRegister">Registreeru</button>
+
+    <div class="auth-footer">
+        <span>Juba on konto?</span>
+        <button class="link-button" @onclick="GoToLogin">Tagasi loginisse</button>
+    </div>
+</div>
+
+@code {
+    private string FullName = string.Empty;
+    private string Email = string.Empty;
+    private string Password = string.Empty;
+    private string ErrorMessage = string.Empty;
+
+    private void HandleRegister()
+    {
+        ErrorMessage = string.Empty;
+
+        var success = AuthService.Register(FullName, Email, Password);
+
+        if (success)
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        ErrorMessage = "Registreerimine ebaõnnestus.";
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}

@@ -1,5 +1,7 @@
 <Solution>
   <Project Path="MedScan/MedScan.Shared/MedScan.Shared.csproj" />
   <Project Path="MedScan/MedScan.Web/MedScan.Web.csproj" />
-  <Project Path="MedScan/MedScan/MedScan.csproj" />
+  <Project Path="MedScan/MedScan/MedScan.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>

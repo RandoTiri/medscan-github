@@ -16,6 +16,7 @@ namespace MedScan {
             builder.Services.AddSingleton<IFormFactor,FormFactor>();
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddSingleton<AuthService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

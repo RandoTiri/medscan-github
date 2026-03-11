@@ -1,14 +1,35 @@
 ﻿@page "/"
 @using MedScan.Shared.Services
 @inject IFormFactor FormFactor
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 
 <PageTitle>Home</PageTitle>
 
-<h1>Welcome to MedScan!</h1>
+@if (AuthService.IsLoggedIn)
+{
+    <h1>Welcome to MedScan!</h1>
 
-Welcome to your new app running on <em>@factor</em> using <em>@platform</em>.
+    <p>Tere, @AuthService.CurrentUser?.FullName</p>
+
+    <p>
+        Welcome to your new app running on <em>@factor</em> using <em>@platform</em>.
+    </p>
+}
+else
+{
+    <p>Suunan loginisse...</p>
+}
 
 @code {
     private string factor => FormFactor.GetFormFactor();
     private string platform => FormFactor.GetPlatform();
+
+    protected override void OnInitialized()
+    {
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
 }

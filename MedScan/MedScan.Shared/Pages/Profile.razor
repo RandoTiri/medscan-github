@@ -1,0 +1,77 @@
+﻿@page "/profile"
+@using MedScan.Shared.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Profile</PageTitle>
+
+@if (!AuthService.IsLoggedIn)
+{
+    <p>Suunan loginisse...</p>
+}
+else
+{
+    <div class="profile-page">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    @GetInitials()
+                </div>
+
+                <div class="profile-title-block">
+                    <h1>Minu profiil</h1>
+                    <p>Sinu konto andmed MedScan rakenduses.</p>
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="info-row">
+                    <span class="info-label">Nimi</span>
+                    <span class="info-value">@AuthService.CurrentUser?.FullName</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="info-label">Email</span>
+                    <span class="info-value">@AuthService.CurrentUser?.Email</span>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button class="logout-button" @onclick="Logout">
+                    Logi välja
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private void Logout()
+    {
+        AuthService.Logout();
+        Navigation.NavigateTo("/login", true);
+    }
+
+    private string GetInitials()
+    {
+        var fullName = AuthService.CurrentUser?.FullName;
+
+        if (string.IsNullOrWhiteSpace(fullName))
+            return "U";
+
+        var parts = fullName
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2)
+            .Select(p => char.ToUpperInvariant(p[0]));
+
+        return string.Concat(parts);
+    }
+}
