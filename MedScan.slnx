@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="MedScan.Api/MedScan.Api.csproj" Id="033e229b-b8f7-41d8-b111-7d759246a474" />
   <Project Path="MedScan/MedScan.Shared/MedScan.Shared.csproj" />
   <Project Path="MedScan/MedScan.Web/MedScan.Web.csproj" />
   <Project Path="MedScan/MedScan/MedScan.csproj">
