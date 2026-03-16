@@ -38,7 +38,7 @@ else
 
             <div class="profile-actions">
                 <button class="logout-button" @onclick="Logout">
-                    Logi välja
+                    Logi valja
                 </button>
             </div>
         </div>
@@ -46,17 +46,19 @@ else
 }
 
 @code {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await AuthService.InitializeAsync();
+
         if (!AuthService.IsLoggedIn)
         {
             Navigation.NavigateTo("/login");
         }
     }
 
-    private void Logout()
+    private async Task Logout()
     {
-        AuthService.Logout();
+        await AuthService.LogoutAsync();
         Navigation.NavigateTo("/login", true);
     }
 

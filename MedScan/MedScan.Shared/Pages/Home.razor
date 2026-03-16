@@ -25,8 +25,10 @@ else
     private string factor => FormFactor.GetFormFactor();
     private string platform => FormFactor.GetPlatform();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await AuthService.InitializeAsync();
+
         if (!AuthService.IsLoggedIn)
         {
             Navigation.NavigateTo("/login");
