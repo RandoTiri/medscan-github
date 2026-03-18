@@ -17,19 +17,21 @@
 
     <div class="form-group">
         <label for="email">Email</label>
-        <input id="email" @bind="Email" class="form-input" />
+        <input id="email" @bind="Email" class="form-input" disabled="@IsBusy" />
     </div>
 
     <div class="form-group">
         <label for="password">Parool</label>
-        <input id="password" type="password" @bind="Password" class="form-input" />
+        <input id="password" type="password" @bind="Password" class="form-input" disabled="@IsBusy" />
     </div>
 
-    <button class="auth-button" @onclick="HandleLogin">Logi sisse</button>
+    <button class="auth-button" @onclick="HandleLogin" disabled="@IsBusy">
+        @(IsBusy ? "Logib sisse..." : "Logi sisse")
+    </button>
 
     <div class="auth-footer">
         <span>Pole veel kasutajat?</span>
-        <button class="link-button" @onclick="GoToRegister">Loo kasutaja</button>
+        <button class="link-button" @onclick="GoToRegister" disabled="@IsBusy">Loo kasutaja</button>
     </div>
 </div>
 
@@ -37,35 +39,50 @@
     private string Email = string.Empty;
     private string Password = string.Empty;
     private string ErrorMessage = string.Empty;
+    private bool IsBusy;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await AuthService.InitializeAsync();
+
         if (AuthService.IsLoggedIn)
         {
             Navigation.NavigateTo("/");
         }
     }
 
-    private void HandleLogin()
+    private async Task HandleLogin()
     {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        IsBusy = true;
         ErrorMessage = string.Empty;
 
-        var success = AuthService.Login(Email, Password);
-
-        if (success)
+        try
         {
-            Navigation.NavigateTo("/");
-            return;
-        }
+            var result = await AuthService.LoginAsync(Email, Password);
 
-        if (!AuthService.HasRegisteredUser())
+            if (result.Success)
+            {
+                Navigation.NavigateTo("/");
+                return;
+            }
+
+            ErrorMessage = result.ErrorMessage;
+        }
+        catch (Exception ex)
         {
-            ErrorMessage = "Ühtegi kasutajat pole veel loodud.";
-            return;
+            ErrorMessage = $"Tehniline viga: {ex.Message}";
         }
-
-        ErrorMessage = "Vale email või parool.";
+        finally
+        {
+            IsBusy = false;
+        }
     }
+
 
     private void GoToRegister()
     {

@@ -17,24 +17,26 @@
 
     <div class="form-group">
         <label for="fullname">Nimi</label>
-        <input id="fullname" @bind="FullName" class="form-input" />
+        <input id="fullname" @bind="FullName" class="form-input" disabled="@IsBusy" />
     </div>
 
     <div class="form-group">
         <label for="email">Email</label>
-        <input id="email" @bind="Email" class="form-input" />
+        <input id="email" @bind="Email" class="form-input" disabled="@IsBusy" />
     </div>
 
     <div class="form-group">
         <label for="password">Parool</label>
-        <input id="password" type="password" @bind="Password" class="form-input" />
+        <input id="password" type="password" @bind="Password" class="form-input" disabled="@IsBusy" />
     </div>
 
-    <button class="auth-button" @onclick="HandleRegister">Registreeru</button>
+    <button class="auth-button" @onclick="HandleRegister" disabled="@IsBusy">
+        @(IsBusy ? "Loob kasutajat..." : "Registreeru")
+    </button>
 
     <div class="auth-footer">
         <span>Juba on konto?</span>
-        <button class="link-button" @onclick="GoToLogin">Tagasi loginisse</button>
+        <button class="link-button" @onclick="GoToLogin" disabled="@IsBusy">Tagasi loginisse</button>
     </div>
 </div>
 
@@ -43,20 +45,48 @@
     private string Email = string.Empty;
     private string Password = string.Empty;
     private string ErrorMessage = string.Empty;
+    private bool IsBusy;
 
-    private void HandleRegister()
+    protected override async Task OnInitializedAsync()
     {
-        ErrorMessage = string.Empty;
+        await AuthService.InitializeAsync();
 
-        var success = AuthService.Register(FullName, Email, Password);
-
-        if (success)
+        if (AuthService.IsLoggedIn)
         {
             Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        if (IsBusy)
+        {
             return;
         }
 
-        ErrorMessage = "Registreerimine ebaõnnestus.";
+        IsBusy = true;
+        ErrorMessage = string.Empty;
+
+        try
+        {
+            var result = await AuthService.RegisterAsync(FullName, Email, Password);
+
+            if (result.Success)
+            {
+                Navigation.NavigateTo("/");
+                return;
+            }
+
+            ErrorMessage = result.ErrorMessage;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.ToString();
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private void GoToLogin()
