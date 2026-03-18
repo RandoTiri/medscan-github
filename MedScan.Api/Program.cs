@@ -8,8 +8,11 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=medscan.db"));
+    options.UseNpgsql(connectionString));
+
 
 builder.Services
     .AddAuthentication(IdentityConstants.BearerScheme)
@@ -154,5 +157,6 @@ app.MapGet("/api/auth/me", async (
         user.Email
     });
 }).RequireAuthorization();
+
 
 app.Run();
