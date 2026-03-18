@@ -1,44 +1,35 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: medscan_postgres
-    restart: unless-stopped
+  medscan.api:
+    image: medscanapi
+    build:
+      context: .
+      dockerfile: MedScan.Api/Dockerfile
     environment:
-      POSTGRES_DB: medscan
-      POSTGRES_USER: medscan_user
-      POSTGRES_PASSWORD: medscan_pass
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U medscan_user -d medscan']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      - ConnectionStrings__DefaultConnection=Host=db;Database=medscan;Username=postgres;Password=yourpassword
+    depends_on:
+      - db
 
   pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: medscan_pgadmin
-    restart: unless-stopped
+    image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@medscan.ee
-      PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_DEFAULT_EMAIL: admin@medscan.com
+      PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - '5050:80'
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - "5050:80"
     depends_on:
-      postgres:
-        condition: service_healthy
+      - db
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: medscan
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
 volumes:
-  postgres_data:
-    name: medscan_postgres_data
-  pgadmin_data:
-    name: medscan_pgadmin_data
+  pgdata:
+
