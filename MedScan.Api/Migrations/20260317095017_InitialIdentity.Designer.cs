@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260311133907_InitialIdentity")]
+    [Migration("20260317095017_InitialIdentity")]
     partial class InitialIdentity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.4");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
             modelBuilder.Entity("MedScan.Api.Models.ApplicationUser", b =>
                 {
