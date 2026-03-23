@@ -23,6 +23,11 @@ public sealed class ApiMedicationService : IMedicationService {
         return medications ?? [];
     }
 
+    public async Task<UserMedicationDto?> GetByIdAsync(int userMedicationId) {
+        return await _httpClient.GetFromJsonAsync<UserMedicationDto>(
+            $"api/medications/{userMedicationId}");
+    }
+
     public async Task<UserMedicationDto> AddToScheduleAsync(AddMedicationDto dto) {
         var response = await _httpClient.PostAsJsonAsync("api/medications",dto);
         response.EnsureSuccessStatusCode();
@@ -36,7 +41,7 @@ public sealed class ApiMedicationService : IMedicationService {
     }
 
     public async Task<UserMedicationDto> UpdateScheduleAsync(int userMedicationId,AddMedicationDto dto) {
-        var existingMedication = await GetMedicationByIdAsync(userMedicationId);
+        var existingMedication = await GetByIdAsync(userMedicationId);
         if (existingMedication is not null) {
             await _reminderCoordinator.CancelForMedicineAsync(existingMedication);
         }
@@ -52,17 +57,19 @@ public sealed class ApiMedicationService : IMedicationService {
         return updatedMedication;
     }
 
-    public async Task RemoveFromScheduleAsync(int userMedicationId) {
-        var existingMedication = await GetMedicationByIdAsync(userMedicationId);
+    public async Task<bool> RemoveFromScheduleAsync(int userMedicationId) {
+        var existingMedication = await GetByIdAsync(userMedicationId);
         if (existingMedication is not null) {
             await _reminderCoordinator.CancelForMedicineAsync(existingMedication);
         }
 
         var response = await _httpClient.DeleteAsync($"api/medications/{userMedicationId}");
-        response.EnsureSuccessStatusCode();
-    }
 
-    private async Task<UserMedicationDto?> GetMedicationByIdAsync(int userMedicationId) {
-        return await _httpClient.GetFromJsonAsync<UserMedicationDto>($"api/medications/{userMedicationId}");
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) {
+            return false;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return true;
     }
 }

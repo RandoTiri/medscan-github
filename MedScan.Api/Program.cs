@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
+using MedScan.Api.Repositories;
+using MedScan.Api.Services;
+using MedScan.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +21,13 @@ builder.Services
     .AddAuthentication(IdentityConstants.BearerScheme)
     .AddBearerToken(IdentityConstants.BearerScheme);
 
+builder.Services.AddScoped<IMedicationRepository,MedicationRepository>();
+builder.Services.AddScoped<IUserMedicationRepository,UserMedicationRepository>();
+builder.Services.AddScoped<IMedicationService,MedicationService>();
+
+
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 
 builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
@@ -90,6 +99,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapControllers();
 app.MapIdentityApi<ApplicationUser>();
 
 app.MapPost("/api/auth/register", async (
