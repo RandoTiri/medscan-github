@@ -78,6 +78,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5" />
     <PackageReference Include="MudBlazor" Version="9.2.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageReference Include="Plugin.LocalNotification" Version="14.0.0" />
     <PackageReference Include="ZXing.Net.Maui" Version="0.7.4" />
     <PackageReference Include="ZXing.Net.Maui.Controls" Version="0.7.4" />
   </ItemGroup>
