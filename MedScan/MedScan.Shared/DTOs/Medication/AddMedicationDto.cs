@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace MedScan.Shared.DTOs.Medication;
 
-namespace MedScan.Shared.DTOs.Medication {
-    internal class AddMedicationDto {
-    }
+public sealed class AddMedicationDto {
+    public int ProfileId { get; set; }
+    public int MedicationId { get; set; }
+    public int FrequencyPerDay { get; set; }
+    public List<TimeOnly> ScheduledTimes { get; set; } = [];
+    public bool RemindersEnabled { get; set; } = true;
+    public string? Notes { get; set; }
 }

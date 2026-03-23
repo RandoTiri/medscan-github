@@ -1,4 +1,4 @@
-﻿using MedScan.Shared.Models;
+﻿using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Services;
 
 namespace MedScan.MAUI.Services;
@@ -14,15 +14,21 @@ public sealed class MedicineReminderCoordinator {
         return _scheduler.RequestPermissionAsync();
     }
 
-    public Task ScheduleForMedicineAsync(MedicineReminderModel medicine) {
-        return _scheduler.ScheduleAsync(medicine);
+    public Task ScheduleForMedicineAsync(UserMedicationDto medication) {
+        var reminder = MedicineReminderMapper.ToReminderModel(medication);
+        return _scheduler.ScheduleAsync(reminder);
     }
 
-    public Task CancelForMedicineAsync(MedicineReminderModel medicine) {
-        return _scheduler.CancelAsync(medicine);
+    public Task CancelForMedicineAsync(UserMedicationDto medication) {
+        var reminder = MedicineReminderMapper.ToReminderModel(medication);
+        return _scheduler.CancelAsync(reminder);
     }
 
-    public Task RebuildAsync(IEnumerable<MedicineReminderModel> medicines) {
-        return _scheduler.RescheduleAllAsync(medicines);
+    public Task RebuildAsync(IEnumerable<UserMedicationDto> medications) {
+        var reminders = medications
+            .Select(MedicineReminderMapper.ToReminderModel)
+            .ToList();
+
+        return _scheduler.RescheduleAllAsync(reminders);
     }
 }

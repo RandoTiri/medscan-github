@@ -15,23 +15,25 @@ namespace MedScan
             builder
                 .UseMauiApp<App>()
                 .UseLocalNotification()
-                .ConfigureFonts(fonts =>
-                {
+                .ConfigureFonts(fonts => {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
 
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
             builder.Services.AddSingleton<ITokenStore, MauiTokenStore>();
-            builder.Services.AddSingleton(_ => new HttpClient
-            {
+
+            builder.Services.AddSingleton(_ => new HttpClient {
                 BaseAddress = new Uri(GetApiBaseAddress())
             });
+
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<AuthService>();
 
             builder.Services.AddScoped<IMedicineReminderScheduler,MauiMedicineReminderScheduler>();
             builder.Services.AddScoped<MedicineReminderCoordinator>();
+            builder.Services.AddScoped<IMedicationService,ApiMedicationService>();
+
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

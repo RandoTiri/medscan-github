@@ -27,7 +27,7 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler {
         }
 
         foreach (var time in medicine.ReminderTimes) {
-            var notificationId = ReminderNotificationIdFactory.Create(medicine.MedicationId,time);
+            var notificationId = ReminderNotificationIdFactory.Create(medicine.UserMedicationId,time);
 
             var request = new NotificationRequest {
                 NotificationId = notificationId,
@@ -45,7 +45,7 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler {
 
     public Task CancelAsync(MedicineReminderModel medicine) {
         foreach (var time in medicine.ReminderTimes) {
-            var notificationId = ReminderNotificationIdFactory.Create(medicine.MedicationId,time);
+            var notificationId = ReminderNotificationIdFactory.Create(medicine.UserMedicationId,time);
             LocalNotificationCenter.Current.Cancel(notificationId);
         }
 
