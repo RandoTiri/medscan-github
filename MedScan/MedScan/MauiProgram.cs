@@ -23,7 +23,7 @@ namespace MedScan
             builder.Services.AddSingleton<ITokenStore, MauiTokenStore>();
 
             builder.Services.AddSingleton(_ => new HttpClient {
-                BaseAddress = new Uri(GetApiBaseAddress())
+                BaseAddress = new Uri(ApiBaseAddressProvider.GetApiBaseAddress())
             });
 
 
@@ -42,12 +42,5 @@ namespace MedScan
 
             return builder.Build();
         }
-
-        private static string GetApiBaseAddress()
-        {
-            return "http://172.20.10.5:5183/";
-        }
-
-
     }
 }
