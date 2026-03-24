@@ -1,12 +1,12 @@
 ﻿namespace MedScan.Shared.Models.Enums; 
-public enum MethodOfAdministrionEnum {
+public enum MethodOfAdministraionEnum {
     Suukaudne,
     PaikneNahale,
     Inhalatsioon,
-    Süstitav,
+    Sustitav,
     Silm,
     Korv,
     Rektaalne,
     Vaginaalne,
-    Muud
+    Muu
 }

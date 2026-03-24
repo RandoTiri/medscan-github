@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 
 namespace MedScan.Shared.Models.Enums; 
-public enum PrescriptionTypeEnum {
-    Retseptiravim,
-    Kasimuugiravim
+public enum DoseStatusEnum { 
+    Pending, 
+    Done, 
+    Missed, 
+    Skipped 
 }

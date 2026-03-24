@@ -158,5 +158,4 @@ app.MapGet("/api/auth/me", async (
     });
 }).RequireAuthorization();
 
-
 app.Run();

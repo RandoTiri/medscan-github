@@ -4,10 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MedScan.Api.Data.Migrations
+namespace MedScan.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -81,6 +81,7 @@ namespace MedScan.Api.Data.Migrations
                     Indication = table.Column<string>(type: "text", nullable: true),
                     Warnings = table.Column<string>(type: "text", nullable: true),
                     PdfUrl = table.Column<string>(type: "text", nullable: true),
+                    BestBefore = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     MethodOfAdministrion = table.Column<int>(type: "integer", nullable: false),
                     PrescriptionType = table.Column<int>(type: "integer", nullable: false),
                     MedicationForm = table.Column<int>(type: "integer", nullable: false),

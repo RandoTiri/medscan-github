@@ -5,7 +5,7 @@ public class UserMedication {
     public Profile Profile { get; set; } = null!;
     public int MedicationId { get; set; }
     public Medication Medication { get; set; } = null!;
-    public int FrequencyPerDay { get; set; }
+    public int Frequency { get; set; }
     public string ScheduledTimesJson { get; set; } = "[]";
     public bool RemindersEnabled { get; set; } = true;
     public string? Notes { get; set; }

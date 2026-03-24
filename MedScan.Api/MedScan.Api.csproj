@@ -10,6 +10,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Migrations\**" />
+	  <Content Remove="Migrations\**" />
+	  <EmbeddedResource Remove="Migrations\**" />
+	  <None Remove="Migrations\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.5" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
@@ -29,12 +36,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Controllers\" />
-		<Folder Include="Migrations\" />
+	  <ProjectReference Include="..\MedScan\MedScan.Shared\MedScan.Shared.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\MedScan\MedScan.Shared\MedScan.Shared.csproj" />
+	  <Folder Include="Controllers\" />
+	  <Folder Include="Data\Migrations\" />
 	</ItemGroup>
 
 </Project>

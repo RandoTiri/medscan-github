@@ -6,6 +6,6 @@ public class AppUser
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public DateTime CreateAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<Profile> Profiles { get; set; } = new List<Profile>();
 }
