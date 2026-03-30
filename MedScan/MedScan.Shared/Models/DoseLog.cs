@@ -6,7 +6,7 @@ public class DoseLog {
     public int UserMedicationId { get; set; }
     public UserMedication UserMedication { get; set; } = null!;
     public DateTime ScheduledTime { get; set; }
-    public DateTime TakenAt { get; set; }
+    public DateTime? TakenAt { get; set; }
     public DoseStatusEnum DoseStatus { get; set; } = DoseStatusEnum.Pending;
     public string? ConfirmedByUserId { get; set; }
 }

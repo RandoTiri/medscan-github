@@ -21,11 +21,30 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
 
         builder.Entity<Profile>(entity =>
         {
+            entity.Property(x => x.ProfileType).HasColumnName("Type");
             entity.HasIndex(x => x.UserId);
             entity.HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<UserMedication>(entity =>
+        {
+            entity.Property(x => x.Frequency).HasColumnName("FrequencyPerDay");
+        });
+
+        builder.Entity<Medication>(entity =>
+        {
+            // Current DB schema does not have BestBefore column.
+            entity.Ignore(x => x.BestBefore);
+            entity.Property(x => x.MarketingAuthNr).HasColumnName("MarketingAuthNumber");
+            entity.Property(x => x.MethodOfAdministraion).HasColumnName("MethodOfAdministrion");
+        });
+
+        builder.Entity<DoseLog>(entity =>
+        {
+            entity.Property(x => x.DoseStatus).HasColumnName("Status");
         });
     }
 }
