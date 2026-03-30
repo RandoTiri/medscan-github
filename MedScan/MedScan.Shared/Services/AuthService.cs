@@ -86,7 +86,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
                 return (false, "Sisesta email ja parool.");
             }
 
-            var response = await httpClient.PostAsJsonAsync("/login?useCookies=false&useSessionCookies=false", new LoginRequest
+            var response = await httpClient.PostAsJsonAsync("/api/auth/login", new LoginRequest
             {
                 Email = email.Trim(),
                 Password = password

@@ -1,8 +1,10 @@
-﻿namespace MedScan.Shared.DTOs.Medication; 
-public class AddMedicationDto {
-    public int MedicationId { get; set; }
+﻿namespace MedScan.Shared.DTOs.Medication;
+
+public sealed class AddMedicationDto {
     public int ProfileId { get; set; }
-    public int Frequency { get; set; }
-    List<string>? ScheduledTimes { get; set; }
-    public bool RemindersEnabled { get; set; }
+    public int MedicationId { get; set; }
+    public int FrequencyPerDay { get; set; }
+    public List<TimeOnly> ScheduledTimes { get; set; } = [];
+    public bool RemindersEnabled { get; set; } = true;
+    public string? Notes { get; set; }
 }

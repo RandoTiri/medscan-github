@@ -1,8 +1,9 @@
-using MedScan.Api.Contracts;
 using MedScan.Api.Data;
 using MedScan.Api.Models;
+using MedScan.Api.Repositories;
+using MedScan.Api.Services;
+using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 
@@ -13,12 +14,16 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-
 builder.Services
     .AddAuthentication(IdentityConstants.BearerScheme)
     .AddBearerToken(IdentityConstants.BearerScheme);
 
+builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
+builder.Services.AddScoped<IUserMedicationRepository, UserMedicationRepository>();
+builder.Services.AddScoped<IMedicationService, MedicationService>();
+
 builder.Services.AddAuthorization();
+builder.Services.AddControllers();
 
 builder.Services
     .AddIdentityCore<ApplicationUser>(options =>
@@ -73,6 +78,18 @@ builder.Services.AddSwaggerGen(options =>
             [new OpenApiSecuritySchemeReference(schemeId, document)] = []
         };
     });
+
+    options.MapType<TimeOnly>(() => new OpenApiSchema
+    {
+        Type = JsonSchemaType.String,
+        Pattern = "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$"
+    });
+
+    options.MapType<TimeOnly?>(() => new OpenApiSchema
+    {
+        Type = JsonSchemaType.String,
+        Pattern = "^([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d$"
+    });
 });
 
 var app = builder.Build();
@@ -90,72 +107,6 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapIdentityApi<ApplicationUser>();
-
-app.MapPost("/api/auth/register", async (
-    [FromBody] AppRegisterRequest request,
-    [FromServices] UserManager<ApplicationUser> userManager) =>
-{
-    if (string.IsNullOrWhiteSpace(request.FullName) ||
-        string.IsNullOrWhiteSpace(request.Email) ||
-        string.IsNullOrWhiteSpace(request.Password))
-    {
-        return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
-    }
-
-    var existingUser = await userManager.FindByEmailAsync(request.Email);
-    if (existingUser is not null)
-    {
-        return Results.BadRequest(new { message = "Selle emailiga kasutaja on juba olemas." });
-    }
-
-    var user = new ApplicationUser
-    {
-        UserName = request.Email,
-        Email = request.Email,
-        FullName = request.FullName,
-        EmailConfirmed = true
-    };
-
-    var result = await userManager.CreateAsync(user, request.Password);
-
-    if (!result.Succeeded)
-    {
-        return Results.BadRequest(result.Errors.Select(e => new
-        {
-            e.Code,
-            e.Description
-        }));
-    }
-
-    return Results.Ok(new
-    {
-        message = "User created"
-    });
-});
-
-app.MapGet("/api/auth/me", async (
-    HttpContext httpContext,
-    [FromServices] UserManager<ApplicationUser> userManager) =>
-{
-    if (httpContext.User?.Identity?.IsAuthenticated != true)
-    {
-        return Results.Unauthorized();
-    }
-
-    var user = await userManager.GetUserAsync(httpContext.User);
-
-    if (user is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    return Results.Ok(new
-    {
-        user.Id,
-        user.FullName,
-        user.Email
-    });
-}).RequireAuthorization();
+app.MapControllers();
 
 app.Run();

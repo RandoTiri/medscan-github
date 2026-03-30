@@ -3,8 +3,7 @@
 namespace MedScan.Shared.Models; 
 public class Profile {
     public int Id { get; set; }
-    public int UserId { get; set; }
-    public AppUser User { get; set; } = null!;
+    public string UserId { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public ProfileTypeEnum ProfileType { get; set; }
     public DateOnly? BirthDate { get; set; }
