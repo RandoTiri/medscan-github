@@ -1,12 +1,16 @@
 using MedScan.Shared.Services;
 using MedScan.Web.Components;
 using MedScan.Web.Services;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Add MudBlazor services
+builder.Services.AddMudServices();
 
 // Add device-specific services used by the MedScan.Shared project
 builder.Services.AddSingleton<IFormFactor,FormFactor>();

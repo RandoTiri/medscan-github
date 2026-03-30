@@ -1,40 +1,101 @@
-﻿@page "/mymedicine"
+@page "/mymedicine"
+@using MedScan.Shared.Services
+@inject NavigationManager Navigation
 
-<PageTitle>My Medicine</PageTitle>
+<PageTitle>Minu Ravimid</PageTitle>
 
-<h1>My Medicine</h1>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h3">Minu Ravimid</MudText>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="@(() => Navigation.NavigateTo("/scanner"))">
+            Lisa Uus Ravim
+        </MudButton>
+    </div>
 
-<p>This list shows all of your saved medicines.</p>
-
-@if (medicines == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Substance</th>
-                <th>Strength</th>
-                <th>Form</th>
-                <th>Expiring Date</th>               
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var medicine in medicines) {
-                <tr>
-                    <td>@medicine.Name</td>
-                    <td>@medicine.Substance</td>
-                    <td>@medicine.Strength</td>
-                    <td>@medicine.Form</td>
-                    <td>@medicine.ExpiringDate</td>
-                </tr>
+    @if (medicines == null)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+    }
+    else if (!medicines.Any())
+    {
+        <MudPaper Elevation="0" Class="pa-8 text-center">
+            <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Size="Size.Large" Color="Color.Secondary" />
+            <MudText Typo="Typo.h6" Class="mt-4">Ravimeid pole veel lisatud</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Skaneeri ravimi vöötkood, et see oma nimekirja lisada
+            </MudText>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       Class="mt-4"
+                       StartIcon="@Icons.Material.Filled.QrCodeScanner"
+                       OnClick="@(() => Navigation.NavigateTo("/scanner"))">
+                Skaneeri Ravim
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var medicine in medicines)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Elevation="2">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@medicine.Name</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@medicine.Substance</MudText>
+                            </CardHeaderContent>
+                            <CardHeaderActions>
+                                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" />
+                            </CardHeaderActions>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Medication" Size="Size.Small" Class="mr-2" Color="Color.Primary" />
+                                    <MudText Typo="Typo.body2"><strong>Tugevus:</strong> @medicine.Strength mg</MudText>
+                                </div>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Category" Size="Size.Small" Class="mr-2" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2"><strong>Vorm:</strong> @medicine.Form</MudText>
+                                </div>
+                                <div class="d-flex align-center">
+                                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-2" Color="@GetExpiryColor(medicine.ExpiringDate)" />
+                                    <MudText Typo="Typo.body2">
+                                        <strong>Aegub:</strong> @medicine.ExpiringDate?.ToString("dd.MM.yyyy")
+                                    </MudText>
+                                </div>
+                                @if (medicine.ExpiringDate.HasValue && IsExpiringSoon(medicine.ExpiringDate.Value))
+                                {
+                                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mt-2">
+                                        Aegub varsti!
+                                    </MudAlert>
+                                }
+                            </div>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Info">
+                                Detailid
+                            </MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Error" StartIcon="@Icons.Material.Filled.Delete">
+                                Kustuta
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
             }
-        </tbody>
-    </table>
-}
+        </MudGrid>
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.body2" Color="Color.Secondary">
+            Kokku: @medicines.Length ravimit
+        </MudText>
+    }
+</MudContainer>
 
 @code {
     private Medicine[]? medicines;
@@ -45,19 +106,40 @@ else
         await Task.Delay(500);
 
         var expiringDate = DateOnly.FromDateTime(DateTime.Now);
-        var names = new[] { "Paracetamol","Ibuprofen","Aspirin","Amoxicillin","Metformin","Atorvastatin","Omeprazole" };
-        var substances = new[] { "Caffeine","Nicotine","Ethanol","Glucose","Sodium chloride","Acetone","Carbon dioxide","Methane" };
-        var forms = new[] { "Tablett", "Liquid", "Powder" };
-        medicines = Enumerable.Range(1,5).Select(index => new Medicine {
+        var names = new[] { "Paracetamol", "Ibuprofen", "Aspirin", "Amoxicillin", "Metformin", "Atorvastatin", "Omeprazole" };
+        var substances = new[] { "Paracetamol", "Ibuprofen", "Aspirin", "Amoxicillin", "Metformin", "Atorvastatin", "Omeprazole" };
+        var forms = new[] { "Tablett", "Kapsel", "Siirup" };
+        medicines = Enumerable.Range(1, 5).Select(index => new Medicine
+        {
             Name = names[Random.Shared.Next(names.Length)],
             Substance = substances[Random.Shared.Next(substances.Length)],
-            Strength = Random.Shared.Next(100,500),
+            Strength = Random.Shared.Next(100, 500),
             Form = forms[Random.Shared.Next(forms.Length)],
-            ExpiringDate = expiringDate.AddDays(index)
+            ExpiringDate = expiringDate.AddDays(index * 30)
         }).ToArray();
     }
 
-    private class Medicine {
+    private Color GetExpiryColor(DateOnly? expiringDate)
+    {
+        if (!expiringDate.HasValue) return Color.Default;
+
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var daysUntilExpiry = expiringDate.Value.DayNumber - today.DayNumber;
+
+        if (daysUntilExpiry < 0) return Color.Error;
+        if (daysUntilExpiry < 30) return Color.Warning;
+        return Color.Success;
+    }
+
+    private bool IsExpiringSoon(DateOnly expiringDate)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Now);
+        var daysUntilExpiry = expiringDate.DayNumber - today.DayNumber;
+        return daysUntilExpiry >= 0 && daysUntilExpiry < 30;
+    }
+
+    private class Medicine
+    {
         public string? Name { get; set; }
         public string? Substance { get; set; }
         public int? Strength { get; set; }

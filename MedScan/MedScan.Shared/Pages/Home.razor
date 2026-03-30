@@ -1,29 +1,187 @@
-﻿@page "/"
+@page "/"
 @using MedScan.Shared.Services
+@using MudBlazor
 @inject IFormFactor FormFactor
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>MedScan - Avaleht</PageTitle>
 
 @if (AuthService.IsLoggedIn)
 {
-    <h1>Welcome to MedScan!</h1>
+    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+        <MudText Typo="Typo.h3" Class="mb-4">Tere tulemast, @AuthService.CurrentUser?.FullName!</MudText>
 
-    <p>Tere, @AuthService.CurrentUser?.FullName</p>
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.h6" Color="Color.Primary">Minu Ravimid</MudText>
+                                <MudText Typo="Typo.h4">@totalMedications</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Aktiivset ravimit</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Medication" Size="Size.Large" Color="Color.Primary" />
+                        </div>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@(() => Navigation.NavigateTo("/mymedicine"))">
+                            Vaata kõiki
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
 
-    <p>
-        Welcome to your new app running on <em>@factor</em> using <em>@platform</em>.
-    </p>
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.h6" Color="Color.Success">Täna Võetud</MudText>
+                                <MudText Typo="Typo.h4">@todayTaken</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">annust @todayTotal-st</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Color="Color.Success" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2">
+                    <MudCardContent>
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Typo="Typo.h6" Color="Color.Warning">Järgmine Annus</MudText>
+                                <MudText Typo="Typo.h4">@nextDoseTime</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@nextMedication</MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Large" Color="Color.Warning" />
+                        </div>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Kiirtoimingud</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="6" sm="3">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Primary"
+                                          FullWidth="true"
+                                          StartIcon="@Icons.Material.Filled.QrCodeScanner"
+                                          OnClick="@(() => Navigation.NavigateTo("/scanner"))">
+                                    Skaneeri
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Secondary"
+                                          FullWidth="true"
+                                          StartIcon="@Icons.Material.Filled.Add"
+                                          OnClick="@(() => Navigation.NavigateTo("/mymedicine"))">
+                                    Lisa Ravim
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Info"
+                                          FullWidth="true"
+                                          StartIcon="@Icons.Material.Filled.Person"
+                                          OnClick="@(() => Navigation.NavigateTo("/profile"))">
+                                    Profiil
+                                </MudButton>
+                            </MudItem>
+                            <MudItem xs="6" sm="3">
+                                <MudButton Variant="Variant.Outlined"
+                                          Color="Color.Tertiary"
+                                          FullWidth="true"
+                                          StartIcon="@Icons.Material.Filled.History">
+                                    Ajalugu
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Meeldetuletus</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Sul on @upcomingReminders tulevat meeldetuletust järgmise 24 tunni jooksul.
+                        </MudText>
+                        <MudDivider Class="my-2" />
+                        <MudSwitch T="bool" @bind-Value="@notificationsEnabled" Color="Color.Primary" Label="Meeldetuletused" />
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudCard Elevation="2">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Tänane Graafik</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (todaySchedule?.Any() == true)
+                        {
+                            <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Top">
+                                @foreach (var item in todaySchedule)
+                                {
+                                    <MudTimelineItem Color="@(item.Taken ? Color.Success : Color.Default)" Size="Size.Small">
+                                        <ItemContent>
+                                            <MudText Typo="Typo.body2"><strong>@item.Time</strong></MudText>
+                                            <MudText Typo="Typo.caption">@item.MedicationName</MudText>
+                                        </ItemContent>
+                                    </MudTimelineItem>
+                                }
+                            </MudTimeline>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Täna pole annuseid planeeritud</MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
 }
 else
 {
-    <p>Suunan loginisse...</p>
+    <MudContainer Class="d-flex justify-center align-center" Style="min-height: 80vh;">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+        <MudText Class="ml-3">Suunan loginisse...</MudText>
+    </MudContainer>
 }
 
 @code {
     private string factor => FormFactor.GetFormFactor();
     private string platform => FormFactor.GetPlatform();
+
+    private int totalMedications = 0;
+    private int todayTaken = 0;
+    private int todayTotal = 0;
+    private string nextDoseTime = "--:--";
+    private string nextMedication = "Pole planeeritud";
+    private int upcomingReminders = 0;
+    private bool notificationsEnabled = true;
+
+    private List<ScheduleItem>? todaySchedule;
 
     protected override async Task OnInitializedAsync()
     {
@@ -32,6 +190,40 @@ else
         if (!AuthService.IsLoggedIn)
         {
             Navigation.NavigateTo("/login");
+            return;
         }
+
+        // Load dashboard data
+        await LoadDashboardDataAsync();
+    }
+
+    private async Task LoadDashboardDataAsync()
+    {
+        // Simulate loading data - in real app, this would call the API
+        await Task.Delay(100);
+
+        totalMedications = 5;
+        todayTaken = 3;
+        todayTotal = 6;
+        nextDoseTime = "14:00";
+        nextMedication = "Paracetamol 500mg";
+        upcomingReminders = 8;
+
+        todaySchedule = new List<ScheduleItem>
+        {
+            new() { Time = "08:00", MedicationName = "Aspirin 100mg", Taken = true },
+            new() { Time = "10:00", MedicationName = "Metformin 500mg", Taken = true },
+            new() { Time = "12:00", MedicationName = "Omeprazole 20mg", Taken = true },
+            new() { Time = "14:00", MedicationName = "Paracetamol 500mg", Taken = false },
+            new() { Time = "18:00", MedicationName = "Metformin 500mg", Taken = false },
+            new() { Time = "20:00", MedicationName = "Aspirin 100mg", Taken = false }
+        };
+    }
+
+    private class ScheduleItem
+    {
+        public string Time { get; set; } = string.Empty;
+        public string MedicationName { get; set; } = string.Empty;
+        public bool Taken { get; set; }
     }
 }

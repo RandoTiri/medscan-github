@@ -1,4 +1,9 @@
-﻿<Router AppAssembly="@typeof(MedScan.Shared.Pages.Home).Assembly">
+﻿<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<Router AppAssembly="@typeof(MedScan.Shared.Pages.Home).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MedScan.Shared.Layout.MainLayout)" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />
