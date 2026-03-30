@@ -2,6 +2,7 @@ using MedScan.Api.Contracts;
 using MedScan.Api.Data;
 using MedScan.Api.Models;
 using MedScan.Shared.Models;
+using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -83,7 +84,7 @@ public sealed class AuthController(
         {
             UserId = user.Id,
             Name = user.FullName,
-            Type = ProfileType.Self
+            ProfileType = ProfileTypeEnum.Ise
         };
 
         dbContext.Profiles.Add(defaultProfile);
@@ -110,7 +111,7 @@ public sealed class AuthController(
 
         var defaultProfileId = await dbContext.Profiles
             .Where(p => p.UserId == user.Id)
-            .OrderBy(p => p.Type == ProfileType.Self ? 0 : 1)
+            .OrderBy(p => p.ProfileType == ProfileTypeEnum.Ise ? 0 : 1)
             .ThenBy(p => p.Id)
             .Select(p => (int?)p.Id)
             .FirstOrDefaultAsync();

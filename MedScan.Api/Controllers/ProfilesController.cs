@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using MedScan.Api.Contracts;
 using MedScan.Api.Data;
-using MedScan.Shared.Models;
+using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,13 +25,13 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
         var profiles = await dbContext.Profiles
             .AsNoTracking()
             .Where(p => p.UserId == userId)
-            .OrderBy(p => p.Type == ProfileType.Self ? 0 : 1)
+            .OrderBy(p => p.ProfileType == ProfileTypeEnum.Ise ? 0 : 1)
             .ThenBy(p => p.Id)
             .Select(p => new ProfileSummaryResponse
             {
                 Id = p.Id,
                 Name = p.Name,
-                Type = p.Type.ToString(),
+                Type = p.ProfileType.ToString(),
                 BirthDate = p.BirthDate
             })
             .ToListAsync();

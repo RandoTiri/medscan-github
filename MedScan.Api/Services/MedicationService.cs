@@ -36,7 +36,7 @@ public sealed class MedicationService : IMedicationService {
         var userMedication = new UserMedication {
             ProfileId = dto.ProfileId,
             MedicationId = dto.MedicationId,
-            FrequencyPerDay = dto.FrequencyPerDay,
+            Frequency = dto.FrequencyPerDay,
             ScheduledTimesJson = SerializeTimes(dto.ScheduledTimes),
             RemindersEnabled = dto.RemindersEnabled,
             Notes = dto.Notes,
@@ -61,7 +61,7 @@ public sealed class MedicationService : IMedicationService {
 
         userMedication.ProfileId = dto.ProfileId;
         userMedication.MedicationId = dto.MedicationId;
-        userMedication.FrequencyPerDay = dto.FrequencyPerDay;
+        userMedication.Frequency = dto.FrequencyPerDay;
         userMedication.ScheduledTimesJson = SerializeTimes(dto.ScheduledTimes);
         userMedication.RemindersEnabled = dto.RemindersEnabled;
         userMedication.Notes = dto.Notes;
@@ -96,7 +96,7 @@ public sealed class MedicationService : IMedicationService {
             Strength = userMedication.Medication?.StrengthMg is int mg
                 ? $"{mg} mg"
                 : null,
-            FrequencyPerDay = userMedication.FrequencyPerDay,
+            FrequencyPerDay = userMedication.Frequency,
             ScheduledTimes = DeserializeTimes(userMedication.ScheduledTimesJson),
             RemindersEnabled = userMedication.RemindersEnabled,
             Notes = userMedication.Notes,
