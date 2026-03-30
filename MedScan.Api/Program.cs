@@ -104,7 +104,8 @@ app.MapIdentityApi<ApplicationUser>();
 
 app.MapPost("/api/auth/register", async (
     [FromBody] AppRegisterRequest request,
-    [FromServices] UserManager<ApplicationUser> userManager) =>
+    [FromServices] UserManager<ApplicationUser> userManager,
+    [FromServices] AppDbContext dbContext) =>
 {
     if (string.IsNullOrWhiteSpace(request.FullName) ||
         string.IsNullOrWhiteSpace(request.Email) ||
@@ -127,6 +128,8 @@ app.MapPost("/api/auth/register", async (
         EmailConfirmed = true
     };
 
+    await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
     var result = await userManager.CreateAsync(user, request.Password);
 
     if (!result.Succeeded)
@@ -138,15 +141,29 @@ app.MapPost("/api/auth/register", async (
         }));
     }
 
+    var defaultProfile = new MedScan.Shared.Models.Profile
+    {
+        UserId = user.Id,
+        Name = user.FullName,
+        Type = MedScan.Shared.Models.ProfileType.Self
+    };
+
+    dbContext.Profiles.Add(defaultProfile);
+    await dbContext.SaveChangesAsync();
+    await transaction.CommitAsync();
+
     return Results.Ok(new
     {
-        message = "User created"
+        message = "User created",
+        userId = user.Id,
+        profileId = defaultProfile.Id
     });
 });
 
 app.MapGet("/api/auth/me", async (
     HttpContext httpContext,
-    [FromServices] UserManager<ApplicationUser> userManager) =>
+    [FromServices] UserManager<ApplicationUser> userManager,
+    [FromServices] AppDbContext dbContext) =>
 {
     if (httpContext.User?.Identity?.IsAuthenticated != true)
     {
@@ -160,11 +177,19 @@ app.MapGet("/api/auth/me", async (
         return Results.Unauthorized();
     }
 
+    var defaultProfileId = await dbContext.Profiles
+        .Where(p => p.UserId == user.Id)
+        .OrderBy(p => p.Type == MedScan.Shared.Models.ProfileType.Self ? 0 : 1)
+        .ThenBy(p => p.Id)
+        .Select(p => (int?)p.Id)
+        .FirstOrDefaultAsync();
+
     return Results.Ok(new
     {
         user.Id,
         user.FullName,
-        user.Email
+        user.Email,
+        defaultProfileId
     });
 }).RequireAuthorization();
 
