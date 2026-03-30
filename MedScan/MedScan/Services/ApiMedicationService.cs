@@ -35,16 +35,13 @@ public sealed class ApiMedicationService : IMedicationService {
         var savedMedication = await response.Content.ReadFromJsonAsync<UserMedicationDto>()
             ?? throw new InvalidOperationException("Medication response was empty.");
 
-        await _reminderCoordinator.ScheduleForMedicineAsync(savedMedication);
+        await TryScheduleAsync(savedMedication);
 
         return savedMedication;
     }
 
     public async Task<UserMedicationDto> UpdateScheduleAsync(int userMedicationId,AddMedicationDto dto) {
         var existingMedication = await GetByIdAsync(userMedicationId);
-        if (existingMedication is not null) {
-            await _reminderCoordinator.CancelForMedicineAsync(existingMedication);
-        }
 
         var response = await _httpClient.PutAsJsonAsync($"api/medications/{userMedicationId}",dto);
         response.EnsureSuccessStatusCode();
@@ -52,16 +49,17 @@ public sealed class ApiMedicationService : IMedicationService {
         var updatedMedication = await response.Content.ReadFromJsonAsync<UserMedicationDto>()
             ?? throw new InvalidOperationException("Medication response was empty.");
 
-        await _reminderCoordinator.ScheduleForMedicineAsync(updatedMedication);
+        if (existingMedication is not null) {
+            await TryCancelAsync(existingMedication);
+        }
+
+        await TryScheduleAsync(updatedMedication);
 
         return updatedMedication;
     }
 
     public async Task<bool> RemoveFromScheduleAsync(int userMedicationId) {
         var existingMedication = await GetByIdAsync(userMedicationId);
-        if (existingMedication is not null) {
-            await _reminderCoordinator.CancelForMedicineAsync(existingMedication);
-        }
 
         var response = await _httpClient.DeleteAsync($"api/medications/{userMedicationId}");
 
@@ -70,6 +68,29 @@ public sealed class ApiMedicationService : IMedicationService {
         }
 
         response.EnsureSuccessStatusCode();
+
+        if (existingMedication is not null) {
+            await TryCancelAsync(existingMedication);
+        }
+
         return true;
+    }
+
+    private async Task TryScheduleAsync(UserMedicationDto medication) {
+        try {
+            await _reminderCoordinator.ScheduleForMedicineAsync(medication);
+        }
+        catch {
+            // Medication save should not fail due to local notification issues.
+        }
+    }
+
+    private async Task TryCancelAsync(UserMedicationDto medication) {
+        try {
+            await _reminderCoordinator.CancelForMedicineAsync(medication);
+        }
+        catch {
+            // Medication update/delete should not fail due to local notification issues.
+        }
     }
 }
