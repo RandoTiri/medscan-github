@@ -3,17 +3,20 @@ using System;
 using MedScan.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MedScan.Api.Data.Migrations
+namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318142156_init")]
+    partial class init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -90,6 +93,34 @@ namespace MedScan.Api.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("MedScan.Shared.Models.AppUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AppUser");
+                });
+
             modelBuilder.Entity("MedScan.Shared.Models.DoseLog", b =>
                 {
                     b.Property<int>("Id")
@@ -138,6 +169,9 @@ namespace MedScan.Api.Data.Migrations
                     b.Property<string>("Barcode")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("BestBefore")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CachedAt")
                         .HasColumnType("timestamp with time zone");
@@ -197,9 +231,8 @@ namespace MedScan.Api.Data.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -395,11 +428,13 @@ namespace MedScan.Api.Data.Migrations
 
             modelBuilder.Entity("MedScan.Shared.Models.Profile", b =>
                 {
-                    b.HasOne("MedScan.Api.Models.ApplicationUser", null)
-                        .WithMany()
+                    b.HasOne("MedScan.Shared.Models.AppUser", "User")
+                        .WithMany("Profiles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MedScan.Shared.Models.UserMedication", b =>
@@ -470,6 +505,11 @@ namespace MedScan.Api.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("MedScan.Shared.Models.AppUser", b =>
+                {
+                    b.Navigation("Profiles");
                 });
 
             modelBuilder.Entity("MedScan.Shared.Models.Profile", b =>

@@ -10,11 +10,12 @@ public class Medication {
     public string? Indication { get; set; }
     public string? Warnings { get; set; }
     public string? PdfUrl { get; set; }
-    public MethodOfAdministrionEnum MethodOfAdministrion { get; set; }
+    public DateOnly BestBefore { get; set; }
+    public MethodOfAdministraionEnum MethodOfAdministraion { get; set; }
     public PrescriptionTypeEnum PrescriptionType { get; set; }
     public MedicationFormEnum MedicationForm { get; set; }
-    public string Manufacturer { get; set; } = string.Empty;
-    public string? MarketingAuthNumber { get; set; }
+    public string? Manufacturer { get; set; } = string.Empty;
+    public string? MarketingAuthNr { get; set; }
     public DateTime? AuthValidUntil { get; set; }
     public DateTime CachedAt { get; set; } = DateTime.UtcNow;
 }

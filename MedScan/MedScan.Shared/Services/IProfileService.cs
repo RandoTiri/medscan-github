@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace MedScan.Shared.Services; 
+public interface IProfileService {
 
-namespace MedScan.Shared.Services {
-    internal class IProfileService {
-    }
 }
