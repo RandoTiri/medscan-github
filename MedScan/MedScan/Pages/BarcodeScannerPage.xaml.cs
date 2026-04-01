@@ -41,10 +41,30 @@ public partial class BarcodeScannerPage : ContentPage
     {
         base.OnAppearing();
         _ = StartTimeoutAsync();
+        AnimateScanLine();
+    }
+
+    private void AnimateScanLine()
+    {
+        var startY = 0;
+        var endY = 198;
+
+        var scanLine = this.FindByName<BoxView>("ScanLine");
+        if (scanLine == null) return;
+
+        Action<double> callback = input => scanLine.TranslationY = input;
+
+        var animation = new Animation {
+            { 0, 0.5, new Animation(callback, startY, endY, Easing.Linear) },
+            { 0.5, 1, new Animation(callback, endY, startY, Easing.Linear) }
+        };
+
+        animation.Commit(this, "ScanLineAnimation", length: 3000, repeat: () => true);
     }
 
     protected override void OnDisappearing()
     {
+        this.AbortAnimation("ScanLineAnimation");
         CameraView.BarcodesDetected -= OnBarcodesDetected;
         _timeoutSource.Cancel();
         base.OnDisappearing();
@@ -73,6 +93,15 @@ public partial class BarcodeScannerPage : ContentPage
         {
             Status = BarcodeScanStatus.Canceled,
             Message = "Skannimine katkestati."
+        });
+        await CloseAsync();
+    }
+
+    private async void ManualSearchClicked(object? sender, EventArgs e)
+    {
+        Complete(new BarcodeScanResult
+        {
+            Status = BarcodeScanStatus.ManualSearch
         });
         await CloseAsync();
     }

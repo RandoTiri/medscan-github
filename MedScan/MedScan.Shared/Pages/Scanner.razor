@@ -91,6 +91,10 @@ else
                     Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
                     return;
 
+                case BarcodeScanStatus.ManualSearch:
+                    Navigation.NavigateTo("/scanner/search");
+                    return;
+
                 case BarcodeScanStatus.PermissionDenied:
                     _message = "Kaameraoiguse puudumisel ei saa triipkoodi skannida.";
                     _showOpenSettings = scanResult.CanOpenSettings;

@@ -6,7 +6,8 @@ public enum BarcodeScanStatus
     PermissionDenied,
     NotDetected,
     Canceled,
-    Error
+    Error,
+    ManualSearch
 }
 
 public sealed class BarcodeScanResult
