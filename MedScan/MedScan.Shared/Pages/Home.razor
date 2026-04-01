@@ -8,22 +8,171 @@
 
 @if (AuthService.IsLoggedIn)
 {
-    <h1>Welcome to MedScan!</h1>
+    <div class="mobile-container">
+        <!-- Header Section -->
+        <header class="header-section">
+            <div class="header-top">
+                <div class="header-title"></div>
+                <div class="header-icons">
+                    <span class="notification-icon">🔔<span class="badge">2</span></span>
+                    <span class="user-initials">@GetInitials()</span>
+                </div>
+            </div>
 
-    <p>Tere, @AuthService.CurrentUser?.FullName</p>
+            <h1 class="greeting">Tere, @(AuthService.CurrentUser?.FullName ?? "Kasutaja")!</h1>
 
-    <p>
-        Welcome to your new app running on <em>@factor</em> using <em>@platform</em>.
-    </p>
+            <!-- Summary Stats -->
+            <div class="stats-card">
+                <div class="stat-item">
+                    <span class="stat-number">2</span>
+                    <span class="stat-label">Tehtud</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number" style="color: #f5a623;">2</span>
+                    <span class="stat-label">Ootel</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Kokku</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Scan Button -->
+            <div class="scan-card">
+                <div class="scan-icon-wrapper">
+                    <span class="scan-icon" style="display:flex;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M4 17v3h3"></path><path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    </span>
+                </div>
+                <div class="scan-text">
+                    <h3>Skaneeri ravim</h3>
+                    <p>Skan triipkoodi infole</p>
+                </div>
+                <div class="scan-arrow">›</div>
+            </div>
+
+            <!-- Today's Plan -->
+            <div class="section-header">
+                <h2>Minu tänane raviskeem</h2>
+                <a href="#">Kõik</a>
+            </div>
+
+            <div class="med-card tehtud">
+                <div class="med-icon">✔️</div>
+                <div class="med-info">
+                    <h3>Metformiin 500mg</h3>
+                    <p>08:00, 20:00 • 2x päevas</p>
+                </div>
+                <div class="med-status tehtud-status">✓ Tehtud</div>
+            </div>
+
+            <div class="med-card ootel">
+                <div class="med-icon">🕒</div>
+                <div class="med-info">
+                    <h3>Bisoprolool 5mg</h3>
+                    <p>08:00 • 1x päevas</p>
+                </div>
+                <div class="med-status ootel-status">🕒 Ootel</div>
+            </div>
+
+            <!-- Family -->
+            <div class="section-header">
+                <h2>Perekond</h2>
+            </div>
+            <div class="family-card">
+                <div class="family-avatar">MT</div>
+                <div class="family-info">
+                    <h3>Marta</h3>
+                    <p>Nurofen 200mg – 14:00 ootel</p>
+                </div>
+                <div class="family-action">🔔</div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .mobile-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px; 
+            margin: -1rem; /* Laiendab vaikimisi paddingu */
+        }
+        .header-section {
+            background-color: #258d6b;
+            color: white;
+            padding: 20px;
+            padding-top: 40px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .header-icons { display: flex; gap: 15px; align-items: center; margin-left: auto; }
+        .notification-icon { position: relative; font-size: 24px; }
+        .badge { position: absolute; top: -2px; right: -5px; background: #f5a623; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; }
+        .user-initials { background: transparent; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
+        .greeting { font-size: 28px; font-weight: bold; margin: 10px 0 20px 0; }
+
+        .stats-card {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-number { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+        .stat-label { font-size: 12px; opacity: 0.9; }
+        .stat-divider { width: 1px; background-color: rgba(255,255,255,0.3); }
+
+        .main-content { padding: 20px; margin-top: -10px; }
+
+        .scan-card { background: white; border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; cursor: pointer; }
+        .scan-icon-wrapper { background: #e8f5f1; color: #258d6b; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; }
+        .scan-text { flex-grow: 1; }
+        .scan-text h3 { margin: 0; font-size: 18px; color: #1a4a3c; }
+        .scan-text p { margin: 5px 0 0 0; font-size: 14px; color: #7a8c87; }
+        .scan-arrow { font-size: 24px; color: #a0b0aa; font-weight: bold; }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .section-header h2 { margin: 0; font-size: 18px; color: #1a4a3c; font-weight: bold; }
+        .section-header a { color: #258d6b; text-decoration: none; font-size: 14px; font-weight: 500; }
+
+        .med-card { background: white; border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .med-card.tehtud .med-icon { background: #e8f5f1; color: #258d6b; }
+        .med-card.ootel .med-icon { background: #fff5e6; color: #f5a623; }
+        .med-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 15px; flex-shrink: 0; }
+        .med-info { flex-grow: 1; }
+        .med-info h3 { margin: 0; font-size: 16px; color: #1a4a3c; }
+        .med-info p { margin: 5px 0 0 0; font-size: 13px; color: #7a8c87; }
+
+        .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .tehtud-status { background: #e8f5f1; color: #258d6b; }
+        .ootel-status { background: #fff5e6; color: #f5a623; }
+
+        .family-card { background: white; border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .family-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee1fa; color: #8a4baf; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; position:relative; }
+        .family-avatar::after { content:''; position:absolute; bottom:0; right:0; width:10px; height:10px; background:#f5a623; border-radius:50%; border:2px solid white; }
+        .family-info { flex-grow: 1; }
+        .family-info h3 { margin: 0; font-size: 16px; color: #1a4a3c; }
+        .family-info p { margin: 5px 0 0 0; font-size: 13px; color: #7a8c87; }
+        .family-action { background: #fff5e6; color: #f5a623; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    </style>
 }
 else
 {
-    <p>Suunan loginisse...</p>
+    <p>Suunan sisselogimislehele</p>
 }
 
 @code {
-    private string factor => FormFactor.GetFormFactor();
-    private string platform => FormFactor.GetPlatform();
 
     protected override async Task OnInitializedAsync()
     {
@@ -33,5 +182,16 @@ else
         {
             Navigation.NavigateTo("/login");
         }
+    }
+
+    private string GetInitials()
+    {
+        var name = AuthService.CurrentUser?.FullName;
+        if (string.IsNullOrWhiteSpace(name)) return "M S";
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+
+        return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
     }
 }

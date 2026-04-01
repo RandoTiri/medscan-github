@@ -10,6 +10,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private bool _isInitialized;
 
+    public event Action? OnChange;
+
     public bool IsLoggedIn { get; private set; }
     public bool IsInitialized => _isInitialized;
     public UserInfo? CurrentUser { get; private set; }
@@ -40,6 +42,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
         }
 
         _isInitialized = true;
+        NotifyStateChanged();
     }
 
     public async Task<(bool Success, string ErrorMessage)> RegisterAsync(string fullName, string email, string password)
@@ -110,6 +113,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
             CurrentUser = await GetCurrentUserAsync();
             IsLoggedIn = CurrentUser is not null;
             _isInitialized = true;
+            NotifyStateChanged();
 
             if (!IsLoggedIn)
             {
@@ -134,7 +138,10 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
 
         await tokenStore.RemoveTokenAsync();
         SetAccessToken(null);
+        NotifyStateChanged();
     }
+
+    private void NotifyStateChanged() => OnChange?.Invoke();
 
     private async Task<UserInfo?> GetCurrentUserAsync()
     {
