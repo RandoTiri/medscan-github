@@ -11,7 +11,8 @@ public static class ApiBaseAddressProvider
     {
         var wifiIp = NetworkInterface.GetAllNetworkInterfaces()
             .Where(ni =>
-                ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 &&
+                (ni.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ||
+                 ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet) &&
                 ni.OperationalStatus == OperationalStatus.Up)
             .SelectMany(ni => ni.GetIPProperties().UnicastAddresses)
             .Select(u => u.Address)
@@ -19,7 +20,8 @@ public static class ApiBaseAddressProvider
 
         if (wifiIp is null)
         {
-            throw new InvalidOperationException("Active WiFi IPv4 address was not found.");
+            var fallbackIp = DeviceInfo.Platform == DevicePlatform.Android ? "10.0.2.2" : "localhost";
+            return $"http://{fallbackIp}:{ApiPort}/";
         }
 
         return $"http://{wifiIp}:{ApiPort}/";

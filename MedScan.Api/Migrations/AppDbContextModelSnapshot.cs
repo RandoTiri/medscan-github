@@ -101,11 +101,12 @@ namespace MedScan.Api.Migrations
                     b.Property<string>("ConfirmedByUserId")
                         .HasColumnType("text");
 
+                    b.Property<int>("DoseStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
+
                     b.Property<DateTime>("ScheduledTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("TakenAt")
                         .HasColumnType("timestamp with time zone");
@@ -139,9 +140,6 @@ namespace MedScan.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("BestBefore")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime>("CachedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -149,17 +147,18 @@ namespace MedScan.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Manufacturer")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("MarketingAuthNumber")
-                        .HasColumnType("text");
+                    b.Property<string>("MarketingAuthNr")
+                        .HasColumnType("text")
+                        .HasColumnName("MarketingAuthNumber");
 
                     b.Property<int>("MedicationForm")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MethodOfAdministrion")
-                        .HasColumnType("integer");
+                    b.Property<int>("MethodOfAdministraion")
+                        .HasColumnType("integer")
+                        .HasColumnName("MethodOfAdministrion");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -197,8 +196,9 @@ namespace MedScan.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("ProfileType")
+                        .HasColumnType("integer")
+                        .HasColumnName("Type");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -222,8 +222,9 @@ namespace MedScan.Api.Migrations
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("FrequencyPerDay")
-                        .HasColumnType("integer");
+                    b.Property<int>("Frequency")
+                        .HasColumnType("integer")
+                        .HasColumnName("FrequencyPerDay");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");

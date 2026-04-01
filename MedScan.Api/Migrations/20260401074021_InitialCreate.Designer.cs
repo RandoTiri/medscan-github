@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260318142156_init")]
-    partial class init
+    [Migration("20260401074021_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -93,34 +93,6 @@ namespace MedScan.Api.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("MedScan.Shared.Models.AppUser", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreateAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppUser");
-                });
-
             modelBuilder.Entity("MedScan.Shared.Models.DoseLog", b =>
                 {
                     b.Property<int>("Id")
@@ -132,11 +104,12 @@ namespace MedScan.Api.Migrations
                     b.Property<string>("ConfirmedByUserId")
                         .HasColumnType("text");
 
+                    b.Property<int>("DoseStatus")
+                        .HasColumnType("integer")
+                        .HasColumnName("Status");
+
                     b.Property<DateTime>("ScheduledTime")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("TakenAt")
                         .HasColumnType("timestamp with time zone");
@@ -170,9 +143,6 @@ namespace MedScan.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("BestBefore")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<DateTime>("CachedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -180,17 +150,18 @@ namespace MedScan.Api.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Manufacturer")
-                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("MarketingAuthNumber")
-                        .HasColumnType("text");
+                    b.Property<string>("MarketingAuthNr")
+                        .HasColumnType("text")
+                        .HasColumnName("MarketingAuthNumber");
 
                     b.Property<int>("MedicationForm")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MethodOfAdministrion")
-                        .HasColumnType("integer");
+                    b.Property<int>("MethodOfAdministraion")
+                        .HasColumnType("integer")
+                        .HasColumnName("MethodOfAdministrion");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -228,11 +199,13 @@ namespace MedScan.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.Property<int>("ProfileType")
+                        .HasColumnType("integer")
+                        .HasColumnName("Type");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -252,8 +225,9 @@ namespace MedScan.Api.Migrations
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("FrequencyPerDay")
-                        .HasColumnType("integer");
+                    b.Property<int>("Frequency")
+                        .HasColumnType("integer")
+                        .HasColumnName("FrequencyPerDay");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -428,13 +402,11 @@ namespace MedScan.Api.Migrations
 
             modelBuilder.Entity("MedScan.Shared.Models.Profile", b =>
                 {
-                    b.HasOne("MedScan.Shared.Models.AppUser", "User")
-                        .WithMany("Profiles")
+                    b.HasOne("MedScan.Api.Models.ApplicationUser", null)
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("MedScan.Shared.Models.UserMedication", b =>
@@ -505,11 +477,6 @@ namespace MedScan.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("MedScan.Shared.Models.AppUser", b =>
-                {
-                    b.Navigation("Profiles");
                 });
 
             modelBuilder.Entity("MedScan.Shared.Models.Profile", b =>
