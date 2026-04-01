@@ -1,0 +1,100 @@
+@page "/scanner/search"
+@using MedScan.Shared.Models
+@using MedScan.Shared.Services
+@inject AuthService AuthService
+@inject IMedicationCatalogClient MedicationCatalogClient
+@inject NavigationManager Navigation
+
+<PageTitle>Kasitsi otsing</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else
+{
+    <div class="scanner-page">
+        <h1>Kasitsi otsing</h1>
+        <p>Sisesta ravimi nimi, kui triipkoodi ei olnud voimalik skannida.</p>
+
+        <div class="manual-search-bar">
+            <input class="form-control"
+                   placeholder="Nt Paracetamol"
+                   @bind="_query" />
+            <button class="btn btn-primary"
+                    @onclick="SearchAsync"
+                    disabled="@_isSearching">
+                @(_isSearching ? "Otsin..." : "Otsi")
+            </button>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_message))
+        {
+            <p class="scanner-message">@_message</p>
+        }
+
+        @if (_results.Count > 0)
+        {
+            <div class="manual-results">
+                @foreach (var item in _results)
+                {
+                    <button class="manual-result-item" @onclick="@(() => OpenResult(item.Barcode))">
+                        <strong>@item.Name</strong>
+                        <span>@item.ActiveIngredient</span>
+                    </button>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _isReady;
+    private bool _isSearching;
+    private string _query = string.Empty;
+    private string? _message;
+    private IReadOnlyList<MedicationLookupResult> _results = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _isReady = true;
+    }
+
+    private async Task SearchAsync()
+    {
+        _isSearching = true;
+        _message = null;
+        _results = [];
+
+        try
+        {
+            _results = await MedicationCatalogClient.SearchByNameAsync(_query, 20);
+
+            if (_results.Count == 0)
+            {
+                _message = "Vastavaid ravimeid ei leitud.";
+            }
+        }
+        catch
+        {
+            _message = "Otsing ebaonnestus. Proovi uuesti.";
+        }
+        finally
+        {
+            _isSearching = false;
+        }
+    }
+
+    private void OpenResult(string barcode)
+    {
+        Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(barcode)}");
+    }
+}

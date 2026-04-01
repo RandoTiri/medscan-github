@@ -3,6 +3,7 @@ using MedScan.Shared.Services;
 using Microsoft.Extensions.Logging;
 using MedScan.MAUI.Services;
 using Plugin.LocalNotification;
+using ZXing.Net.Maui.Controls;
 
 
 namespace MedScan
@@ -14,6 +15,7 @@ namespace MedScan
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseBarcodeReader()
                 .UseLocalNotification()
                 .ConfigureFonts(fonts => {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -29,6 +31,8 @@ namespace MedScan
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddSingleton<IBarcodeScannerService, MauiBarcodeScannerService>();
+            builder.Services.AddSingleton<IMedicationCatalogClient, MedicationCatalogClient>();
 
             builder.Services.AddScoped<IMedicineReminderScheduler,MauiMedicineReminderScheduler>();
             builder.Services.AddScoped<MedicineReminderCoordinator>();

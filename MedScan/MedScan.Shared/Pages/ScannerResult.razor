@@ -1,0 +1,86 @@
+@page "/scanner/result/{Barcode}"
+@using MedScan.Shared.Models
+@using MedScan.Shared.Services
+@inject AuthService AuthService
+@inject IMedicationCatalogClient MedicationCatalogClient
+@inject NavigationManager Navigation
+
+<PageTitle>Ravimi info</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else if (_isLoading)
+{
+    <p><em>Otsin ravimi infot...</em></p>
+}
+else if (_medication is null)
+{
+    <div class="scanner-page">
+        <h1>Tundmatu triipkood</h1>
+        <p>Tuvastatud triipkoodi andmeid ei leitud andmebaasist.</p>
+
+        <div class="scanner-actions">
+            <button class="btn btn-outline-primary" @onclick="ScanAgain">
+                Skaneeri uuesti
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="OpenManualSearch">
+                Kasitsi otsimine
+            </button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="scanner-page">
+        <h1>@_medication.Name</h1>
+        <p><strong>Toimeaine:</strong> @_medication.ActiveIngredient</p>
+        <p><strong>Tugevus:</strong> @(_medication.Strength ?? "-")</p>
+        <p><strong>Luhikirjeldus:</strong> @(_medication.ShortDescription ?? "-")</p>
+        <p><strong>Hoiatused:</strong> @(_medication.Warnings ?? "-")</p>
+
+        <div class="scanner-actions">
+            <button class="btn btn-outline-primary" @onclick="ScanAgain">
+                Skaneeri uuesti
+            </button>
+            <button class="btn btn-outline-secondary" @onclick="OpenManualSearch">
+                Kasitsi otsimine
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string Barcode { get; set; } = string.Empty;
+
+    private bool _isReady;
+    private bool _isLoading;
+    private MedicationLookupResult? _medication;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await AuthService.InitializeAsync();
+
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _isReady = true;
+        _isLoading = true;
+
+        try
+        {
+            _medication = await MedicationCatalogClient.FindByBarcodeAsync(Barcode);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ScanAgain() => Navigation.NavigateTo("/scanner");
+    private void OpenManualSearch() => Navigation.NavigateTo("/scanner/search");
+}
