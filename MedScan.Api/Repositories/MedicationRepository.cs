@@ -22,8 +22,10 @@ public sealed class MedicationRepository : IMedicationRepository {
             .FirstOrDefaultAsync(m => m.Id == id);
 
     public async Task<IEnumerable<Medication>> SearchByNameAsync(string name) {
+        var pattern = $"%{name.Trim()}%";
         return await _db.Medications
-            .Where(m => m.Name.Contains(name))
+            .Where(m => EF.Functions.ILike(m.Name,pattern))
+            .OrderBy(m => m.Name)
             .AsNoTracking()
             .ToListAsync();
     }

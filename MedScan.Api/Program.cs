@@ -21,6 +21,7 @@ builder.Services
 builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<IUserMedicationRepository, UserMedicationRepository>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
+builder.Services.AddScoped<IMedicationCatalogService, MedicationCatalogService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
