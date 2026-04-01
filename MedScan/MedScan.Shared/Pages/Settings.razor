@@ -1,0 +1,324 @@
+@page "/settings"
+@using MedScan.Shared.Services
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+<PageTitle>Seaded</PageTitle>
+
+@if (!AuthService.IsLoggedIn)
+{
+    <p>Suunan sisselogimislehele...</p>
+}
+else
+{
+    <div class="mobile-container">
+        <div class="settings-content">
+            <h1 class="page-title">Seaded</h1>
+
+            <div class="profile-summary-card">
+                <div class="profile-avatar-lg">
+                    @GetInitials()
+                </div>
+                <div class="profile-summary-info">
+                    <h2>@(AuthService.CurrentUser?.FullName)</h2>
+                    <p>@(AuthService.CurrentUser?.Email)</p>
+                    <span class="user-meta">34a</span>
+                </div>
+                <div class="right-arrow">›</div>
+            </div>
+
+            <div class="settings-section">
+                <span class="section-label">KONTO</span>
+                
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Isiklikud andmed</h3>
+                            <p>@(AuthService.CurrentUser?.FullName) • @(AuthService.CurrentUser?.Email)</p>
+                        </div>
+                        <div class="right-arrow">›</div>
+                    </div>
+                    <div class="item-divider"></div>
+                    <div class="settings-item">
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Turvalisus</h3>
+                            <p>Parool ja autentimine</p>
+                        </div>
+                        <div class="right-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <span class="section-label">RAKENDUS</span>
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Meeldetuletused</h3>
+                            <p>Teavitused ja helid</p>
+                        </div>
+                        <div class="right-arrow">›</div>
+                    </div>
+                    <div class="item-divider"></div>
+                    <div class="settings-item">
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a4baf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Välimus</h3>
+                            <p>Heledus ja teema</p>
+                        </div>
+                        <div class="right-arrow">›</div>
+                    </div>
+                    <div class="item-divider"></div>
+                    <div class="settings-item">
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Keel</h3>
+                            <p>Eesti keel</p>
+                        </div>
+                        <div class="right-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <span class="section-label">ANDMED</span>
+                <div class="settings-card">
+                    <div class="settings-item">
+                        <div class="icon-wrapper">
+                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Ravimiregister</h3>
+                            <p>www.ravimiregister.ee</p>
+                        </div>
+                        <div class="right-arrow">›</div>
+                    </div>
+                    <div class="item-divider"></div>
+                    <div class="settings-item">
+                        <div class="icon-wrapper">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a4baf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div class="item-text">
+                            <h3>Abi ja tugi</h3>
+                            <p>KKK ja kontakt</p>
+                        </div>
+                        <div class="right-arrow">›</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="logout-btn" @onclick="Logout">
+                <span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </span>
+                Logi välja
+            </button>
+            
+            <div class="version-info">
+                MediScan v1.0.0 • © 2026
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .mobile-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px; 
+            margin: -1rem; 
+        }
+        
+        .settings-content {
+            padding: 20px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a4a3c;
+            margin-bottom: 20px;
+            margin-top: 10px;
+        }
+
+        .profile-summary-card {
+            background-color: #258d6b;
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 10px rgba(37,141,107,0.2);
+        }
+
+        .profile-avatar-lg {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .profile-summary-info {
+            flex-grow: 1;
+        }
+        
+        .profile-summary-info h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .profile-summary-info p {
+            margin: 2px 0 5px 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .user-meta {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .right-arrow {
+            font-size: 24px;
+            color: #a0b0aa;
+            margin-left: 10px;
+        }
+        .profile-summary-card .right-arrow {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .settings-section {
+            margin-bottom: 25px;
+        }
+        .section-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #90a09a;
+            margin-bottom: 10px;
+            display: block;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            cursor: pointer;
+        }
+        .item-divider {
+            height: 1px;
+            background-color: #f0f0f0;
+            margin: 0 15px;
+        }
+
+        .icon-wrapper {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+            background-color: transparent;
+        }
+
+        .item-text {
+            flex-grow: 1;
+        }
+        
+        .item-text h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #1a4a3c;
+            font-weight: bold;
+        }
+        .item-text p {
+            margin: 2px 0 0 0;
+            font-size: 13px;
+            color: #90a09a;
+        }
+        
+        .logout-btn {
+            width: 100%;
+            background-color: #fef2f2;
+            color: #cf3d3d;
+            border: 1px solid #fce7e7;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .version-info {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #b0c0ba;
+        }
+    </style>
+}
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private string GetInitials()
+    {
+        var name = AuthService.CurrentUser?.FullName;
+        if (string.IsNullOrWhiteSpace(name)) return "NA";
+        
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        
+        return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
+    }
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        Navigation.NavigateTo("/login", true);
+    }
+}

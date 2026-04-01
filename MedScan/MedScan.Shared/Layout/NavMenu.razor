@@ -1,31 +1,92 @@
 ﻿
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject MedScan.Shared.Services.AuthService AuthService
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
+@if (AuthService.IsLoggedIn)
+{
+    <nav class="bottom-nav">
+        <div class="@GetNavItemClass("/")" @onclick='() => NavigateTo("/")'>
+            <span class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </span>
+            <span class="nav-label">Avaleht</span>
         </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="scanner">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Scanner
-            </NavLink>
+        <div class="@GetNavItemClass("/mymedicine")" @onclick='() => NavigateTo("/mymedicine")'>
+            <span class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5l-6-6a4.95 4.95 0 1 1 7-7l6 6a4.95 4.95 0 1 1-7 7z"></path><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"></line></svg>
+            </span>
+            <span class="nav-label">Ravimid</span>
         </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="mymedicine">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> My Medicine
-            </NavLink>
+        <div class="nav-item-center" @onclick='() => NavigateTo("/scanner")'>
+            <div class="center-button">
+                <span class="center-icon" style="display:flex;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M4 17v3h3"></path><path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                </span>
+            </div>
         </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="profile">
-                <span class="bi bi-person-fill" aria-hidden="true"></span>
-                Profile
-            </NavLink>
+        <div class="@GetNavItemClass("/profile")" @onclick='() => NavigateTo("/profile")'>
+            <span class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </span>
+            <span class="nav-label">Profiilid</span>
+        </div>
+        <div class="@GetNavItemClass("/settings")" @onclick='() => NavigateTo("/settings")'>
+            <span class="nav-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </span>
+            <span class="nav-label">Seaded</span>
         </div>
     </nav>
-</div>
+}
+
+<style>
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; display: flex; justify-content: space-between; align-items: center; padding: 10px 15px 20px 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); border-top-left-radius: 20px; border-top-right-radius: 20px; z-index: 1000; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #a0b0aa; cursor: pointer; flex: 1; text-align:center; transition: color 0.2s; }
+    .nav-item:hover { color: #258d6b; }
+    .nav-item.active { color: #258d6b; font-weight: bold; }
+    .nav-icon { font-size: 22px; margin-bottom: 4px; }
+    .nav-label { font-size: 10px; }
+
+    .nav-item-center { flex: 0.8; display: flex; justify-content: center; position: relative; }
+    .center-button { position: absolute; top: -35px; background: #258d6b; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; box-shadow: 0 4px 10px rgba(37,141,107,0.3); border: 4px solid #f4f7f6; cursor: pointer; transition: transform 0.2s; }
+    .center-button:hover { transform: scale(1.05); }
+</style>
+
+@code {
+    private string currentUrl = "";
+
+    protected override void OnInitialized()
+    {
+        currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.LocationChanged += OnLocationChanged;
+        AuthService.OnChange += StateHasChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        currentUrl = Navigation.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    private string GetNavItemClass(string path)
+    {
+        var normalizedCurrent = "/" + (currentUrl?.Split('?')[0].Trim('/') ?? "");
+        var normalizedPath = "/" + path.Trim('/');
+
+        bool isActive = normalizedCurrent.Equals(normalizedPath, StringComparison.OrdinalIgnoreCase);
+
+        return isActive ? "nav-item active" : "nav-item";
+    }
+
+    private void NavigateTo(string url)
+    {
+        Navigation.NavigateTo(url);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        AuthService.OnChange -= StateHasChanged;
+    }
+}
