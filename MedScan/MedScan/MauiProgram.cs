@@ -33,6 +33,7 @@ namespace MedScan
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<IBarcodeScannerService, MauiBarcodeScannerService>();
             builder.Services.AddSingleton<IMedicationCatalogClient, MedicationCatalogClient>();
+            builder.Services.AddSingleton<IScannerFlowService, ScannerFlowService>();
 
             builder.Services.AddScoped<IMedicineReminderScheduler,MauiMedicineReminderScheduler>();
             builder.Services.AddScoped<MedicineReminderCoordinator>();

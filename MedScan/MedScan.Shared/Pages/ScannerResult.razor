@@ -2,7 +2,7 @@
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject AuthService AuthService
-@inject IMedicationCatalogClient MedicationCatalogClient
+@inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
 <PageTitle>Ravimi info</PageTitle>
@@ -40,6 +40,41 @@ else
         <p><strong>Luhikirjeldus:</strong> @(_medication.ShortDescription ?? "-")</p>
         <p><strong>Hoiatused:</strong> @(_medication.Warnings ?? "-")</p>
 
+        <hr />
+        <h2>Lisa raviplaani</h2>
+        <div class="scanner-form">
+            <label>
+                Kordi paevas
+                <input class="form-control" type="number" min="1" max="24" @bind="_frequencyPerDay" />
+            </label>
+
+            <label>
+                Esimene meeldetuletuse aeg
+                <input class="form-control" type="time" value="@_scheduledTimeText" @onchange="OnScheduledTimeChanged" />
+            </label>
+
+            <label class="scanner-toggle">
+                <input type="checkbox" @bind="_remindersEnabled" />
+                Meeldetuletused sees
+            </label>
+
+            <label>
+                Markmed
+                <textarea class="form-control" @bind="_notes"></textarea>
+            </label>
+
+            <button class="btn btn-success"
+                    @onclick="AddToScheduleAsync"
+                    disabled="@_isSavingMedication">
+                @(_isSavingMedication ? "Lisan..." : "Lisa raviplaani")
+            </button>
+
+            @if (!string.IsNullOrWhiteSpace(_addMessage))
+            {
+                <p class="scanner-message">@_addMessage</p>
+            }
+        </div>
+
         <div class="scanner-actions">
             <button class="btn btn-outline-primary" @onclick="ScanAgain">
                 Skaneeri uuesti
@@ -56,6 +91,12 @@ else
 
     private bool _isReady;
     private bool _isLoading;
+    private bool _isSavingMedication;
+    private int _frequencyPerDay = 1;
+    private string _scheduledTimeText = "08:00";
+    private bool _remindersEnabled = true;
+    private string? _notes;
+    private string? _addMessage;
     private MedicationLookupResult? _medication;
 
     protected override async Task OnParametersSetAsync()
@@ -73,7 +114,7 @@ else
 
         try
         {
-            _medication = await MedicationCatalogClient.FindByBarcodeAsync(Barcode);
+            _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
         }
         finally
         {
@@ -83,4 +124,42 @@ else
 
     private void ScanAgain() => Navigation.NavigateTo("/scanner");
     private void OpenManualSearch() => Navigation.NavigateTo("/scanner/search");
+
+    private async Task AddToScheduleAsync()
+    {
+        if (_medication is null || _isSavingMedication)
+        {
+            return;
+        }
+
+        if (!TimeOnly.TryParse(_scheduledTimeText, out var scheduledTime))
+        {
+            _addMessage = "Sisesta korrektne kellaaeg.";
+            return;
+        }
+
+        _isSavingMedication = true;
+        _addMessage = null;
+
+        try
+        {
+            var result = await ScannerFlowService.AddMedicationToDefaultProfileAsync(
+                _medication.Id,
+                _frequencyPerDay,
+                [scheduledTime],
+                _remindersEnabled,
+                _notes);
+
+            _addMessage = result.Message;
+        }
+        finally
+        {
+            _isSavingMedication = false;
+        }
+    }
+
+    private void OnScheduledTimeChanged(ChangeEventArgs args)
+    {
+        _scheduledTimeText = args.Value?.ToString() ?? _scheduledTimeText;
+    }
 }

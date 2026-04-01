@@ -7,7 +7,7 @@ public partial class BarcodeScannerPage : ContentPage
 {
     private readonly TaskCompletionSource<BarcodeScanResult> _completionSource = new();
     private readonly CancellationTokenSource _timeoutSource = new();
-    private bool _isCompleted;
+    private int _isCompleted;
 
     public BarcodeScannerPage()
     {
@@ -84,7 +84,7 @@ public partial class BarcodeScannerPage : ContentPage
 
     private async void OnBarcodesDetected(object? sender, BarcodeDetectionEventArgs e)
     {
-        if (_isCompleted)
+        if (Volatile.Read(ref _isCompleted) == 1)
         {
             return;
         }
@@ -98,6 +98,8 @@ public partial class BarcodeScannerPage : ContentPage
             return;
         }
 
+        CameraView.IsDetecting = false;
+
         Complete(new BarcodeScanResult
         {
             Status = BarcodeScanStatus.Success,
@@ -109,12 +111,11 @@ public partial class BarcodeScannerPage : ContentPage
 
     private void Complete(BarcodeScanResult result)
     {
-        if (_isCompleted)
+        if (Interlocked.Exchange(ref _isCompleted, 1) == 1)
         {
             return;
         }
 
-        _isCompleted = true;
         _timeoutSource.Cancel();
         _completionSource.TrySetResult(result);
     }

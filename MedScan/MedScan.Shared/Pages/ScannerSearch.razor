@@ -2,7 +2,7 @@
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject AuthService AuthService
-@inject IMedicationCatalogClient MedicationCatalogClient
+@inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
 <PageTitle>Kasitsi otsing</PageTitle>
@@ -70,13 +70,25 @@ else
 
     private async Task SearchAsync()
     {
+        if (_isSearching)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_query))
+        {
+            _message = "Sisesta ravimi nimi.";
+            _results = [];
+            return;
+        }
+
         _isSearching = true;
         _message = null;
         _results = [];
 
         try
         {
-            _results = await MedicationCatalogClient.SearchByNameAsync(_query, 20);
+            _results = await ScannerFlowService.SearchByNameAsync(_query, 20);
 
             if (_results.Count == 0)
             {

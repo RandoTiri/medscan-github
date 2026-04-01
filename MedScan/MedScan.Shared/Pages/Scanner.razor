@@ -2,7 +2,7 @@
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject AuthService AuthService
-@inject IBarcodeScannerService BarcodeScannerService
+@inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
 <PageTitle>Skanner</PageTitle>
@@ -71,6 +71,11 @@ else
 
     private async Task StartScanAsync()
     {
+        if (_isScanning)
+        {
+            return;
+        }
+
         _isScanning = true;
         _showRetryActions = false;
         _showOpenSettings = false;
@@ -78,7 +83,7 @@ else
 
         try
         {
-            var scanResult = await BarcodeScannerService.ScanAsync();
+            var scanResult = await ScannerFlowService.ScanAsync();
 
             switch (scanResult.Status)
             {
@@ -117,7 +122,7 @@ else
         }
     }
 
-    private Task OpenSettingsAsync() => BarcodeScannerService.OpenAppSettingsAsync();
+    private Task OpenSettingsAsync() => ScannerFlowService.OpenAppSettingsAsync();
 
     private void OpenManualSearch() => Navigation.NavigateTo("/scanner/search");
 }
