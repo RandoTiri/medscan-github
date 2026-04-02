@@ -2,6 +2,7 @@
 @using MedScan.Shared.Services
 @inject IFormFactor FormFactor
 @inject AuthService AuthService
+@inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
 <PageTitle>Home</PageTitle>
@@ -43,7 +44,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Scan Button -->
-            <div class="scan-card" @onclick='() => Navigation.NavigateTo("/scanner")'>
+            <div class="scan-card" @onclick="StartScannerAsync">
                 <div class="scan-icon-wrapper">
                     <span class="scan-icon" style="display:flex;">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M4 17v3h3"></path><path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
@@ -103,7 +104,7 @@
             display: flex;
             flex-direction: column;
             padding-bottom: 80px; 
-            margin: -1rem; /* Laiendab vaikimisi paddingu */
+            margin: -1rem;
         }
         .header-section {
             background-color: #258d6b;
@@ -173,6 +174,19 @@ else
 }
 
 @code {
+    private async Task StartScannerAsync()
+    {
+        var scanResult = await ScannerFlowService.ScanAsync();
+
+        if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
+        {
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+        }
+        else if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.ManualSearch)
+        {
+            Navigation.NavigateTo("/scanner/search");
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

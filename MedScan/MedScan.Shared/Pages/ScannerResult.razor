@@ -17,19 +17,7 @@ else if (_isLoading)
 }
 else if (_medication is null)
 {
-    <div class="scanner-page">
-        <h1>Tundmatu triipkood</h1>
-        <p>Tuvastatud triipkoodi andmeid ei leitud andmebaasist.</p>
-
-        <div class="scanner-actions">
-            <button class="btn btn-outline-primary" @onclick="ScanAgain">
-                Skaneeri uuesti
-            </button>
-            <button class="btn btn-outline-secondary" @onclick="OpenManualSearch">
-                Kasitsi otsimine
-            </button>
-        </div>
-    </div>
+    <p><em>Tuvastatud triipkoodi andmeid ei leitud andmebaasist. Suunan ümber...</em></p>
 }
 else
 {
@@ -115,6 +103,10 @@ else
         try
         {
             _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
+            if (_medication == null)
+            {
+                Navigation.NavigateTo("/scanner/search");
+            }
         }
         finally
         {
@@ -122,7 +114,19 @@ else
         }
     }
 
-    private void ScanAgain() => Navigation.NavigateTo("/scanner");
+    private async Task ScanAgain()
+    {
+        var scanResult = await ScannerFlowService.ScanAsync();
+        if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
+        {
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+        }
+        else if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.ManualSearch)
+        {
+            Navigation.NavigateTo("/scanner/search");
+        }
+    }
+    
     private void OpenManualSearch() => Navigation.NavigateTo("/scanner/search");
 
     private async Task AddToScheduleAsync()
