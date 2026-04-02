@@ -21,55 +21,57 @@ else if (_medication is null)
 }
 else
 {
-    <div class="scanner-page">
-        <h1>@_medication.Name</h1>
-        <p><strong>Toimeaine:</strong> @_medication.ActiveIngredient</p>
-        <p><strong>Tugevus:</strong> @(_medication.Strength ?? "-")</p>
-        <p><strong>Luhikirjeldus:</strong> @(_medication.ShortDescription ?? "-")</p>
-        <p><strong>Hoiatused:</strong> @(_medication.Warnings ?? "-")</p>
+    <div class="page-container">
+        <div class="content-wrapper">
+            <h1>@_medication.Name</h1>
+            <p><strong>Toimeaine:</strong> @_medication.ActiveIngredient</p>
+            <p><strong>Tugevus:</strong> @(_medication.Strength ?? "-")</p>
+            <p><strong>Luhikirjeldus:</strong> @(_medication.ShortDescription ?? "-")</p>
+            <p><strong>Hoiatused:</strong> @(_medication.Warnings ?? "-")</p>
 
-        <hr />
-        <h2>Lisa raviplaani</h2>
-        <div class="scanner-form">
-            <label>
-                Kordi paevas
-                <input class="form-control" type="number" min="1" max="24" @bind="_frequencyPerDay" />
-            </label>
+            <hr />
+            <h2>Lisa raviplaani</h2>
+            <div class="scanner-form">
+                <div class="form-group mb-3">
+                    <label>Kordi paevas</label>
+                    <input class="form-control" type="number" min="1" max="24" @bind="_frequencyPerDay" />
+                </div>
 
-            <label>
-                Esimene meeldetuletuse aeg
-                <input class="form-control" type="time" value="@_scheduledTimeText" @onchange="OnScheduledTimeChanged" />
-            </label>
+                <div class="form-group mb-3">
+                    <label>Esimene meeldetuletuse aeg</label>
+                    <input class="form-control" type="time" value="@_scheduledTimeText" @onchange="OnScheduledTimeChanged" />
+                </div>
 
-            <label class="scanner-toggle">
-                <input type="checkbox" @bind="_remindersEnabled" />
-                Meeldetuletused sees
-            </label>
+                <div class="form-check mb-3">
+                    <input class="form-check-input darker-border-checkbox" type="checkbox" id="remindersCheck" @bind="_remindersEnabled" />
+                    <label class="form-check-label" for="remindersCheck">Meeldetuletused sees</label>
+                </div>
 
-            <label>
-                Markmed
-                <textarea class="form-control" @bind="_notes"></textarea>
-            </label>
+                <div class="form-group mb-3">
+                    <label>Markmed</label>
+                    <textarea class="form-control" @bind="_notes"></textarea>
+                </div>
 
-            <button class="btn btn-success"
-                    @onclick="AddToScheduleAsync"
-                    disabled="@_isSavingMedication">
-                @(_isSavingMedication ? "Lisan..." : "Lisa raviplaani")
-            </button>
+                <button class="btn btn-success w-100 mb-3"
+                        @onclick="AddToScheduleAsync"
+                        disabled="@_isSavingMedication">
+                    @(_isSavingMedication ? "Lisan..." : "Lisa raviplaani")
+                </button>
 
-            @if (!string.IsNullOrWhiteSpace(_addMessage))
-            {
-                <p class="scanner-message">@_addMessage</p>
-            }
-        </div>
+                @if (!string.IsNullOrWhiteSpace(_addMessage))
+                {
+                    <p class="text-success">@_addMessage</p>
+                }
+            </div>
 
-        <div class="scanner-actions">
-            <button class="btn btn-outline-primary" @onclick="ScanAgain">
-                Skaneeri uuesti
-            </button>
-            <button class="btn btn-outline-secondary" @onclick="OpenManualSearch">
-                Kasitsi otsimine
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary flex-fill" @onclick="ScanAgain">
+                    Skaneeri uuesti
+                </button>
+                <button class="btn btn-outline-secondary flex-fill" @onclick="OpenManualSearch">
+                    Kasitsi otsimine
+                </button>
+            </div>
         </div>
     </div>
 }

@@ -13,28 +13,28 @@
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Substance</th>
-                <th>Strength</th>
-                <th>Form</th>
-                <th>Expiring Date</th>               
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var medicine in medicines) {
-                <tr>
-                    <td>@medicine.Name</td>
-                    <td>@medicine.Substance</td>
-                    <td>@medicine.Strength</td>
-                    <td>@medicine.Form</td>
-                    <td>@medicine.ExpiringDate</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Substance</th>
+            <th>Strength</th>
+            <th>Form</th>
+            <th>Expiring Date</th>               
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var medicine in medicines) {
+        <tr>
+            <td>@medicine.Name</td>
+            <td>@medicine.Substance</td>
+            <td>@medicine.Strength</td>
+            <td>@medicine.Form</td>
+            <td>@medicine.ExpiringDate</td>
+        </tr>
+        }
+    </tbody>
+</table>
 }
 
 @code {
