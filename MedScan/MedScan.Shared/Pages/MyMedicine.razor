@@ -1,68 +1,615 @@
-﻿@page "/mymedicine"
+@page "/mymedicine"
+@using MedScan.Shared.DTOs.Medication
+@using MedScan.Shared.Models
+@using MedScan.Shared.Models.Enums
+@using MedScan.Shared.Services
 @inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject IProfileService ProfileService
+@inject IMedicationService MedicationService
 
-<PageTitle>My Medicine</PageTitle>
+<PageTitle>Minu ravimid</PageTitle>
 
-<h1>My Medicine</h1>
-
-<p>This list shows all of your saved medicines.</p>
-
-@if (medicines == null)
+@if (!_isReady)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Laen...</em></p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Substance</th>
-                <th>Strength</th>
-                <th>Form</th>
-                <th>Expiring Date</th>               
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var medicine in medicines) {
-                <tr>
-                    <td>@medicine.Name</td>
-                    <td>@medicine.Substance</td>
-                    <td>@medicine.Strength</td>
-                    <td>@medicine.Form</td>
-                    <td>@medicine.ExpiringDate</td>
-                </tr>
+    <div class="medicine-screen">
+        <div class="medicine-header">
+            <h1>Minu ravimid</h1>
+            <button class="add-med-btn" @onclick="OpenScanner">+ Lisa</button>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="error-box">@_errorMessage</div>
+        }
+
+        <div class="profiles-row">
+            @foreach (var profile in _profiles)
+            {
+                var active = profile.Id == _selectedProfileId;
+                <button class="profile-chip @(active ? "active" : null)" @onclick="() => SelectProfileAsync(profile.Id)">
+                    <span>@profile.Name</span>
+                    <span class="count-badge">@GetProfileCount(profile.Id)</span>
+                </button>
             }
-        </tbody>
-    </table>
+        </div>
+
+        @if (_isLoadingMedications)
+        {
+            <div class="empty-state">Laen ravimeid...</div>
+        }
+        else if (_selectedMedications.Count == 0)
+        {
+            <div class="empty-state">Selle profiili raviplaan on tühi.</div>
+        }
+        else
+        {
+            <div class="medicine-cards">
+                @foreach (var medicine in _selectedMedications)
+                {
+                    var status = BuildStatusView(medicine);
+                    var showMenu = _statusMenuMedicationId == medicine.Id;
+
+                    <article class="medicine-card">
+                        <div class="left-icon @status.IconClass">@status.Icon</div>
+
+                        <div class="card-content">
+                            <div class="top-line">
+                                <h2>@BuildTitle(medicine)</h2>
+                                <div class="right-controls">
+                                    <span class="status-pill @status.PillClass">@status.Label</span>
+                                    <button class="menu-btn" @onclick="() => ToggleStatusMenu(medicine.Id)">⋮</button>
+                                </div>
+                            </div>
+
+                            <p class="meta-line">@medicine.FrequencyPerDay x päevas · @FormatTimes(medicine.ScheduledTimes)</p>
+
+                            @if (!string.IsNullOrWhiteSpace(medicine.Notes))
+                            {
+                                <p class="note-line">💬 @medicine.Notes</p>
+                            }
+
+                            <div class="times-line">
+                                @foreach (var time in medicine.ScheduledTimes.OrderBy(t => t))
+                                {
+                                    <span class="time-pill">🕒 @time.ToString("HH:mm")</span>
+                                }
+                            </div>
+
+                            @if (showMenu)
+                            {
+                                <div class="status-actions">
+                                    <button class="action done" @onclick="() => SetStatusAsync(medicine, DoseStatusEnum.Done)">Tehtud</button>
+                                    <button class="action pending" @onclick="() => SetStatusAsync(medicine, DoseStatusEnum.Pending)">Ootel</button>
+                                    <button class="action missed" @onclick="() => SetStatusAsync(medicine, DoseStatusEnum.Missed)">Tegemata</button>
+                                </div>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
 }
 
+<style>
+    .medicine-screen {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f3f4f4;
+        min-height: 100vh;
+        padding: 18px 12px 92px 12px;
+        margin: -1rem;
+    }
+
+    .medicine-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 6px 14px 6px;
+        border-bottom: 1px solid #dfe3e2;
+    }
+
+    .medicine-header h1 {
+        margin: 0;
+        font-size: 45px;
+        letter-spacing: -0.02em;
+        color: #132340;
+        font-weight: 800;
+    }
+
+    .add-med-btn {
+        border: 0;
+        border-radius: 18px;
+        background: #3b705e;
+        color: #fff;
+        padding: 9px 18px;
+        font-size: 34px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .profiles-row {
+        display: flex;
+        gap: 14px;
+        padding: 12px 6px 10px;
+        border-bottom: 1px solid #dfe3e2;
+        margin-bottom: 12px;
+        overflow-x: auto;
+    }
+
+    .profile-chip {
+        border: 0;
+        border-bottom: 4px solid transparent;
+        background: transparent;
+        color: #607175;
+        font-size: 34px;
+        font-weight: 600;
+        padding: 0 2px 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-chip.active {
+        color: #2f6654;
+        border-bottom-color: #3b705e;
+    }
+
+    .count-badge {
+        min-width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: #d8dce2;
+        color: #4f5f6a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .profile-chip.active .count-badge {
+        background: #3b705e;
+        color: #fff;
+    }
+
+    .medicine-cards {
+        display: grid;
+        gap: 12px;
+    }
+
+    .medicine-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
+        padding: 14px;
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 12px;
+    }
+
+    .left-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 18px;
+        display: grid;
+        place-items: center;
+        font-size: 36px;
+        font-weight: 700;
+    }
+
+    .icon-done {
+        background: #d6eddf;
+        color: #2f6f58;
+    }
+
+    .icon-pending {
+        background: #f4eccd;
+        color: #98601f;
+    }
+
+    .icon-missed {
+        background: #f9dfe2;
+        color: #aa3f4c;
+    }
+
+    .card-content {
+        display: grid;
+        gap: 6px;
+    }
+
+    .top-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .top-line h2 {
+        margin: 0;
+        color: #132340;
+        font-size: 44px;
+        line-height: 1.08;
+        font-weight: 800;
+    }
+
+    .right-controls {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .status-pill {
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 27px;
+        font-weight: 700;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .pill-done {
+        background: #dff2e8;
+        color: #2f6f58;
+    }
+
+    .pill-pending {
+        background: #f8ecd8;
+        color: #98601f;
+    }
+
+    .pill-missed {
+        background: #f9dfe2;
+        color: #aa3f4c;
+    }
+
+    .menu-btn {
+        border: 0;
+        background: #f0f2f2;
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        color: #6d7786;
+        font-size: 28px;
+        line-height: 1;
+    }
+
+    .meta-line {
+        margin: 0;
+        color: #5e7072;
+        font-size: 32px;
+    }
+
+    .note-line {
+        margin: 0;
+        color: #8f84a1;
+        font-size: 30px;
+        font-style: italic;
+    }
+
+    .times-line {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .time-pill {
+        background: #e7efed;
+        color: #2f6f58;
+        border-radius: 14px;
+        padding: 7px 12px;
+        font-size: 29px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .status-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        border-top: 1px solid #edf1f0;
+        margin-top: 6px;
+        padding-top: 10px;
+    }
+
+    .action {
+        border: 0;
+        border-radius: 10px;
+        padding: 8px 11px;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .action.done {
+        background: #dff2e8;
+        color: #2f6f58;
+    }
+
+    .action.pending {
+        background: #f8ecd8;
+        color: #98601f;
+    }
+
+    .action.missed {
+        background: #f9dfe2;
+        color: #aa3f4c;
+    }
+
+    .error-box, .empty-state {
+        background: #fff;
+        border-radius: 16px;
+        padding: 12px;
+        font-size: 24px;
+        margin: 0 6px 10px;
+    }
+
+    .error-box {
+        background: #fde9eb;
+        color: #ab3f4c;
+    }
+
+    .empty-state {
+        color: #607175;
+    }
+
+    @@media (max-width: 768px) {
+        .medicine-header h1 {
+            font-size: 22px;
+        }
+
+        .add-med-btn {
+            font-size: 16px;
+            padding: 8px 14px;
+            border-radius: 14px;
+        }
+
+        .profile-chip {
+            font-size: 17px;
+            padding-bottom: 8px;
+        }
+
+        .count-badge {
+            min-width: 28px;
+            height: 28px;
+            font-size: 14px;
+        }
+
+        .medicine-card {
+            grid-template-columns: 64px 1fr;
+            border-radius: 16px;
+            padding: 12px;
+        }
+
+        .left-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
+            font-size: 28px;
+        }
+
+        .top-line h2 {
+            font-size: 18px;
+        }
+
+        .status-pill {
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+
+        .menu-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 22px;
+            border-radius: 10px;
+        }
+
+        .meta-line {
+            font-size: 15px;
+        }
+
+        .note-line {
+            font-size: 14px;
+        }
+
+        .time-pill {
+            font-size: 14px;
+            padding: 6px 10px;
+        }
+
+        .action {
+            font-size: 13px;
+        }
+
+        .error-box, .empty-state {
+            font-size: 15px;
+        }
+    }
+</style>
+
 @code {
-    private Medicine[]? medicines;
+    private bool _isReady;
+    private bool _isLoadingMedications;
+    private string? _errorMessage;
+    private int _selectedProfileId;
+    private int? _statusMenuMedicationId;
+
+    private readonly List<ProfileSummary> _profiles = [];
+    private readonly Dictionary<int, List<UserMedicationDto>> _medicationsByProfile = [];
+
+    private List<UserMedicationDto> _selectedMedications =>
+        _selectedProfileId != 0 && _medicationsByProfile.TryGetValue(_selectedProfileId, out var medications)
+            ? medications
+            : [];
 
     protected override async Task OnInitializedAsync()
     {
-        // Simulate asynchronous loading to demonstrate a loading indicator
-        await Task.Delay(500);
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
 
-        var expiringDate = DateOnly.FromDateTime(DateTime.Now);
-        var names = new[] { "Paracetamol","Ibuprofen","Aspirin","Amoxicillin","Metformin","Atorvastatin","Omeprazole" };
-        var substances = new[] { "Caffeine","Nicotine","Ethanol","Glucose","Sodium chloride","Acetone","Carbon dioxide","Methane" };
-        var forms = new[] { "Tablett", "Liquid", "Powder" };
-        medicines = Enumerable.Range(1,5).Select(index => new Medicine {
-            Name = names[Random.Shared.Next(names.Length)],
-            Substance = substances[Random.Shared.Next(substances.Length)],
-            Strength = Random.Shared.Next(100,500),
-            Form = forms[Random.Shared.Next(forms.Length)],
-            ExpiringDate = expiringDate.AddDays(index)
-        }).ToArray();
+        _isReady = true;
+        await LoadAsync();
     }
 
-    private class Medicine {
-        public string? Name { get; set; }
-        public string? Substance { get; set; }
-        public int? Strength { get; set; }
-        public string? Form { get; set; }
-        public DateOnly? ExpiringDate { get; set; }
+    private async Task LoadAsync()
+    {
+        _errorMessage = null;
+
+        try
+        {
+            var profiles = await ProfileService.GetMyProfilesAsync();
+            _profiles.Clear();
+            _profiles.AddRange(profiles.OrderBy(p => p.Id));
+
+            _selectedProfileId = ResolveDefaultProfileId();
+            if (_selectedProfileId != 0)
+            {
+                await LoadProfileMedicationsAsync(_selectedProfileId);
+            }
+        }
+        catch
+        {
+            _errorMessage = "Ravimite laadimine ebaõnnestus.";
+        }
     }
+
+    private int ResolveDefaultProfileId()
+    {
+        if (AuthService.CurrentUser?.DefaultProfileId is int defaultProfileId &&
+            _profiles.Any(profile => profile.Id == defaultProfileId))
+        {
+            return defaultProfileId;
+        }
+
+        return _profiles.FirstOrDefault()?.Id ?? 0;
+    }
+
+    private async Task SelectProfileAsync(int profileId)
+    {
+        if (_selectedProfileId == profileId)
+        {
+            return;
+        }
+
+        _selectedProfileId = profileId;
+        _statusMenuMedicationId = null;
+
+        if (!_medicationsByProfile.ContainsKey(profileId))
+        {
+            await LoadProfileMedicationsAsync(profileId);
+        }
+    }
+
+    private async Task LoadProfileMedicationsAsync(int profileId)
+    {
+        _isLoadingMedications = true;
+        _errorMessage = null;
+
+        try
+        {
+            var raw = await MedicationService.GetScheduleAsync(profileId);
+            var cleaned = raw
+                .Where(m => m.IsActive)
+                .GroupBy(m => m.Id)
+                .Select(g => g.First())
+                .OrderBy(m => m.ScheduledTimes.DefaultIfEmpty(TimeOnly.MaxValue).Min())
+                .ThenBy(m => m.MedicationName)
+                .ToList();
+
+            _medicationsByProfile[profileId] = cleaned;
+        }
+        catch
+        {
+            _medicationsByProfile[profileId] = [];
+            _errorMessage = "Ravimite laadimine ebaõnnestus.";
+        }
+        finally
+        {
+            _isLoadingMedications = false;
+        }
+    }
+
+    private int GetProfileCount(int profileId)
+    {
+        return _medicationsByProfile.TryGetValue(profileId, out var meds) ? meds.Count : 0;
+    }
+
+    private static string BuildTitle(UserMedicationDto medication)
+    {
+        var name = medication.MedicationName?.Trim() ?? string.Empty;
+        var strength = medication.Strength?.Trim();
+
+        if (string.IsNullOrWhiteSpace(strength))
+        {
+            return name;
+        }
+
+        return name.Contains(strength, StringComparison.OrdinalIgnoreCase)
+            ? name
+            : $"{name} {strength}";
+    }
+
+    private static string FormatTimes(IEnumerable<TimeOnly> times)
+    {
+        var values = times.OrderBy(t => t).Select(t => t.ToString("HH:mm")).ToList();
+        return values.Count == 0 ? "-" : string.Join(", ", values);
+    }
+
+    private StatusView BuildStatusView(UserMedicationDto medication)
+    {
+        if (medication.LatestDoseStatus == DoseStatusEnum.Done)
+        {
+            return new StatusView("✓ Tehtud", "✓", "icon-done", "pill-done");
+        }
+
+        if (medication.LatestDoseStatus == DoseStatusEnum.Missed || medication.LatestDoseStatus == DoseStatusEnum.Skipped)
+        {
+            return new StatusView("! Tegemata", "!", "icon-missed", "pill-missed");
+        }
+
+        return new StatusView("🕒 Ootel", "🕒", "icon-pending", "pill-pending");
+    }
+
+    private void ToggleStatusMenu(int medicationId)
+    {
+        _statusMenuMedicationId = _statusMenuMedicationId == medicationId ? null : medicationId;
+    }
+
+    private async Task SetStatusAsync(UserMedicationDto medicine, DoseStatusEnum status)
+    {
+        var scheduled = medicine.ScheduledTimes.OrderBy(t => t).FirstOrDefault();
+        var updated = await MedicationService.UpdateStatusAsync(medicine.Id, new UpdateMedicationStatusDto
+        {
+            ScheduledTime = scheduled,
+            Status = status
+        });
+
+        if (updated is null)
+        {
+            _errorMessage = "Staatuse uuendamine ebaõnnestus.";
+            return;
+        }
+
+        if (_medicationsByProfile.TryGetValue(medicine.ProfileId, out var list))
+        {
+            var index = list.FindIndex(x => x.Id == medicine.Id);
+            if (index >= 0)
+            {
+                list[index] = updated;
+            }
+        }
+
+        _statusMenuMedicationId = null;
+    }
+
+    private void OpenScanner() => Navigation.NavigateTo("/scanner");
+
+    private sealed record StatusView(string Label, string Icon, string IconClass, string PillClass);
 }

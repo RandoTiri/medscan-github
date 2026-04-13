@@ -45,13 +45,17 @@ else
         <div class="scanner-form">
             <label>
                 Kordi paevas
-                <input class="form-control" type="number" min="1" max="24" @bind="_frequencyPerDay" />
+                <input class="form-control" type="number" min="1" max="8" @bind="_frequencyPerDay" @bind:after="SyncScheduledTimes" />
             </label>
 
-            <label>
-                Esimene meeldetuletuse aeg
-                <input class="form-control" type="time" value="@_scheduledTimeText" @onchange="OnScheduledTimeChanged" />
-            </label>
+            @for (var i = 0; i < _scheduledTimeTexts.Count; i++)
+            {
+                var index = i;
+                <label>
+                    Meeldetuletuse aeg @(index + 1)
+                    <input class="form-control" type="time" value="@_scheduledTimeTexts[index]" @onchange="args => OnScheduledTimeChanged(index, args)" />
+                </label>
+            }
 
             <label class="scanner-toggle">
                 <input type="checkbox" @bind="_remindersEnabled" />
@@ -93,7 +97,7 @@ else
     private bool _isLoading;
     private bool _isSavingMedication;
     private int _frequencyPerDay = 1;
-    private string _scheduledTimeText = "08:00";
+    private readonly List<string> _scheduledTimeTexts = ["08:00"];
     private bool _remindersEnabled = true;
     private string? _notes;
     private string? _addMessage;
@@ -132,10 +136,16 @@ else
             return;
         }
 
-        if (!TimeOnly.TryParse(_scheduledTimeText, out var scheduledTime))
+        var parsedTimes = new List<TimeOnly>();
+        foreach (var text in _scheduledTimeTexts)
         {
-            _addMessage = "Sisesta korrektne kellaaeg.";
-            return;
+            if (!TimeOnly.TryParse(text, out var parsed))
+            {
+                _addMessage = "Sisesta koik meeldetuletuse ajad korrektselt.";
+                return;
+            }
+
+            parsedTimes.Add(parsed);
         }
 
         _isSavingMedication = true;
@@ -146,7 +156,7 @@ else
             var result = await ScannerFlowService.AddMedicationToDefaultProfileAsync(
                 _medication.Id,
                 _frequencyPerDay,
-                [scheduledTime],
+                parsedTimes,
                 _remindersEnabled,
                 _notes);
 
@@ -158,8 +168,25 @@ else
         }
     }
 
-    private void OnScheduledTimeChanged(ChangeEventArgs args)
+    private Task SyncScheduledTimes()
     {
-        _scheduledTimeText = args.Value?.ToString() ?? _scheduledTimeText;
+        _frequencyPerDay = Math.Clamp(_frequencyPerDay, 1, 8);
+
+        while (_scheduledTimeTexts.Count < _frequencyPerDay)
+        {
+            _scheduledTimeTexts.Add("08:00");
+        }
+
+        while (_scheduledTimeTexts.Count > _frequencyPerDay)
+        {
+            _scheduledTimeTexts.RemoveAt(_scheduledTimeTexts.Count - 1);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void OnScheduledTimeChanged(int index, ChangeEventArgs args)
+    {
+        _scheduledTimeTexts[index] = args.Value?.ToString() ?? _scheduledTimeTexts[index];
     }
 }

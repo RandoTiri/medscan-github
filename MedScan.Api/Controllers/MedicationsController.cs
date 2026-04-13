@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using MedScan.Api.Data;
 using MedScan.Shared.DTOs.Medication;
+using MedScan.Shared.Models;
+using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -147,5 +149,65 @@ public sealed class MedicationsController(
         }
 
         return NoContent();
+    }
+
+    [HttpPost("{id:int}/status")]
+    public async Task<ActionResult<UserMedicationDto>> UpdateStatus(int id, [FromBody] UpdateMedicationStatusDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Unauthorized();
+        }
+
+        var userMedication = await dbContext.UserMedications
+            .Include(um => um.Profile)
+            .Include(um => um.DoseLogs)
+            .FirstOrDefaultAsync(um => um.Id == id && um.Profile.UserId == userId);
+
+        if (userMedication is null)
+        {
+            return NotFound();
+        }
+
+        var baseDate = DateTime.Today;
+
+        var resolvedTime = dto.ScheduledTime ?? TimeOnly.FromDateTime(DateTime.Now);
+        var scheduledDateTime = baseDate.Add(resolvedTime.ToTimeSpan());
+
+        var existingLog = userMedication.DoseLogs
+            .Where(log => log.ScheduledTime.Date == baseDate && log.ScheduledTime.TimeOfDay == resolvedTime.ToTimeSpan())
+            .OrderByDescending(log => log.Id)
+            .FirstOrDefault();
+
+        if (existingLog is null)
+        {
+            existingLog = new DoseLog
+            {
+                UserMedicationId = userMedication.Id,
+                ScheduledTime = scheduledDateTime,
+                DoseStatus = dto.Status,
+                TakenAt = dto.Status == DoseStatusEnum.Done ? DateTime.UtcNow : null,
+                ConfirmedByUserId = userId
+            };
+
+            dbContext.DoseLogs.Add(existingLog);
+        }
+        else
+        {
+            existingLog.DoseStatus = dto.Status;
+            existingLog.TakenAt = dto.Status == DoseStatusEnum.Done ? DateTime.UtcNow : null;
+            existingLog.ConfirmedByUserId = userId;
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        var updated = await medicationService.GetByIdAsync(id);
+        if (updated is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(updated);
     }
 }
