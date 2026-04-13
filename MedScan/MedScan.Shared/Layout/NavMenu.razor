@@ -1,7 +1,7 @@
-﻿
-@implements IDisposable
+﻿@implements IDisposable
 @inject NavigationManager Navigation
 @inject MedScan.Shared.Services.AuthService AuthService
+@inject MedScan.Shared.Services.IScannerFlowService ScannerFlowService
 
 @if (AuthService.IsLoggedIn)
 {
@@ -18,7 +18,7 @@
             </span>
             <span class="nav-label">Ravimid</span>
         </div>
-        <div class="nav-item-center" @onclick='() => NavigateTo("/scanner")'>
+        <div class="nav-item-center" @onclick="StartScannerAsync">
             <div class="center-button">
                 <span class="center-icon" style="display:flex;">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M4 17v3h3"></path><path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
@@ -82,6 +82,20 @@
     private void NavigateTo(string url)
     {
         Navigation.NavigateTo(url);
+    }
+
+    private async Task StartScannerAsync()
+    {
+        var scanResult = await ScannerFlowService.ScanAsync();
+
+        if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
+        {
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+        }
+        else if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.ManualSearch)
+        {
+            Navigation.NavigateTo("/scanner/search");
+        }
     }
 
     public void Dispose()

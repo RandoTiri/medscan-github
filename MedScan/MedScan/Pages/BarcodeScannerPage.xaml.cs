@@ -75,12 +75,21 @@ public partial class BarcodeScannerPage : ContentPage
         try
         {
             await Task.Delay(TimeSpan.FromSeconds(20), _timeoutSource.Token);
-            Complete(new BarcodeScanResult
+            bool retry = await MainThread.InvokeOnMainThreadAsync(async () =>
+                await DisplayAlertAsync("Viga", "Kaamera ei tuvastanud ravimit.","Skaneeri uuesti", "Käsitsi otsimine"));
+
+            if (retry)
             {
-                Status = BarcodeScanStatus.NotDetected,
-                Message = "Kaamera ei tuvastanud ravimit."
-            });
-            await CloseAsync();
+                _ = StartTimeoutAsync();
+            }
+            else
+            {
+                Complete(new BarcodeScanResult
+                {
+                    Status = BarcodeScanStatus.ManualSearch
+                });
+                await CloseAsync();
+            }
         }
         catch (TaskCanceledException)
         {
@@ -89,6 +98,12 @@ public partial class BarcodeScannerPage : ContentPage
 
     private async void CancelClicked(object? sender, EventArgs e)
     {
+        if (sender is View view)
+        {
+            await view.ScaleToAsync(0.9, 100);
+            await view.ScaleToAsync(1.0, 100);
+        }
+
         Complete(new BarcodeScanResult
         {
             Status = BarcodeScanStatus.Canceled,
@@ -99,6 +114,12 @@ public partial class BarcodeScannerPage : ContentPage
 
     private async void ManualSearchClicked(object? sender, EventArgs e)
     {
+        if (sender is View view)
+        {
+            await view.ScaleToAsync(0.9, 100);
+            await view.ScaleToAsync(1.0, 100);
+        }
+
         Complete(new BarcodeScanResult
         {
             Status = BarcodeScanStatus.ManualSearch
@@ -106,8 +127,13 @@ public partial class BarcodeScannerPage : ContentPage
         await CloseAsync();
     }
 
-    private void ToggleTorchClicked(object? sender, EventArgs e)
+    private async void ToggleTorchClicked(object? sender, EventArgs e)
     {
+        if (sender is View view)
+        {
+            await view.ScaleToAsync(0.9, 100);
+            await view.ScaleToAsync(1.0, 100);
+        }
         CameraView.IsTorchOn = !CameraView.IsTorchOn;
     }
 
@@ -128,6 +154,37 @@ public partial class BarcodeScannerPage : ContentPage
         }
 
         CameraView.IsDetecting = false;
+
+#if WINDOWS || ANDROID || IOS || MACCATALYST
+        var services = IPlatformApplication.Current?.Services;
+#else
+        var services = this.Handler?.MauiContext?.Services;
+#endif
+        var scannerFlowService = services?.GetService<MedScan.Shared.Services.IScannerFlowService>();
+        if (scannerFlowService != null)
+        {
+            var medication = await scannerFlowService.FindByBarcodeAsync(barcodeValue.Trim());
+            if (medication == null)
+            {
+                bool retry = await MainThread.InvokeOnMainThreadAsync(async () => 
+                    await DisplayAlertAsync("Tundmatu triipkood", "Tuvastatud triipkoodi andmeid ei leitud andmebaasist.", "Skaneeri uuesti", "Käsitsi otsimine"));
+
+                if (retry)
+                {
+                    CameraView.IsDetecting = true;
+                    return;
+                }
+                else
+                {
+                    Complete(new BarcodeScanResult
+                    {
+                        Status = BarcodeScanStatus.ManualSearch
+                    });
+                    await CloseAsync();
+                    return;
+                }
+            }
+        }
 
         Complete(new BarcodeScanResult
         {

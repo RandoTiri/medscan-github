@@ -13,11 +13,12 @@
 }
 else
 {
-    <div class="scanner-page">
-        <h1>Kasitsi otsing</h1>
-        <p>Sisesta ravimi nimi, kui triipkoodi ei olnud voimalik skannida.</p>
+    <div class="page-container">
+        <div class="content-wrapper">
+            <h1>Kasitsi otsing</h1>
+            <p>Sisesta ravimi nimi, kui triipkoodi ei olnud voimalik skannida.</p>
 
-        <div class="manual-search-bar">
+            <div class="manual-search-bar">
             <input class="form-control"
                    placeholder="Nt Paracetamol"
                    @bind="_query" />
@@ -36,19 +37,20 @@ else
         @if (_results.Count > 0)
         {
             <div class="manual-results">
-                @foreach (var item in _results)
-                {
-                    <button class="manual-result-item" @onclick="@(() => OpenResult(item.Barcode))">
-                        <strong>@item.Name</strong>
-                        <span>@item.ActiveIngredient</span>
-                    </button>
+                            @foreach (var item in _results)
+                            {
+                                <button class="manual-result-item" @onclick="@(() => OpenResult(item.Barcode))">
+                                    <strong>@item.Name</strong>
+                                    <span>@item.ActiveIngredient</span>
+                                </button>
+                            }
+                        </div>
+                    }
+                        </div>
+                    </div>
                 }
-            </div>
-        }
-    </div>
-}
 
-@code {
+                @code {
     private bool _isReady;
     private bool _isSearching;
     private string _query = string.Empty;

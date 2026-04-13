@@ -3,7 +3,238 @@
 @inject AuthService AuthService
 @inject NavigationManager Navigation
 
-<PageTitle>Profile</PageTitle>
+<style>
+    .page-container {
+        /* Nutikalt võtame maha MainLayout'i poolt kaasa pandud paddingud (tavaliselt 1.5rem ehk 24px) */
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+
+        /* content mähise top-padding (1.1rem) ja alt mahaarvestamine; lisame safe-area paddingud (notch/alläär/ülevaläärast hoidumine) */
+        margin-top: -1.1rem;
+
+        /* padding-top: css funktsiooni max() abil kasutame kas safeareat valitud padiga või paddingut - kaitseme et text ei läheks nutitelefonide kellade jms taha 
+           Lisame veel väikse extra väära, et content on veidi isegi notchist allpool  */
+        padding-top: calc(max(24px, env(safe-area-inset-top)) + 32px);
+        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px); /* Pikk alumise tabiga arvestamine, nav bar vms vältimiseks */
+        padding-left: max(24px, env(safe-area-inset-left));
+        padding-right: max(24px, env(safe-area-inset-right));
+
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        box-sizing: border-box;
+    }
+
+    .content-wrapper {
+        max-width: 600px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: #0d2034;
+        margin-bottom: 24px;
+        margin-top: 0;
+    }
+
+    .main-user-card {
+        background-color: #2e8b6c;
+        color: white;
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .avatar-outline {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .main-user-info .name {
+        font-weight: 700;
+        font-size: 18px;
+        margin: 0;
+    }
+
+    .main-user-info .subtitle {
+        font-size: 14px;
+        opacity: 0.9;
+        margin: 4px 0 0 0;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #8898aa;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .btn-add {
+        background: none;
+        border: none;
+        color: #2e8b6c;
+        font-weight: 700;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .patient-card {
+        background-color: white;
+        border-radius: 16px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .patient-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+        background-color: #e6f4f1;
+        color: #2e8b6c;
+        border: 2px solid #bce0d5;
+    }
+
+    .patient-info {
+        flex: 1;
+    }
+
+    .patient-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: #0d2034;
+        margin: 0;
+    }
+
+    .patient-details {
+        font-size: 14px;
+        color: #718096;
+        margin: 4px 0 0 0;
+    }
+
+    .add-form-container {
+        background-color: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        color: #4a5568;
+        margin-bottom: 6px;
+        font-weight: 600;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #cbd5e0;
+        border-radius: 8px;
+        font-size: 15px;
+        box-sizing: border-box;
+        background-color: #f8f9fa;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2e8b6c;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .btn-save {
+        background-color: #2e8b6c;
+        color: white;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .btn-cancel {
+        background-color: #edf2f7;
+        color: #4a5568;
+        border: none;
+        padding: 12px 16px;
+        border-radius: 8px;
+        font-weight: 700;
+        cursor: pointer;
+        flex: 1;
+    }
+
+    .profile-actions {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .logout-button {
+        border: none;
+        border-radius: 12px;
+        padding: 0.9rem 1.4rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        background: #e2e8f0;
+        color: #4a5568;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .logout-button:hover {
+        opacity: 0.96;
+        transform: translateY(-1px);
+    }
+
+    .logout-button:active {
+        transform: translateY(0);
+    }
+</style>
+
+<PageTitle>Profiilid</PageTitle>
 
 @if (!AuthService.IsLoggedIn)
 {
@@ -11,41 +242,108 @@
 }
 else
 {
-    <div class="profile-page">
-        <div class="profile-card">
-            <div class="profile-header">
-                <div class="profile-avatar">
-                    @GetInitials()
-                </div>
+    <div class="page-container">
+        <div class="content-wrapper">
+            <h1 class="page-title">Profiilid</h1>
 
-                <div class="profile-title-block">
-                    <h1>Minu profiil</h1>
-                    <p>Sinu konto andmed MedScan rakenduses.</p>
-                </div>
-            </div>
-
-            <div class="profile-info">
-                <div class="info-row">
-                    <span class="info-label">Nimi</span>
-                    <span class="info-value">@AuthService.CurrentUser?.FullName</span>
-                </div>
-
-                <div class="info-row">
-                    <span class="info-label">Email</span>
-                    <span class="info-value">@AuthService.CurrentUser?.Email</span>
+            <!-- Peakasutaja kaart -->
+            <div class="main-user-card">
+                <div class="avatar-outline">@GetInitials()</div>
+                <div class="main-user-info">
+                    <p class="name">@(AuthService.CurrentUser?.FullName ?? "Nimetu")</p>
                 </div>
             </div>
 
-            <div class="profile-actions">
-                <button class="logout-button" @onclick="Logout">
-                    Logi valja
+            <!-- Hooldatavate sektsiooni päis -->
+            <div class="section-header">
+                <h2 class="section-title">Hooldatav</h2>
+                <button class="btn-add" @onclick="ToggleAddForm">
+                    @(isAdding ? "Sulge" : "+ Lisa hooldatav")
                 </button>
+            </div>
+
+            <!-- Hooldatava lisamise ankeet -->
+            @if (isAdding)
+            {
+                <div class="add-form-container">
+                    <div class="form-group">
+                        <label>Nimi</label>
+                        <input class="form-control" @bind="newPatient.Name" placeholder="nt. Maie Tamm" />
+                    </div>
+                    <div class="form-group">
+                        <label>Sugu</label>
+                        <select class="form-control" @bind="newPatient.Gender">
+                            <option value="">Vali sugu...</option>
+                            <option value="Mees">Mees</option>
+                            <option value="Naine">Naine</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Vanus</label>
+                        <input class="form-control" type="number" @bind="newPatient.Age" placeholder="nt. 21" />
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-cancel" @onclick="ToggleAddForm">Tühista</button>
+                        <button class="btn-save" @onclick="SavePatient">Salvesta</button>
+                    </div>
+                </div>
+            }
+
+            <!-- Lisatud hooldatavad -->
+            <div class="patients-list">
+                @if (CareReceivers.Any())
+                {
+                    @foreach (var patient in CareReceivers)
+                    {
+                        <div class="patient-card">
+                            <div class="patient-avatar">
+                                @patient.Initials
+                            </div>
+                            <div class="patient-info">
+                                <p class="patient-name">@patient.Name</p>
+                                <p class="patient-details">@patient.Age a · @patient.Gender</p>
+                            </div>
+                            <div style="color: #cbd5e0;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
     </div>
 }
 
 @code {
+    public class Person
+    {
+        public string Name { get; set; } = "";
+
+        public string Initials 
+        {
+            get 
+            {
+                if (string.IsNullOrWhiteSpace(Name)) return "?";
+                var words = Name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (words.Length == 1) return words[0].Substring(0, 1).ToUpper();
+                return (words[0].Substring(0, 1) + words[1].Substring(0, 1)).ToUpper();
+            }
+        }
+    }
+
+    public class Patient : Person
+    {
+        public int? Age { get; set; }
+        public string Gender { get; set; } = "";
+    }
+
+    private List<Patient> CareReceivers = new List<Patient>();
+
+    private bool isAdding = false;
+    private Patient newPatient = new Patient();
+
     protected override async Task OnInitializedAsync()
     {
         await AuthService.InitializeAsync();
@@ -56,10 +354,27 @@ else
         }
     }
 
-    private async Task Logout()
+    private void ToggleAddForm()
     {
-        await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/login", true);
+        isAdding = !isAdding;
+        if (isAdding)
+        {
+            newPatient = new Patient(); 
+        }
+    }
+
+    private void SavePatient()
+    {
+        if (!string.IsNullOrWhiteSpace(newPatient.Name))
+        {
+            CareReceivers.Add(new Patient
+            {
+                Name = newPatient.Name,
+                Gender = !string.IsNullOrEmpty(newPatient.Gender) ? newPatient.Gender : "Määramata",
+                Age = newPatient.Age ?? 0
+            });
+            isAdding = false;
+        }
     }
 
     private string GetInitials()

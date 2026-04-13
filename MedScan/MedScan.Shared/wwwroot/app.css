@@ -1,3 +1,29 @@
+.page-container {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    margin-left: -50vw;
+
+    margin-top: -1.1rem;
+
+    padding: 24px;
+    padding-top: calc(max(24px, env(safe-area-inset-top)) + 32px);
+    padding-bottom: calc(max(24px, env(safe-area-bottom)) + 80px);
+    padding-left: max(24px, env(safe-area-inset-left));
+    padding-right: max(24px, env(safe-area-inset-right));
+
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+.content-wrapper {
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
