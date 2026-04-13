@@ -12,12 +12,7 @@
         display: flex;
         flex-direction: column;
 
-        width: 100vw;
-        position: relative;
-        left: 50%;
-        margin-left: -50vw;
-        margin-top: -1.1rem;
-
+        width: 100%;
         min-height: 100vh;
         background-color: #fff;
         max-width: 450px;
@@ -25,7 +20,7 @@
         color: #1c3d4f;
         box-sizing: border-box;
 
-        padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
+        padding-top: 0;
         padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 20px);
         padding-left: max(0px, env(safe-area-inset-left));
         padding-right: max(0px, env(safe-area-inset-right));
@@ -33,7 +28,7 @@
 
     .header-section {
         background: linear-gradient(180deg, #ecf7f4 0%, #fff 100%);
-        padding: 60px 20px 20px;
+        padding: calc(max(20px, env(safe-area-inset-top)) + 40px) 20px 20px;
         display: flex;
         flex-direction: column;
         align-items: center;
