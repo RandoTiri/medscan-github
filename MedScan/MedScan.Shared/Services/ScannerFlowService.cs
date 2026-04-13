@@ -63,6 +63,11 @@ public sealed class ScannerFlowService(
             return new AddMedicationToScheduleResult { Message = "Lisa vahemalt uks manustamise aeg." };
         }
 
+        if (scheduledTimes.Count != frequencyPerDay)
+        {
+            return new AddMedicationToScheduleResult { Message = "Meeldetuletuse aegade arv peab vastama paevasele sagedusele." };
+        }
+
         await authService.InitializeAsync();
 
         if (!authService.IsLoggedIn)

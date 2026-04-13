@@ -58,6 +58,17 @@ public sealed class ApiMedicationService : IMedicationService {
         return updatedMedication;
     }
 
+    public async Task<UserMedicationDto?> UpdateStatusAsync(int userMedicationId, UpdateMedicationStatusDto dto) {
+        var response = await _httpClient.PostAsJsonAsync($"api/medications/{userMedicationId}/status", dto);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<UserMedicationDto>();
+    }
+
     public async Task<bool> RemoveFromScheduleAsync(int userMedicationId) {
         var existingMedication = await GetByIdAsync(userMedicationId);
 

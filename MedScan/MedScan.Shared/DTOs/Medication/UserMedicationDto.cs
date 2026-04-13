@@ -1,6 +1,9 @@
-﻿namespace MedScan.Shared.DTOs.Medication;
+using MedScan.Shared.Models.Enums;
 
-public sealed class UserMedicationDto {
+namespace MedScan.Shared.DTOs.Medication;
+
+public sealed class UserMedicationDto
+{
     public int Id { get; set; }
     public int ProfileId { get; set; }
     public string ProfileName { get; set; } = string.Empty;
@@ -14,4 +17,5 @@ public sealed class UserMedicationDto {
     public bool RemindersEnabled { get; set; }
     public string? Notes { get; set; }
     public bool IsActive { get; set; }
+    public DoseStatusEnum? LatestDoseStatus { get; set; }
 }

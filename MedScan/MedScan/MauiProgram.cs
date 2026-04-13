@@ -38,6 +38,7 @@ namespace MedScan
             builder.Services.AddScoped<IMedicineReminderScheduler,MauiMedicineReminderScheduler>();
             builder.Services.AddScoped<MedicineReminderCoordinator>();
             builder.Services.AddScoped<IMedicationService,ApiMedicationService>();
+            builder.Services.AddScoped<IProfileService, ApiProfileService>();
 
 
 #if DEBUG

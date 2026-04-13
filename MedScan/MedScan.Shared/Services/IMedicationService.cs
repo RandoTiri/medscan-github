@@ -7,5 +7,6 @@ public interface IMedicationService {
     Task<UserMedicationDto?> GetByIdAsync(int userMedicationId);
     Task<UserMedicationDto> AddToScheduleAsync(AddMedicationDto dto);
     Task<UserMedicationDto?> UpdateScheduleAsync(int userMedicationId,AddMedicationDto dto);
+    Task<UserMedicationDto?> UpdateStatusAsync(int userMedicationId, UpdateMedicationStatusDto dto);
     Task<bool> RemoveFromScheduleAsync(int userMedicationId);
 }
