@@ -130,6 +130,96 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
         }
     }
 
+    public async Task<(bool Success, string ErrorMessage)> ForgotPasswordAsync(string email)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return (false, "Sisesta email.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/forgot-password", new ForgotPasswordRequest
+            {
+                Email = email.Trim()
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"FORGOT PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> VerifyCodeAsync(string email, string code)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code))
+            {
+                return (false, "Sisesta e-mail ja kood.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/verify-code", new VerifyCodeRequest
+            {
+                Email = email.Trim(),
+                Code = code.Trim()
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"VERIFY CODE ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> ResetPasswordAsync(string email, string code, string newPassword)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(newPassword))
+            {
+                return (false, "Kõik väljad on kohustuslikud.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/reset-password", new ResetPasswordRequest
+            {
+                Email = email.Trim(),
+                Code = code.Trim(),
+                NewPassword = newPassword
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"RESET PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
     public async Task LogoutAsync()
     {
         CurrentUser = null;
