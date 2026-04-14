@@ -170,13 +170,16 @@ public sealed class MedicationsController(
             return NotFound();
         }
 
-        var baseDate = DateTime.Today;
+        var nowLocal = DateTime.Now;
+        var localDate = nowLocal.Date;
+        var resolvedTime = dto.ScheduledTime ?? TimeOnly.FromDateTime(nowLocal);
 
-        var resolvedTime = dto.ScheduledTime ?? TimeOnly.FromDateTime(DateTime.Now);
-        var scheduledDateTime = baseDate.Add(resolvedTime.ToTimeSpan());
+        // DB column type is timestamptz; always persist ScheduledTime in UTC.
+        var scheduledUtc = DateTime.SpecifyKind(localDate.Add(resolvedTime.ToTimeSpan()), DateTimeKind.Local)
+            .ToUniversalTime();
 
         var existingLog = userMedication.DoseLogs
-            .Where(log => log.ScheduledTime.Date == baseDate && log.ScheduledTime.TimeOfDay == resolvedTime.ToTimeSpan())
+            .Where(log => log.ScheduledTime == scheduledUtc)
             .OrderByDescending(log => log.Id)
             .FirstOrDefault();
 
@@ -185,7 +188,7 @@ public sealed class MedicationsController(
             existingLog = new DoseLog
             {
                 UserMedicationId = userMedication.Id,
-                ScheduledTime = scheduledDateTime,
+                ScheduledTime = scheduledUtc,
                 DoseStatus = dto.Status,
                 TakenAt = dto.Status == DoseStatusEnum.Done ? DateTime.UtcNow : null,
                 ConfirmedByUserId = userId

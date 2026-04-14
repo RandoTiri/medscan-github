@@ -1,0 +1,364 @@
+@page "/home-pharmacy"
+@using MedScan.Shared.DTOs.HomePharmacy
+@using MedScan.Shared.Models
+@using MedScan.Shared.Services
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject IProfileService ProfileService
+@inject IHomePharmacyService HomePharmacyService
+
+<PageTitle>Minu ravimid</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else
+{
+    <div class="medicine-screen">
+        <div class="medicine-header">
+            <h1>Minu ravimid</h1>
+            <button class="add-med-btn" @onclick="OpenAddPage">+ Lisa</button>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="error-box">@_errorMessage</div>
+        }
+
+        <div class="profiles-row">
+            @foreach (var profile in _profiles)
+            {
+                var active = profile.Id == _selectedProfileId;
+                <button class="profile-chip @(active ? "active" : null)" @onclick="() => SelectProfileAsync(profile.Id)">
+                    <span>@profile.Name</span>
+                    <span class="count-badge">@GetProfileCount(profile.Id)</span>
+                </button>
+            }
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="empty-state">Laen koduapteegi ravimeid...</div>
+        }
+        else if (_selectedItems.Count == 0)
+        {
+            <div class="empty-state">Selles profiilis pole veel koduapteegi ravimeid.</div>
+        }
+        else
+        {
+            <div class="medicine-cards">
+                @foreach (var item in _selectedItems)
+                {
+                    <article class="medicine-card">
+                        <div class="left-icon">💊</div>
+
+                        <div class="card-content">
+                            <div class="top-line">
+                                <h2>@item.MedicationName</h2>
+                            </div>
+
+                            @if (!string.IsNullOrWhiteSpace(item.ActiveIngredient))
+                            {
+                                <p class="meta-line">@item.ActiveIngredient @(string.IsNullOrWhiteSpace(item.Strength) ? "" : $"· {item.Strength}")</p>
+                            }
+                            else if (!string.IsNullOrWhiteSpace(item.Strength))
+                            {
+                                <p class="meta-line">@item.Strength</p>
+                            }
+
+                            <p class="quantity-line">Kogus: @item.Quantity</p>
+
+                            @if (!string.IsNullOrWhiteSpace(item.Notes))
+                            {
+                                <p class="note-line">💬 @item.Notes</p>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .medicine-screen {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f3f4f4;
+        min-height: 100vh;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        box-sizing: border-box;
+        padding: 20px;
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
+        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px);
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    .medicine-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 6px 14px 6px;
+        border-bottom: 1px solid #dfe3e2;
+    }
+
+    .medicine-header h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        color: #132340;
+        font-weight: 800;
+    }
+
+    .add-med-btn {
+        border: 0;
+        border-radius: 14px;
+        background: #3b705e;
+        color: #fff;
+        padding: 8px 14px;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .profiles-row {
+        display: flex;
+        gap: 14px;
+        padding: 12px 6px 10px;
+        border-bottom: 1px solid #dfe3e2;
+        margin-bottom: 12px;
+        overflow-x: auto;
+    }
+
+    .profile-chip {
+        border: 0;
+        border-bottom: 4px solid transparent;
+        background: transparent;
+        color: #607175;
+        font-size: 17px;
+        font-weight: 600;
+        padding: 0 2px 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .profile-chip.active {
+        color: #2f6654;
+        border-bottom-color: #3b705e;
+    }
+
+    .count-badge {
+        min-width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: #d8dce2;
+        color: #4f5f6a;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 8px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .profile-chip.active .count-badge {
+        background: #3b705e;
+        color: #fff;
+    }
+
+    .medicine-cards {
+        display: grid;
+        gap: 12px;
+    }
+
+    .medicine-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
+        padding: 12px;
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 12px;
+    }
+
+    .left-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: #e7efed;
+        color: #2f6f58;
+        font-size: 28px;
+        font-weight: 700;
+    }
+
+    .card-content {
+        display: grid;
+        gap: 6px;
+    }
+
+    .top-line h2 {
+        margin: 0;
+        color: #132340;
+        font-size: 18px;
+        line-height: 1.08;
+        font-weight: 800;
+    }
+
+    .meta-line {
+        margin: 0;
+        color: #5e7072;
+        font-size: 15px;
+    }
+
+    .quantity-line {
+        margin: 0;
+        color: #2f6f58;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .note-line {
+        margin: 0;
+        color: #8f84a1;
+        font-size: 14px;
+        font-style: italic;
+    }
+
+    .error-box, .empty-state {
+        background: #fff;
+        border-radius: 16px;
+        padding: 12px;
+        font-size: 15px;
+        margin: 0 6px 10px;
+    }
+
+    .error-box {
+        background: #fde9eb;
+        color: #ab3f4c;
+    }
+
+    .empty-state {
+        color: #607175;
+    }
+</style>
+
+@code {
+    private bool _isReady;
+    private bool _isLoading;
+    private string? _errorMessage;
+    private int _selectedProfileId;
+
+    private readonly List<ProfileSummary> _profiles = [];
+    private readonly Dictionary<int, List<HomePharmacyItemDto>> _itemsByProfile = [];
+
+    private List<HomePharmacyItemDto> _selectedItems =>
+        _selectedProfileId != 0 && _itemsByProfile.TryGetValue(_selectedProfileId, out var items)
+            ? items
+            : [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _isReady = true;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _errorMessage = null;
+
+        try
+        {
+            var profiles = await ProfileService.GetMyProfilesAsync();
+            _profiles.Clear();
+            _profiles.AddRange(profiles.OrderBy(p => p.Id));
+
+            _selectedProfileId = ResolveDefaultProfileId();
+            if (_selectedProfileId != 0)
+            {
+                await LoadProfileItemsAsync(_selectedProfileId);
+            }
+        }
+        catch
+        {
+            _errorMessage = "Koduapteegi laadimine ebaõnnestus.";
+        }
+    }
+
+    private int ResolveDefaultProfileId()
+    {
+        if (AuthService.CurrentUser?.DefaultProfileId is int defaultProfileId &&
+            _profiles.Any(profile => profile.Id == defaultProfileId))
+        {
+            return defaultProfileId;
+        }
+
+        return _profiles.FirstOrDefault()?.Id ?? 0;
+    }
+
+    private async Task SelectProfileAsync(int profileId)
+    {
+        if (_selectedProfileId == profileId)
+        {
+            return;
+        }
+
+        _selectedProfileId = profileId;
+
+        if (!_itemsByProfile.ContainsKey(profileId))
+        {
+            await LoadProfileItemsAsync(profileId);
+        }
+    }
+
+    private async Task LoadProfileItemsAsync(int profileId)
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var items = await HomePharmacyService.GetByProfileIdAsync(profileId);
+            _itemsByProfile[profileId] = items.OrderBy(x => x.MedicationName).ToList();
+        }
+        catch
+        {
+            _itemsByProfile[profileId] = [];
+            _errorMessage = "Koduapteegi laadimine ebaõnnestus.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private int GetProfileCount(int profileId)
+    {
+        return _itemsByProfile.TryGetValue(profileId, out var items) ? items.Count : 0;
+    }
+
+    private void OpenAddPage()
+    {
+        if (_selectedProfileId > 0)
+        {
+            Navigation.NavigateTo($"/home-pharmacy/add?profileId={_selectedProfileId}");
+            return;
+        }
+
+        Navigation.NavigateTo("/home-pharmacy/add");
+    }
+}

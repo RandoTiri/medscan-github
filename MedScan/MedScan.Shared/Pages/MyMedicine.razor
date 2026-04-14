@@ -7,8 +7,9 @@
 @inject AuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
+@inject IScannerFlowService ScannerFlowService
 
-<PageTitle>Minu ravimid</PageTitle>
+<PageTitle>Minu raviskeem</PageTitle>
 
 @if (!_isReady)
 {
@@ -18,8 +19,8 @@ else
 {
     <div class="medicine-screen">
         <div class="medicine-header">
-            <h1>Minu ravimid</h1>
-            <button class="add-med-btn" @onclick="OpenScanner">+ Lisa</button>
+            <h1>Minu raviskeem</h1>
+            <button class="add-med-btn" @onclick="OpenScannerAsync">+ Lisa</button>
         </div>
 
         @if (!string.IsNullOrWhiteSpace(_errorMessage))
@@ -618,7 +619,19 @@ else
         _statusMenuMedicationId = null;
     }
 
-    private void OpenScanner() => Navigation.NavigateTo("/scanner");
+    private async Task OpenScannerAsync()
+    {
+        var scanResult = await ScannerFlowService.ScanAsync();
+
+        if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
+        {
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+        }
+        else if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.ManualSearch)
+        {
+            Navigation.NavigateTo("/scanner/search");
+        }
+    }
 
     private sealed record StatusView(string Label, string Icon, string IconClass, string PillClass);
 }

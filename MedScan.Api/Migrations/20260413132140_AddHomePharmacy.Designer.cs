@@ -3,6 +3,7 @@ using System;
 using MedScan.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413132140_AddHomePharmacy")]
+    partial class AddHomePharmacy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,13 +153,9 @@ namespace MedScan.Api.Migrations
 
                     b.HasIndex("MedicationId");
 
-                    b.HasIndex("ProfileId", "MedicationId")
-                        .IsUnique();
+                    b.HasIndex("ProfileId", "MedicationId");
 
-                    b.ToTable("HomePharmacyItems", t =>
-                        {
-                            t.HasCheckConstraint("CK_HomePharmacyItems_Quantity_Positive", "\"Quantity\" > 0");
-                        });
+                    b.ToTable("HomePharmacyItems");
                 });
 
             modelBuilder.Entity("MedScan.Shared.Models.Medication", b =>

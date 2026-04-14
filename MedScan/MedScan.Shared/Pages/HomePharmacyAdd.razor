@@ -1,0 +1,239 @@
+@page "/home-pharmacy/add"
+@using MedScan.Shared.DTOs.HomePharmacy
+@using MedScan.Shared.Models
+@using MedScan.Shared.Services
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject IScannerFlowService ScannerFlowService
+@inject IHomePharmacyService HomePharmacyService
+
+<PageTitle>Lisa koduapteeki</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else
+{
+    <div class="page-container">
+        <div class="content-wrapper">
+            <h1>Lisa koduapteeki</h1>
+
+            @if (!string.IsNullOrWhiteSpace(_message))
+            {
+                <p class="message">@_message</p>
+            }
+
+            <button class="btn btn-outline-success w-100 mb-3" @onclick="ScanBarcodeAsync" disabled="@_isBusy">
+                @(_isBusy ? "Töötlen..." : "Skaneeri triipkood")
+            </button>
+
+            <div class="manual-search-bar">
+                <input class="form-control"
+                       placeholder="Otsi ravimit nime järgi"
+                       @bind="_query" />
+                <button class="btn btn-primary"
+                        @onclick="SearchAsync"
+                        disabled="@_isBusy">
+                    Otsi
+                </button>
+            </div>
+
+            @if (_results.Count > 0)
+            {
+                <div class="manual-results">
+                    @foreach (var item in _results)
+                    {
+                        <button class="manual-result-item" @onclick="() => SelectMedication(item)">
+                            <strong>@item.Name</strong>
+                            <span>@item.ActiveIngredient</span>
+                        </button>
+                    }
+                </div>
+            }
+
+            @if (_selectedMedication is not null)
+            {
+                <div class="selected-card">
+                    <h3>@_selectedMedication.Name</h3>
+                    <p>@_selectedMedication.ActiveIngredient</p>
+
+                    <div class="form-group mb-2">
+                        <label>Kogus</label>
+                        <input class="form-control" type="number" min="1" @bind="_quantity" />
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label>Märkmed</label>
+                        <textarea class="form-control" @bind="_notes"></textarea>
+                    </div>
+
+                    <button class="btn btn-success w-100" @onclick="SaveAsync" disabled="@_isBusy">
+                        Salvesta koduapteeki
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery] public int? ProfileId { get; set; }
+
+    private bool _isReady;
+    private bool _isBusy;
+    private int _targetProfileId;
+    private int _quantity = 1;
+    private string _query = string.Empty;
+    private string? _notes;
+    private string? _message;
+    private IReadOnlyList<MedicationLookupResult> _results = [];
+    private MedicationLookupResult? _selectedMedication;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _targetProfileId = ResolveTargetProfileId();
+        if (_targetProfileId <= 0)
+        {
+            _message = "Vaikimisi profiili ei leitud.";
+        }
+
+        _isReady = true;
+    }
+
+    private int ResolveTargetProfileId()
+    {
+        if (ProfileId is int routeProfileId && routeProfileId > 0)
+        {
+            return routeProfileId;
+        }
+
+        return AuthService.CurrentUser?.DefaultProfileId ?? 0;
+    }
+
+    private async Task ScanBarcodeAsync()
+    {
+        if (_isBusy)
+        {
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+
+        try
+        {
+            var scanResult = await ScannerFlowService.ScanAsync();
+            if (scanResult.Status != BarcodeScanStatus.Success || string.IsNullOrWhiteSpace(scanResult.Barcode))
+            {
+                _message = "Skannimine katkestati.";
+                return;
+            }
+
+            var found = await ScannerFlowService.FindByBarcodeAsync(scanResult.Barcode);
+            if (found is null)
+            {
+                _message = "Tundmatu triipkood.";
+                return;
+            }
+
+            SelectMedication(found);
+        }
+        catch
+        {
+            _message = "Skannimine ebaõnnestus.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        if (_isBusy)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_query))
+        {
+            _message = "Sisesta ravimi nimi.";
+            _results = [];
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+        _results = [];
+
+        try
+        {
+            _results = await ScannerFlowService.SearchByNameAsync(_query, 20);
+            if (_results.Count == 0)
+            {
+                _message = "Vastavaid ravimeid ei leitud.";
+            }
+        }
+        catch
+        {
+            _message = "Otsing ebaõnnestus.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void SelectMedication(MedicationLookupResult medication)
+    {
+        _selectedMedication = medication;
+        _message = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_isBusy || _selectedMedication is null)
+        {
+            return;
+        }
+
+        if (_targetProfileId <= 0)
+        {
+            _message = "Profiili ei leitud.";
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+
+        try
+        {
+            await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto
+            {
+                ProfileId = _targetProfileId,
+                MedicationId = _selectedMedication.Id,
+                Quantity = Math.Max(1, _quantity),
+                Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
+            });
+
+            Navigation.NavigateTo("/home-pharmacy");
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}
+

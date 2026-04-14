@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
     public DbSet<Medication> Medications => Set<Medication>();
     public DbSet<UserMedication> UserMedications => Set<UserMedication>();
     public DbSet<DoseLog> DoseLogs => Set<DoseLog>();
+    public DbSet<HomePharmacyItem> HomePharmacyItems => Set<HomePharmacyItem>();
 
     protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
@@ -45,6 +46,25 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
         builder.Entity<DoseLog>(entity =>
         {
             entity.Property(x => x.DoseStatus).HasColumnName("Status");
+        });
+
+        builder.Entity<HomePharmacyItem>(entity =>
+        {
+            entity.ToTable(table =>
+            {
+                table.HasCheckConstraint("CK_HomePharmacyItems_Quantity_Positive", "\"Quantity\" > 0");
+            });
+            entity.HasIndex(x => new { x.ProfileId, x.MedicationId }).IsUnique();
+            entity.Property(x => x.Quantity).HasDefaultValue(1);
+            entity.Property(x => x.AddedAt).HasColumnType("timestamp with time zone");
+            entity.HasOne(x => x.Profile)
+                .WithMany()
+                .HasForeignKey(x => x.ProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(x => x.Medication)
+                .WithMany()
+                .HasForeignKey(x => x.MedicationId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
