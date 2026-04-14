@@ -148,10 +148,10 @@ public sealed class AuthController(
         {
             using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
             await smtpClient.ConnectAsync("smtp.gmail.com",587,MailKit.Security.SecureSocketOptions.StartTls);
-            await smtpClient.AuthenticateAsync("tirirando14@gmail.com","gpjphbdvjcdvyflb");
+            await smtpClient.AuthenticateAsync("medscan.loputoo@gmail.com","iktwctxvuultzigq");
 
             var mailMessage = new MimeKit.MimeMessage();
-            mailMessage.From.Add(new MimeKit.MailboxAddress("MedScan","tirirando14@gmail.com"));
+            mailMessage.From.Add(new MimeKit.MailboxAddress("MedScan","medscan.loputoo@gmail.com"));
             mailMessage.To.Add(new MimeKit.MailboxAddress("",user.Email));
             mailMessage.Subject = "MedScan kinnituskood";
             mailMessage.Body = new MimeKit.TextPart("plain") {

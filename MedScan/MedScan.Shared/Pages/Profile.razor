@@ -1,23 +1,23 @@
-Ôªø@page "/profile"
+@page "/profile"
 @using MedScan.Shared.Services
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <style>
     .page-container {
-        /* Nutikalt v√µtame maha MainLayout'i poolt kaasa pandud paddingud (tavaliselt 1.5rem ehk 24px) */
+        /* Nutikalt vıtame maha MainLayout'i poolt kaasa pandud paddingud (tavaliselt 1.5rem ehk 24px) */
         width: 100vw;
         position: relative;
         left: 50%;
         margin-left: -50vw;
 
-        /* content m√§hise top-padding (1.1rem) ja alt mahaarvestamine; lisame safe-area paddingud (notch/all√§√§r/√ºleval√§√§rast hoidumine) */
+        /* content m‰hise top-padding (1.1rem) ja alt mahaarvestamine; lisame safe-area paddingud (notch/all‰‰r/¸leval‰‰rast hoidumine) */
         margin-top: -1.1rem;
 
-        /* padding-top: css funktsiooni max() abil kasutame kas safeareat valitud padiga v√µi paddingut - kaitseme et text ei l√§heks nutitelefonide kellade jms taha 
-           Lisame veel v√§ikse extra v√§√§ra, et content on veidi isegi notchist allpool  */
+        /* padding-top: css funktsiooni max() abil kasutame kas safeareat valitud padiga vıi paddingut - kaitseme et text ei l‰heks nutitelefonide kellade jms taha 
+           Lisame veel v‰ikse extra v‰‰ra, et content on veidi isegi notchist allpool  */
         padding-top: calc(max(24px, env(safe-area-inset-top)) + 32px);
-        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px); /* Pikk alumise tabiga arvestamine, nav bar vms v√§ltimiseks */
+        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px); /* Pikk alumise tabiga arvestamine, nav bar vms v‰ltimiseks */
         padding-left: max(24px, env(safe-area-inset-left));
         padding-right: max(24px, env(safe-area-inset-right));
 
@@ -254,7 +254,7 @@ else
                 </div>
             </div>
 
-            <!-- Hooldatavate sektsiooni p√§is -->
+            <!-- Hooldatavate sektsiooni p‰is -->
             <div class="section-header">
                 <h2 class="section-title">Hooldatav</h2>
                 <button class="btn-add" @onclick="ToggleAddForm">
@@ -283,7 +283,7 @@ else
                         <input class="form-control" type="number" @bind="newPatient.Age" placeholder="nt. 21" />
                     </div>
                     <div class="form-actions">
-                        <button class="btn-cancel" @onclick="ToggleAddForm">T√ºhista</button>
+                        <button class="btn-cancel" @onclick="ToggleAddForm">T¸hista</button>
                         <button class="btn-save" @onclick="SavePatient">Salvesta</button>
                     </div>
                 </div>
@@ -301,7 +301,7 @@ else
                             </div>
                             <div class="patient-info">
                                 <p class="patient-name">@patient.Name</p>
-                                <p class="patient-details">@patient.Age a ¬∑ @patient.Gender</p>
+                                <p class="patient-details">@patient.Age a ∑ @patient.Gender</p>
                             </div>
                             <div style="color: #cbd5e0;">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -370,7 +370,7 @@ else
             CareReceivers.Add(new Patient
             {
                 Name = newPatient.Name,
-                Gender = !string.IsNullOrEmpty(newPatient.Gender) ? newPatient.Gender : "M√§√§ramata",
+                Gender = !string.IsNullOrEmpty(newPatient.Gender) ? newPatient.Gender : "M‰‰ramata",
                 Age = newPatient.Age ?? 0
             });
             isAdding = false;
@@ -392,3 +392,4 @@ else
         return string.Concat(parts);
     }
 }
+

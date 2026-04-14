@@ -4,7 +4,7 @@
 @using MedScan.Shared.Models.Enums
 @using MedScan.Shared.Services
 @inject NavigationManager Navigation
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
 
@@ -622,3 +622,4 @@ else
 
     private sealed record StatusView(string Label, string Icon, string IconClass, string PillClass);
 }
+

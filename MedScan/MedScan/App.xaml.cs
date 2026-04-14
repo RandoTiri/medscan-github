@@ -6,7 +6,7 @@ namespace MedScan;
 public partial class App : Application
 {
     public App(
-        AuthService authService,
+        IAuthService authService,
         IMedicationService medicationService,
         MedicineReminderCoordinator reminderCoordinator)
     {
@@ -20,7 +20,7 @@ public partial class App : Application
     }
 
     private static async Task InitializeRemindersAsync(
-        AuthService authService,
+        IAuthService authService,
         IMedicationService medicationService,
         MedicineReminderCoordinator reminderCoordinator)
     {

@@ -1,7 +1,7 @@
-ï»¿@page "/register"
+@page "/register"
 @layout MedScan.Shared.Layout.AuthLayout
 @using MedScan.Shared.Services
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>Registreeru</PageTitle>
@@ -276,7 +276,7 @@
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
                     </div>
-                    <input id="password" type="@PasswordInputType" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" @bind="Password" disabled="@IsBusy" />
+                    <input id="password" type="@PasswordInputType" placeholder="••••••••" @bind="Password" disabled="@IsBusy" />
                     <div class="input-action" @onclick="TogglePasswordVisibility">
                         @if (ShowPassword)
                         {
@@ -370,3 +370,4 @@
         ShowPassword = !ShowPassword;
     }
 }
+

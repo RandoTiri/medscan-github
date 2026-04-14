@@ -30,7 +30,7 @@ namespace MedScan
 
 
             builder.Services.AddMauiBlazorWebView();
-            builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddSingleton<IAuthService, AuthService>();
             builder.Services.AddSingleton<IBarcodeScannerService, MauiBarcodeScannerService>();
             builder.Services.AddSingleton<IMedicationCatalogClient, MedicationCatalogClient>();
             builder.Services.AddSingleton<IScannerFlowService, ScannerFlowService>();

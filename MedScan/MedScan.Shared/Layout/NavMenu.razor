@@ -1,6 +1,6 @@
-﻿@implements IDisposable
+@implements IDisposable
 @inject NavigationManager Navigation
-@inject MedScan.Shared.Services.AuthService AuthService
+@inject MedScan.Shared.Services.IAuthService AuthService
 @inject MedScan.Shared.Services.IScannerFlowService ScannerFlowService
 
 @if (AuthService.IsLoggedIn)

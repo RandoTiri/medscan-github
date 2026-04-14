@@ -5,7 +5,7 @@ using MedScan.Shared.Models;
 
 namespace MedScan.Shared.Services;
 
-public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
+public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private bool _isInitialized;

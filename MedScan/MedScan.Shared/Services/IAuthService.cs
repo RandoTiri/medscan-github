@@ -3,6 +3,8 @@
 namespace MedScan.Shared.Services;
 
 public interface IAuthService {
+    event Action? OnChange;
+
     bool IsLoggedIn { get; }
     bool IsInitialized { get; }
     UserInfo? CurrentUser { get; }

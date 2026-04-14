@@ -4,7 +4,7 @@ using MedScan.Shared.Models;
 namespace MedScan.Shared.Services;
 
 public sealed class ScannerFlowService(
-    AuthService authService,
+    IAuthService authService,
     IBarcodeScannerService barcodeScannerService,
     IMedicationCatalogClient medicationCatalogClient,
     IMedicationService medicationService) : IScannerFlowService

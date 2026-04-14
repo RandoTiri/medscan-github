@@ -1,7 +1,7 @@
-﻿@page "/"
+@page "/"
 @using MedScan.Shared.Services
 @inject IFormFactor FormFactor
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
@@ -15,7 +15,7 @@
             <div class="header-top">
                 <div class="header-title"></div>
                 <div class="header-icons">
-                    <span class="notification-icon">🔔<span class="badge">2</span></span>
+                    <span class="notification-icon">??<span class="badge">2</span></span>
                     <span class="user-initials">@GetInitials()</span>
                 </div>
             </div>
@@ -54,31 +54,31 @@
                     <h3>Skaneeri ravim</h3>
                     <p>Skan triipkoodi infole</p>
                 </div>
-                <div class="scan-arrow">›</div>
+                <div class="scan-arrow">�</div>
             </div>
 
             <!-- Today's Plan -->
             <div class="section-header">
-                <h2>Minu tänane raviskeem</h2>
-                <a href="#">Kõik</a>
+                <h2>Minu t�nane raviskeem</h2>
+                <a href="#">K�ik</a>
             </div>
 
             <div class="med-card tehtud">
-                <div class="med-icon">✔️</div>
+                <div class="med-icon">??</div>
                 <div class="med-info">
                     <h3>Metformiin 500mg</h3>
-                    <p>08:00, 20:00 • 2x päevas</p>
+                    <p>08:00, 20:00 � 2x p�evas</p>
                 </div>
-                <div class="med-status tehtud-status">✓ Tehtud</div>
+                <div class="med-status tehtud-status">? Tehtud</div>
             </div>
 
             <div class="med-card ootel">
-                <div class="med-icon">🕒</div>
+                <div class="med-icon">??</div>
                 <div class="med-info">
                     <h3>Bisoprolool 5mg</h3>
-                    <p>08:00 • 1x päevas</p>
+                    <p>08:00 � 1x p�evas</p>
                 </div>
-                <div class="med-status ootel-status">🕒 Ootel</div>
+                <div class="med-status ootel-status">?? Ootel</div>
             </div>
 
             <!-- Family -->
@@ -89,9 +89,9 @@
                 <div class="family-avatar">MT</div>
                 <div class="family-info">
                     <h3>Marta</h3>
-                    <p>Nurofen 200mg – 14:00 ootel</p>
+                    <p>Nurofen 200mg � 14:00 ootel</p>
                 </div>
-                <div class="family-action">🔔</div>
+                <div class="family-action">??</div>
             </div>
         </main>
     </div>
@@ -218,3 +218,4 @@ else
         return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
     }
 }
+
