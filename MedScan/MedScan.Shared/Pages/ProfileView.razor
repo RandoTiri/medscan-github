@@ -42,14 +42,11 @@ else
                 Tagasi
             </button>
 
-            <section class="profile-header">
-                <div class="profile-avatar">@_patient.Initials</div>
-                <div class="profile-main-info">
+            <section class="profile-summary-card @(_isPatientProfile ? "patient-card-view" : "main-card-view")">
+                <div class="profile-avatar @(_isPatientProfile ? "patient-avatar-view" : "main-avatar-view")">@_patient.Initials</div>
+                <div class="profile-main-info @(_isPatientProfile ? "patient-info-view" : "main-info-view")">
                     <h1>@_patient.Name</h1>
-                    <p>
-                        <span class="dot"></span>
-                        @(_patient.Age > 0 ? $"{_patient.Age} aastat" : "Vanus puudub")
-                    </p>
+                    <p>@GetProfileDetails(_patient)</p>
                 </div>
             </section>
 
@@ -87,7 +84,7 @@ else
                 <span class="action-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M4 17v3h3"></path><path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                 </span>
-                Kontrolli ravim (skänni)
+                Kontrolli ravimit
             </button>
 
             <button class="secondary-action" @onclick="OpenTodayOverview">
@@ -174,48 +171,69 @@ else
         margin-right: 8px;
     }
 
-    .profile-header {
+    .profile-summary-card {
         display: flex;
         align-items: center;
         gap: 14px;
         margin-bottom: 18px;
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .main-card-view {
+        background-color: #2e8b6c;
+        color: white;
+    }
+
+    .patient-card-view {
+        background: #fff;
+        border: 2px solid #2e8b6c;
     }
 
     .profile-avatar {
-        width: 56px;
-        height: 56px;
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
-        background: #1d735c;
-        color: white;
-        font-size: 28px;
+        font-size: 20px;
         font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
+    .main-avatar-view {
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        color: white;
+    }
+
+    .patient-avatar-view {
+        background-color: #e6f4f1;
+        color: #2e8b6c;
+        border: 2px solid #bce0d5;
+    }
+
     .profile-main-info h1 {
         margin: 0;
-        color: #11243b;
-        font-size: 34px;
+        font-size: 24px;
         font-weight: 800;
     }
 
     .profile-main-info p {
-        margin: 6px 0 0;
-        color: #6d7882;
-        font-size: 21px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        margin: 4px 0 0;
+        font-size: 14px;
     }
 
-    .dot {
-        width: 9px;
-        height: 9px;
-        border-radius: 50%;
-        background: #efad2b;
-        display: inline-block;
+    .main-info-view h1,
+    .main-info-view p {
+        color: white;
+    }
+
+    .patient-info-view h1 {
+        color: #0d2034;
+    }
+
+    .patient-info-view p {
+        color: #718096;
     }
 
     .dose-list {
@@ -486,6 +504,13 @@ else
             DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("! Vahele", "status-missed", ""),
             _ => new StatusView("◔ Ootel", "status-pending", "")
         };
+    }
+
+    private static string GetProfileDetails(Patient patient)
+    {
+        var age = patient.Age > 0 ? $"{patient.Age} a" : "Vanus puudub";
+        var gender = string.IsNullOrWhiteSpace(patient.Gender) ? "Määramata" : patient.Gender;
+        return $"{age} · {gender}";
     }
 
     private async Task SaveChangesAsync()
