@@ -440,6 +440,9 @@ else
 </style>
 
 @code {
+    [SupplyParameterFromQuery(Name = "profileId")]
+    public int? RequestedProfileId { get; set; }
+
     private bool _isReady;
     private bool _isLoadingMedications;
     private string? _errorMessage;
@@ -491,6 +494,11 @@ else
 
     private int ResolveDefaultProfileId()
     {
+        if (RequestedProfileId is int requestedProfileId && _profiles.Any(profile => profile.Id == requestedProfileId))
+        {
+            return requestedProfileId;
+        }
+
         if (AuthService.CurrentUser?.DefaultProfileId is int defaultProfileId &&
             _profiles.Any(profile => profile.Id == defaultProfileId))
         {

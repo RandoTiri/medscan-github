@@ -84,6 +84,7 @@ public sealed class AuthController(
         {
             UserId = user.Id,
             Name = user.FullName,
+            Gender = "Määramata",
             ProfileType = ProfileTypeEnum.Ise
         };
 

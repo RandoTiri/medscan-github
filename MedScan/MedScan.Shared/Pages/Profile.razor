@@ -1,23 +1,19 @@
 @page "/profile"
+@using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject IAuthService AuthService
+@inject IProfileService ProfileService
 @inject NavigationManager Navigation
 
 <style>
     .page-container {
-        /* Nutikalt võtame maha MainLayout'i poolt kaasa pandud paddingud (tavaliselt 1.5rem ehk 24px) */
         width: 100vw;
         position: relative;
         left: 50%;
         margin-left: -50vw;
-
-        /* content mähise top-padding (1.1rem) ja alt mahaarvestamine; lisame safe-area paddingud (notch/alläär/ülevaläärast hoidumine) */
         margin-top: -1.1rem;
-
-        /* padding-top: css funktsiooni max() abil kasutame kas safeareat valitud padiga või paddingut - kaitseme et text ei läheks nutitelefonide kellade jms taha 
-           Lisame veel väikse extra väära, et content on veidi isegi notchist allpool  */
         padding-top: calc(max(24px, env(safe-area-inset-top)) + 32px);
-        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px); /* Pikk alumise tabiga arvestamine, nav bar vms vältimiseks */
+        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px); 
         padding-left: max(24px, env(safe-area-inset-left));
         padding-right: max(24px, env(safe-area-inset-right));
 
@@ -50,6 +46,13 @@
         align-items: center;
         gap: 16px;
         margin-bottom: 32px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .main-user-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
     }
 
     .avatar-outline {
@@ -76,10 +79,17 @@
         margin: 4px 0 0 0;
     }
 
+    .main-user-chevron {
+        color: rgba(255, 255, 255, 0.8);
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+    }
+
     .section-header {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
+        align-items: center;
         margin-bottom: 16px;
     }
 
@@ -92,13 +102,32 @@
     }
 
     .btn-add {
-        background: none;
-        border: none;
-        color: #2e8b6c;
+        border: 0;
+        border-radius: 18px;
+        background: #3b705e;
+        color: #fff;
+        padding: 9px 18px;
+        font-size: 16px;
         font-weight: 700;
-        font-size: 14px;
+        line-height: 1;
         cursor: pointer;
-        padding: 0;
+    }
+
+    .btn-add:active {
+        transform: scale(0.98);
+    }
+
+    @@media (max-width: 768px) {
+        .btn-add {
+            font-size: 16px;
+            padding: 8px 14px;
+            border-radius: 14px;
+        }
+    }
+
+    .btn-add {
+        border: none;
+        box-shadow: 0 4px 10px rgba(37, 141, 107, 0.2);
     }
 
     .patient-card {
@@ -110,6 +139,14 @@
         gap: 16px;
         margin-bottom: 12px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .patient-card:hover {
+        border-color: #cfe3dc;
+        transform: translateY(-1px);
     }
 
     .patient-avatar {
@@ -247,10 +284,16 @@ else
             <h1 class="page-title">Profiilid</h1>
 
             <!-- Peakasutaja kaart -->
-            <div class="main-user-card">
+            <div class="main-user-card" @onclick="OpenMainProfileView">
                 <div class="avatar-outline">@GetInitials()</div>
                 <div class="main-user-info">
                     <p class="name">@(AuthService.CurrentUser?.FullName ?? "Nimetu")</p>
+                    <p class="subtitle">@GetMainUserDetails()</p>
+                </div>
+                <div class="main-user-chevron">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
                 </div>
             </div>
 
@@ -258,7 +301,7 @@ else
             <div class="section-header">
                 <h2 class="section-title">Hooldatav</h2>
                 <button class="btn-add" @onclick="ToggleAddForm">
-                    @(isAdding ? "Sulge" : "+ Lisa hooldatav")
+                    @(isAdding ? "Sulge" : "+ Lisa")
                 </button>
             </div>
 
@@ -279,12 +322,12 @@ else
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Vanus</label>
-                        <input class="form-control" type="number" @bind="newPatient.Age" placeholder="nt. 21" />
+                        <label>Sünniaeg</label>
+                        <input class="form-control" type="date" @bind="newPatient.BirthDate" />
                     </div>
                     <div class="form-actions">
                         <button class="btn-cancel" @onclick="ToggleAddForm">Tühista</button>
-                        <button class="btn-save" @onclick="SavePatient">Salvesta</button>
+                        <button class="btn-save" @onclick="SavePatientAsync">Salvesta</button>
                     </div>
                 </div>
             }
@@ -295,13 +338,13 @@ else
                 {
                     @foreach (var patient in CareReceivers)
                     {
-                        <div class="patient-card">
+                        <div class="patient-card" @onclick="() => OpenProfileView(patient.Id)">
                             <div class="patient-avatar">
                                 @patient.Initials
                             </div>
                             <div class="patient-info">
                                 <p class="patient-name">@patient.Name</p>
-                                <p class="patient-details">@patient.Age a · @patient.Gender</p>
+                                <p class="patient-details">@GetPatientDetails(patient)</p>
                             </div>
                             <div style="color: #cbd5e0;">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -317,29 +360,9 @@ else
 }
 
 @code {
-    public class Person
-    {
-        public string Name { get; set; } = "";
-
-        public string Initials 
-        {
-            get 
-            {
-                if (string.IsNullOrWhiteSpace(Name)) return "?";
-                var words = Name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                if (words.Length == 1) return words[0].Substring(0, 1).ToUpper();
-                return (words[0].Substring(0, 1) + words[1].Substring(0, 1)).ToUpper();
-            }
-        }
-    }
-
-    public class Patient : Person
-    {
-        public int? Age { get; set; }
-        public string Gender { get; set; } = "";
-    }
-
-    private List<Patient> CareReceivers = new List<Patient>();
+    private List<Patient> CareReceivers = [];
+    private int _mainProfileId;
+    private Patient? _mainUserProfile;
 
     private bool isAdding = false;
     private Patient newPatient = new Patient();
@@ -351,7 +374,10 @@ else
         if (!AuthService.IsLoggedIn)
         {
             Navigation.NavigateTo("/login");
+            return;
         }
+
+        await LoadPatientsAsync();
     }
 
     private void ToggleAddForm()
@@ -363,17 +389,92 @@ else
         }
     }
 
-    private void SavePatient()
+    private async Task SavePatientAsync()
     {
-        if (!string.IsNullOrWhiteSpace(newPatient.Name))
+        if (string.IsNullOrWhiteSpace(newPatient.Name))
         {
-            CareReceivers.Add(new Patient
+            return;
+        }
+
+        var request = new CreatePatientProfileRequest
+        {
+            Name = newPatient.Name,
+            Gender = string.IsNullOrWhiteSpace(newPatient.Gender) ? "Määramata" : newPatient.Gender,
+            BirthDate = newPatient.BirthDate
+        };
+
+        var createdProfile = await ProfileService.CreatePatientProfileAsync(request);
+        CareReceivers.Add(new Patient
+        {
+            Id = createdProfile.Id,
+            Name = createdProfile.Name,
+            BirthDate = createdProfile.BirthDate,
+            Gender = createdProfile.Gender
+        });
+
+        isAdding = false;
+        newPatient = new Patient();
+    }
+
+    private async Task LoadPatientsAsync()
+    {
+        var profiles = await ProfileService.GetMyProfilesAsync();
+
+        _mainProfileId = AuthService.CurrentUser?.DefaultProfileId
+            ?? profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase))?.Id
+            ?? 0;
+
+        var mainProfile = profiles.FirstOrDefault(p => p.Id == _mainProfileId)
+            ?? profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase));
+
+        _mainUserProfile = mainProfile is null
+            ? null
+            : new Patient
             {
-                Name = newPatient.Name,
-                Gender = !string.IsNullOrEmpty(newPatient.Gender) ? newPatient.Gender : "Määramata",
-                Age = newPatient.Age ?? 0
-            });
-            isAdding = false;
+                Id = mainProfile.Id,
+                Name = mainProfile.Name,
+                BirthDate = mainProfile.BirthDate,
+                Gender = string.IsNullOrWhiteSpace(mainProfile.Gender) ? "Määramata" : mainProfile.Gender
+            };
+
+        CareReceivers = profiles
+            .Where(p => p.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase))
+            .Select(p => new Patient
+            {
+                Id = p.Id,
+                Name = p.Name,
+                BirthDate = p.BirthDate,
+                Gender = string.IsNullOrWhiteSpace(p.Gender) ? "Määramata" : p.Gender
+            })
+            .ToList();
+    }
+
+    private static string GetPatientDetails(Patient patient)
+    {
+        var agePart = patient.Age > 0 ? $"{patient.Age} a" : "Vanus puudub";
+        return $"{agePart} · {patient.Gender}";
+    }
+
+    private string GetMainUserDetails()
+    {
+        if (_mainUserProfile is null)
+        {
+            return "Vanus puudub · Määramata";
+        }
+
+        return GetPatientDetails(_mainUserProfile);
+    }
+
+    private void OpenProfileView(int profileId)
+    {
+        Navigation.NavigateTo($"/profile/view/{profileId}");
+    }
+
+    private void OpenMainProfileView()
+    {
+        if (_mainProfileId > 0)
+        {
+            Navigation.NavigateTo($"/profile/view/{_mainProfileId}");
         }
     }
 
