@@ -220,6 +220,65 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
     }
 
+    public async Task<(bool Success, string ErrorMessage)> ChangePasswordAsync(string currentPassword, string newPassword)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            {
+                return (false, "Kõik väljad on kohustuslikud.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/change-password", new ChangePasswordRequest
+            {
+                CurrentPassword = currentPassword,
+                NewPassword = newPassword
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"CHANGE PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> DeleteAccountAsync()
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            var response = await httpClient.DeleteAsync("/api/auth/me");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            CurrentUser = null;
+            IsLoggedIn = false;
+            _isInitialized = true;
+
+            await tokenStore.RemoveTokenAsync();
+            SetAccessToken(null);
+            NotifyStateChanged();
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"DELETE ACCOUNT ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
     public async Task LogoutAsync()
     {
         CurrentUser = null;

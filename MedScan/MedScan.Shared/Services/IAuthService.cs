@@ -15,5 +15,7 @@ public interface IAuthService {
     Task<(bool Success,string ErrorMessage)> ForgotPasswordAsync(string email);
     Task<(bool Success,string ErrorMessage)> VerifyCodeAsync(string email, string code);
     Task<(bool Success,string ErrorMessage)> ResetPasswordAsync(string email, string code, string newPassword);
+    Task<(bool Success, string ErrorMessage)> ChangePasswordAsync(string currentPassword, string newPassword);
+    Task<(bool Success, string ErrorMessage)> DeleteAccountAsync();
     Task LogoutAsync();
 }

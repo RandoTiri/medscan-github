@@ -228,4 +228,74 @@ public sealed class AuthController(
 
         return Results.Ok(new { message = "Parool edukalt uuendatud." });
     }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IResult> ChangePassword([FromBody] MedScan.Api.Contracts.ChangePasswordRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
+        {
+            return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
+        }
+
+        if (request.NewPassword.Length < 6)
+        {
+            return Results.BadRequest(new { message = "Parool peab olema vähemalt 6 tähemärki pikk." });
+        }
+
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            return Results.BadRequest(result.Errors.Select(e => new
+            {
+                e.Code,
+                e.Description
+            }));
+        }
+
+        return Results.Ok(new { message = "Parool edukalt muudetud." });
+    }
+
+    [Authorize]
+    [HttpDelete("me")]
+    public async Task<IResult> DeleteAccount()
+    {
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Results.Unauthorized();
+        }
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
+
+        var userProfiles = await dbContext.Profiles
+            .Where(p => p.UserId == user.Id)
+            .ToListAsync();
+
+        if (userProfiles.Count > 0)
+        {
+            dbContext.Profiles.RemoveRange(userProfiles);
+            await dbContext.SaveChangesAsync();
+        }
+
+        var result = await userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            return Results.BadRequest(result.Errors.Select(e => new
+            {
+                e.Code,
+                e.Description
+            }));
+        }
+
+        await transaction.CommitAsync();
+
+        return Results.NoContent();
+    }
 }

@@ -127,6 +127,45 @@ else
                     <button class="delete-btn" @onclick="DeleteAsync">Kustuta hooldatav</button>
                 </section>
             }
+            else
+            {
+                <section class="crud-panel">
+                    <button class="crud-toggle" @onclick="TogglePasswordForm">
+                        @(_showPasswordForm ? "Sulge parooli muutmine" : "Muuda parooli")
+                    </button>
+
+                    @if (_showPasswordForm)
+                    {
+                        <div class="edit-form">
+                            <label>Praegune parool</label>
+                            <input class="form-control" type="password" @bind="_currentPassword" />
+
+                            <label>Uus parool</label>
+                            <input class="form-control" type="password" @bind="_newPassword" />
+
+                            <label>Korda uut parooli</label>
+                            <input class="form-control" type="password" @bind="_confirmNewPassword" />
+
+                            <div class="edit-actions">
+                                <button class="save-btn" @onclick="ChangePasswordAsync" disabled="@_isAccountActionBusy">Salvesta</button>
+                                <button class="cancel-btn" @onclick="TogglePasswordForm" disabled="@_isAccountActionBusy">Tühista</button>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_accountSuccessMessage))
+                    {
+                        <div class="success-box">@_accountSuccessMessage</div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_accountErrorMessage))
+                    {
+                        <div class="error-box">@_accountErrorMessage</div>
+                    }
+
+                    <button class="delete-btn" @onclick="DeleteAccountAsync" disabled="@_isAccountActionBusy">Kustuta kasutaja</button>
+                </section>
+            }
         </div>
     </div>
 }
@@ -174,27 +213,28 @@ else
     .profile-summary-card {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 18px;
         border-radius: 16px;
-        padding: 16px;
     }
 
     .main-card-view {
         background-color: #2e8b6c;
         color: white;
+        padding: 20px;
+        gap: 16px;
+        margin-bottom: 32px;
     }
 
     .patient-card-view {
         background: #fff;
         border: 2px solid #2e8b6c;
+        padding: 16px;
+        gap: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
     }
 
     .profile-avatar {
-        width: 50px;
-        height: 50px;
         border-radius: 50%;
-        font-size: 20px;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -202,25 +242,34 @@ else
     }
 
     .main-avatar-view {
+        width: 50px;
+        height: 50px;
         border: 2px solid rgba(255, 255, 255, 0.8);
         color: white;
+        font-size: 18px;
     }
 
     .patient-avatar-view {
+        width: 48px;
+        height: 48px;
         background-color: #e6f4f1;
         color: #2e8b6c;
         border: 2px solid #bce0d5;
+        font-size: 18px;
     }
 
     .profile-main-info h1 {
         margin: 0;
-        font-size: 24px;
-        font-weight: 800;
+        font-weight: 700;
     }
 
     .profile-main-info p {
         margin: 4px 0 0;
         font-size: 14px;
+    }
+
+    .main-info-view h1 {
+        font-size: 18px;
     }
 
     .main-info-view h1,
@@ -230,6 +279,7 @@ else
 
     .patient-info-view h1 {
         color: #0d2034;
+        font-size: 16px;
     }
 
     .patient-info-view p {
@@ -402,6 +452,15 @@ else
         border-color: #fac9cf;
         color: #b42332;
     }
+
+    .success-box {
+        background: #ecfdf3;
+        border: 1px solid #abefc6;
+        border-radius: 12px;
+        padding: 12px;
+        color: #067647;
+        margin-bottom: 12px;
+    }
 </style>
 
 @code {
@@ -410,7 +469,14 @@ else
     private bool _isReady;
     private bool _isEditing;
     private bool _isPatientProfile;
+    private bool _showPasswordForm;
+    private bool _isAccountActionBusy;
     private string? _errorMessage;
+    private string? _accountErrorMessage;
+    private string? _accountSuccessMessage;
+    private string _currentPassword = string.Empty;
+    private string _newPassword = string.Empty;
+    private string _confirmNewPassword = string.Empty;
     private Patient? _patient;
     private readonly List<DoseEntry> _entries = [];
     private CreatePatientProfileRequest _editModel = new();
@@ -425,6 +491,82 @@ else
         }
 
         await LoadAsync();
+    }
+
+    private void TogglePasswordForm()
+    {
+        _showPasswordForm = !_showPasswordForm;
+        _accountErrorMessage = null;
+        _accountSuccessMessage = null;
+
+        if (!_showPasswordForm)
+        {
+            _currentPassword = string.Empty;
+            _newPassword = string.Empty;
+            _confirmNewPassword = string.Empty;
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        _accountErrorMessage = null;
+        _accountSuccessMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_currentPassword) || string.IsNullOrWhiteSpace(_newPassword) || string.IsNullOrWhiteSpace(_confirmNewPassword))
+        {
+            _accountErrorMessage = "Kõik väljad on kohustuslikud.";
+            return;
+        }
+
+        if (_newPassword != _confirmNewPassword)
+        {
+            _accountErrorMessage = "Uued paroolid ei kattu.";
+            return;
+        }
+
+        _isAccountActionBusy = true;
+
+        try
+        {
+            var result = await AuthService.ChangePasswordAsync(_currentPassword, _newPassword);
+            if (!result.Success)
+            {
+                _accountErrorMessage = result.ErrorMessage;
+                return;
+            }
+
+            _accountSuccessMessage = "Parool edukalt muudetud.";
+            _currentPassword = string.Empty;
+            _newPassword = string.Empty;
+            _confirmNewPassword = string.Empty;
+        }
+        finally
+        {
+            _isAccountActionBusy = false;
+        }
+    }
+
+    private async Task DeleteAccountAsync()
+    {
+        _accountErrorMessage = null;
+        _accountSuccessMessage = null;
+        _isAccountActionBusy = true;
+
+        try
+        {
+            var result = await AuthService.DeleteAccountAsync();
+            if (!result.Success)
+            {
+                _accountErrorMessage = result.ErrorMessage;
+                return;
+            }
+
+            Navigation.NavigateTo("/login", true);
+        }
+        finally
+        {
+            _isAccountActionBusy = false;
+        }
     }
 
     private async Task LoadAsync()
