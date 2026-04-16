@@ -179,7 +179,60 @@
 }
 else
 {
-    <p>Suunan sisselogimislehele</p>
+    <div class="redirect-loading-container">
+        <div class="spinner-wrap" aria-label="Laadimine">
+            <div class="spinner-ring"></div>
+            <div class="spinner-icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                    <path d="m8.5 8.5 7 7"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .redirect-loading-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            color: #5f6f7d;
+        }
+
+        .spinner-wrap {
+            width: 88px;
+            height: 88px;
+            position: relative;
+            display: grid;
+            place-items: center;
+        }
+
+        .spinner-ring {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            border: 6px solid #cfe8df;
+            border-top-color: #258d6b;
+            animation: home-login-spin 0.9s linear infinite;
+            box-sizing: border-box;
+        }
+
+        .spinner-icon {
+            position: absolute;
+            color: #258d6b;
+            display: grid;
+            place-items: center;
+        }
+
+        @@keyframes home-login-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 }
 
 @code {
