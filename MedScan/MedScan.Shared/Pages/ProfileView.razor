@@ -115,16 +115,48 @@ else
                             </select>
 
                             <label>Sünniaeg</label>
-                            <input class="form-control" type="date" @bind="_editModel.BirthDate" />
+                            <div class="birthdate-picker">
+                                <div class="birth-field">
+                                    <label>Päev</label>
+                                    <select class="birth-select" @bind="_birthDay">
+                                        <option value="">DD</option>
+                                        @foreach (var day in _days)
+                                        {
+                                            <option value="@day">@day</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Kuu</label>
+                                    <select class="birth-select" @bind="_birthMonth">
+                                        <option value="">MM</option>
+                                        @foreach (var month in _months)
+                                        {
+                                            <option value="@month">@month</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Aasta</label>
+                                    <select class="birth-select" @bind="_birthYear">
+                                        <option value="">YYYY</option>
+                                        @foreach (var year in _years)
+                                        {
+                                            <option value="@year">@year</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
 
                             <div class="edit-actions">
                                 <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
-                                <button class="cancel-btn" @onclick="ToggleEdit">Tühista</button>
                             </div>
                         </div>
                     }
 
-                    <button class="delete-btn" @onclick="DeleteAsync">Kustuta hooldatav</button>
+                    <button class="delete-btn" @onclick="PromptDelete">Kustuta hooldatav</button>
                 </section>
             }
             else
@@ -148,15 +180,60 @@ else
                             </select>
 
                             <label>Sünniaeg</label>
-                            <input class="form-control" type="date" @bind="_editModel.BirthDate" />
+                            <div class="birthdate-picker">
+                                <div class="birth-field">
+                                    <label>Päev</label>
+                                    <select class="birth-select" @bind="_birthDay">
+                                        <option value="">DD</option>
+                                        @foreach (var day in _days)
+                                        {
+                                            <option value="@day">@day</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Kuu</label>
+                                    <select class="birth-select" @bind="_birthMonth">
+                                        <option value="">MM</option>
+                                        @foreach (var month in _months)
+                                        {
+                                            <option value="@month">@month</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Aasta</label>
+                                    <select class="birth-select" @bind="_birthYear">
+                                        <option value="">YYYY</option>
+                                        @foreach (var year in _years)
+                                        {
+                                            <option value="@year">@year</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
 
                             <div class="edit-actions">
                                 <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
-                                <button class="cancel-btn" @onclick="ToggleEdit">Tühista</button>
                             </div>
                         </div>
                     }
                 </section>
+            }
+
+            @if (_showDeleteConfirm && _patient is not null && _isPatientProfile)
+            {
+                <div class="confirm-overlay">
+                    <div class="confirm-dialog">
+                        <p>Kas soovite @_patient.Name ära kustutada?</p>
+                        <div class="confirm-actions">
+                            <button class="confirm-yes" @onclick="ConfirmDeleteAsync">Jah</button>
+                            <button class="confirm-no" @onclick="CancelDelete">Ei</button>
+                        </div>
+                    </div>
+                </div>
             }
         </div>
     </div>
@@ -395,6 +472,37 @@ else
         font-size: 14px;
     }
 
+    .birthdate-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .birth-field {
+        display: grid;
+        gap: 6px;
+    }
+
+    .birth-select {
+        width: 100%;
+        height: 46px;
+        border: 2px solid #7a7a7a;
+        border-radius: 10px;
+        padding: 0 12px;
+        padding-right: 36px;
+        font-size: 14px;
+        font-weight: 700;
+        background: #fff;
+        color: #111827;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 18px 18px;
+    }
+
     .edit-actions {
         display: flex;
         gap: 10px;
@@ -445,6 +553,57 @@ else
         color: #b42332;
     }
 
+    .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+    }
+
+    .confirm-dialog {
+        width: 100%;
+        max-width: 340px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .confirm-dialog p {
+        margin: 0 0 14px 0;
+        color: #1f2937;
+        font-size: 15px;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .confirm-yes,
+    .confirm-no {
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .confirm-yes {
+        background: #be3b46;
+        color: #fff;
+    }
+
+    .confirm-no {
+        background: #e8edf1;
+        color: #475569;
+    }
+
 </style>
 
 @code {
@@ -453,9 +612,16 @@ else
     private bool _isReady;
     private bool _isEditing;
     private bool _isPatientProfile;
+    private bool _showDeleteConfirm;
     private string? _errorMessage;
     private Patient? _patient;
     private readonly List<DoseEntry> _entries = [];
+    private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
+    private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
+    private readonly List<int> _years = Enumerable.Range(1900, 201).ToList();
+    private string _birthDay = string.Empty;
+    private string _birthMonth = string.Empty;
+    private string _birthYear = string.Empty;
     private CreatePatientProfileRequest _editModel = new();
 
     protected override async Task OnParametersSetAsync()
@@ -516,6 +682,22 @@ else
         }
     }
 
+    private void PromptDelete()
+    {
+        _showDeleteConfirm = true;
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteConfirm = false;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        _showDeleteConfirm = false;
+        await DeleteAsync();
+    }
+
     private static IEnumerable<DoseEntry> BuildEntries(IEnumerable<UserMedicationDto> medications)
     {
         return medications
@@ -564,6 +746,11 @@ else
         }
 
         _errorMessage = null;
+
+        if (!ApplyBirthDateFromPicker())
+        {
+            return;
+        }
 
         try
         {
@@ -623,6 +810,54 @@ else
                 Gender = _patient.Gender,
                 BirthDate = _patient.BirthDate
             };
+
+            if (_editModel.BirthDate.HasValue)
+            {
+                _birthDay = _editModel.BirthDate.Value.Day.ToString();
+                _birthMonth = _editModel.BirthDate.Value.Month.ToString();
+                _birthYear = _editModel.BirthDate.Value.Year.ToString();
+            }
+            else
+            {
+                _birthDay = string.Empty;
+                _birthMonth = string.Empty;
+                _birthYear = string.Empty;
+            }
+        }
+    }
+
+    private bool ApplyBirthDateFromPicker()
+    {
+        var hasAny = !string.IsNullOrWhiteSpace(_birthDay) || !string.IsNullOrWhiteSpace(_birthMonth) || !string.IsNullOrWhiteSpace(_birthYear);
+        var hasAll = !string.IsNullOrWhiteSpace(_birthDay) && !string.IsNullOrWhiteSpace(_birthMonth) && !string.IsNullOrWhiteSpace(_birthYear);
+
+        if (!hasAny)
+        {
+            _editModel.BirthDate = null;
+            return true;
+        }
+
+        if (!hasAll)
+        {
+            _errorMessage = "Palun vali sünniajast päev, kuu ja aasta.";
+            return false;
+        }
+
+        if (!int.TryParse(_birthYear, out var year) || !int.TryParse(_birthMonth, out var month) || !int.TryParse(_birthDay, out var day))
+        {
+            _errorMessage = "Sünniaja väärtused on vigased.";
+            return false;
+        }
+
+        try
+        {
+            _editModel.BirthDate = new DateOnly(year, month, day);
+            return true;
+        }
+        catch
+        {
+            _errorMessage = "Valitud sünniaeg ei ole korrektne kuupäev.";
+            return false;
         }
     }
 
