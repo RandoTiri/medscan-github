@@ -26,11 +26,13 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Close Button -->
-                <Frame Grid.Column="0" 
-                       WidthRequest="40" HeightRequest="40" 
-                       CornerRadius="20" BackgroundColor="#4D4D4D" BorderColor="Transparent"
-                       HasShadow="False" Padding="0"
-                       Opacity="0.7">
+                <Border Grid.Column="0"
+                        WidthRequest="40" HeightRequest="40"
+                        BackgroundColor="#4D4D4D"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 20"
+                        Padding="0"
+                        Opacity="0.7">
                     <VisualStateManager.VisualStateGroups>
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal">
@@ -41,27 +43,29 @@
                             <VisualState x:Name="PointerOver" />
                         </VisualStateGroup>
                     </VisualStateManager.VisualStateGroups>
-                    <Frame.GestureRecognizers>
+                    <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="CancelClicked" />
-                    </Frame.GestureRecognizers>
+                    </Border.GestureRecognizers>
                     <Path Data="M6,6 L18,18 M18,6 L6,18" 
                           Stroke="White" StrokeThickness="1.5" StrokeLineCap="Round" Fill="Transparent"
                           HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="20" Aspect="Uniform"/>
-                </Frame>
+                </Border>
 
                 <!-- Flashlight Button -->
-                <Frame Grid.Column="2" 
-                       WidthRequest="40" HeightRequest="40" 
-                       CornerRadius="20" BackgroundColor="#4D4D4D" BorderColor="Transparent"
-                       HasShadow="False" Padding="0"
-                       Opacity="0.7">
-                    <Frame.GestureRecognizers>
+                <Border Grid.Column="2"
+                        WidthRequest="40" HeightRequest="40"
+                        BackgroundColor="#4D4D4D"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 20"
+                        Padding="0"
+                        Opacity="0.7">
+                    <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="ToggleTorchClicked" />
-                    </Frame.GestureRecognizers>
+                    </Border.GestureRecognizers>
                     <Path Data="M7,2 H17 V6 L15,9 V20 A2,2 0 0 1 13,22 H11 A2,2 0 0 1 9,20 V9 L7,6 V2 Z M7,6 H17 M12,12 V15"
                           Stroke="White" StrokeThickness="1.5" StrokeLineCap="Round" StrokeLineJoin="Round" Fill="Transparent"
                           HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="22" Aspect="Uniform" />
-                </Frame>
+                </Border>
             </Grid>
 
             <!-- Center Row: Scanning Frame & Text -->
@@ -79,7 +83,7 @@
                     <BoxView WidthRequest="24" HeightRequest="2" Color="#258d6b" HorizontalOptions="End" VerticalOptions="End" CornerRadius="1" />
                     <BoxView WidthRequest="2" HeightRequest="24" Color="#258d6b" HorizontalOptions="End" VerticalOptions="End" CornerRadius="1" />
 
-                    <BoxView x:Name="ScanLine" HeightRequest="2" Color="#258d6b" VerticalOptions="Start" HorizontalOptions="FillAndExpand" Margin="10,0"/>
+                    <BoxView x:Name="ScanLine" HeightRequest="2" Color="#258d6b" VerticalOptions="Start" HorizontalOptions="Fill" Margin="10,0"/>
                 </Grid>
 
                 <Label Text="Suuna kood raami sisse" TextColor="White" HorizontalOptions="Center" FontSize="14" />
@@ -87,16 +91,19 @@
 
             <!-- Bottom Row: Manual Search Button -->
             <Grid Grid.Row="2" VerticalOptions="End" HorizontalOptions="Center" Margin="0,0,0,40">
-                <Frame CornerRadius="25" BackgroundColor="Transparent" BorderColor="#6b7280" HasShadow="False" Padding="20,10">
-                    <Frame.GestureRecognizers>
+                <Border BackgroundColor="Transparent"
+                        Stroke="#6b7280"
+                        StrokeShape="RoundRectangle 25"
+                        Padding="20,10">
+                    <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="ManualSearchClicked" />
-                    </Frame.GestureRecognizers>
+                    </Border.GestureRecognizers>
                     <StackLayout Orientation="Horizontal" Spacing="10">
                         <Path Data="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" 
                               Fill="White" HorizontalOptions="Center" VerticalOptions="Center" WidthRequest="20" HeightRequest="20" Aspect="Uniform"/>
                         <Label Text="Käsitsi otsimine" TextColor="White" VerticalOptions="Center" FontSize="14" />
                     </StackLayout>
-                </Frame>
+                </Border>
             </Grid>
         </Grid>
     </Grid>
