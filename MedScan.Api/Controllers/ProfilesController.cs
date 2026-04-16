@@ -119,10 +119,7 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
         if (profile.ProfileType == ProfileTypeEnum.Ise)
         {
             var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user is not null)
-            {
-                user.FullName = profile.Name;
-            }
+            user?.FullName = profile.Name;
         }
 
         await dbContext.SaveChangesAsync();

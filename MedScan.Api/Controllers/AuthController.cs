@@ -126,7 +126,7 @@ public sealed class AuthController(
         });
     }
 
-    private static readonly Dictionary<string, string> _resetCodes = new();
+    private static readonly Dictionary<string, string> _resetCodes = [];
 
     [HttpPost("forgot-password")]
     public async Task<IResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
@@ -153,7 +153,7 @@ public sealed class AuthController(
 
             var mailMessage = new MimeKit.MimeMessage();
             mailMessage.From.Add(new MimeKit.MailboxAddress("MedScan","medscan.loputoo@gmail.com"));
-            mailMessage.To.Add(new MimeKit.MailboxAddress("",user.Email));
+            mailMessage.To.Add(new MimeKit.MailboxAddress("",user.Email!));
             mailMessage.Subject = "MedScan kinnituskood";
             mailMessage.Body = new MimeKit.TextPart("plain") {
                 Text = $"Tere! Teie kinnituskood on {randomCode}"

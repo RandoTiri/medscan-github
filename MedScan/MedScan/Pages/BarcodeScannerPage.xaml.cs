@@ -52,7 +52,7 @@ public partial class BarcodeScannerPage : ContentPage
         var scanLine = this.FindByName<BoxView>("ScanLine");
         if (scanLine == null) return;
 
-        Action<double> callback = input => scanLine.TranslationY = input;
+        void callback(double input) => scanLine.TranslationY = input;
 
         var animation = new Animation {
             { 0, 0.5, new Animation(callback, startY, endY, Easing.Linear) },

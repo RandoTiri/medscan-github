@@ -1,20 +1,16 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Json;
+using MedScan.MAUI.Services;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Services;
 
-namespace MedScan.MAUI.Services;
+namespace MedScan.Services;
 
-public sealed class ApiMedicationService : IMedicationService {
-    private readonly HttpClient _httpClient;
-    private readonly MedicineReminderCoordinator _reminderCoordinator;
-
-    public ApiMedicationService(
-        HttpClient httpClient,
-        MedicineReminderCoordinator reminderCoordinator) {
-        _httpClient = httpClient;
-        _reminderCoordinator = reminderCoordinator;
-    }
+public sealed class ApiMedicationService(
+    HttpClient httpClient,
+    MedicineReminderCoordinator reminderCoordinator) : IMedicationService {
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly MedicineReminderCoordinator _reminderCoordinator = reminderCoordinator;
 
     public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId) {
         var medications = await _httpClient.GetFromJsonAsync<List<UserMedicationDto>>(
@@ -40,7 +36,7 @@ public sealed class ApiMedicationService : IMedicationService {
         return savedMedication;
     }
 
-    public async Task<UserMedicationDto> UpdateScheduleAsync(int userMedicationId,AddMedicationDto dto) {
+    public async Task<UserMedicationDto?> UpdateScheduleAsync(int userMedicationId, AddMedicationDto dto) {
         var existingMedication = await GetByIdAsync(userMedicationId);
 
         var response = await _httpClient.PutAsJsonAsync($"api/medications/{userMedicationId}",dto);
