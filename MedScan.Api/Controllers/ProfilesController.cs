@@ -112,14 +112,18 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
             return NotFound();
         }
 
-        if (profile.ProfileType == ProfileTypeEnum.Ise)
-        {
-            return BadRequest(new { message = "Põhiprofiili ei saa muuta sellelt vaatelt." });
-        }
-
         profile.Name = request.Name.Trim();
         profile.Gender = string.IsNullOrWhiteSpace(request.Gender) ? "Määramata" : request.Gender.Trim();
         profile.BirthDate = request.BirthDate;
+
+        if (profile.ProfileType == ProfileTypeEnum.Ise)
+        {
+            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user is not null)
+            {
+                user.FullName = profile.Name;
+            }
+        }
 
         await dbContext.SaveChangesAsync();
         return Ok(ToResponse(profile));
