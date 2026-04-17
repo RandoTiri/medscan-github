@@ -267,7 +267,7 @@
         </div>
 
         <div class="forgot-password">
-            <a href="javascript:void(0)" @onclick="GoToChangePassword">Unustasin parooli</a>
+            <a href="javascript:void(0)" @onclick="GoToSendVerificationCode">Unustasin parooli</a>
         </div>
 
         <button class="btn-primary" @onclick="HandleLogin" disabled="@IsBusy">
@@ -344,9 +344,9 @@
         Navigation.NavigateTo("/register");
     }
 
-    private void GoToChangePassword()
+    private void GoToSendVerificationCode()
     {
-        Navigation.NavigateTo("/change-password");
+        Navigation.NavigateTo("/send-verification-code");
     }
 }
 
