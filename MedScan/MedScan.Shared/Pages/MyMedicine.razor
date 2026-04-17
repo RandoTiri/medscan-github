@@ -6,6 +6,7 @@
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IHomePharmacyService HomePharmacyService
+@inject IScannerFlowService ScannerFlowService
 
 <PageTitle>Minu ravimid</PageTitle>
 
@@ -19,7 +20,7 @@ else
         <div class="medicine-header">
             <span class="header-spacer"></span>
             <h1>Minu ravimid</h1>
-            <button class="add-med-btn" @onclick="OpenAddPage">+ Lisa</button>
+            <button class="add-med-btn" @onclick="OpenAddPageAsync">+ Lisa</button>
         </div>
 
         @if (!string.IsNullOrWhiteSpace(_errorMessage))
@@ -40,7 +41,62 @@ else
 
         @if (_isLoading)
         {
-            <div class="empty-state">Laen koduapteegi ravimeid...</div>
+            <div class="redirect-loading-container">
+                <div class="spinner-wrap" aria-label="Laadimine">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-icon">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                            <path d="m8.5 8.5 7 7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <p>Laen koduapteegi ravimeid...</p>
+            </div>
+
+            <style>
+                .redirect-loading-container {
+                    min-height: 100vh;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 14px;
+                    color: #5f6f7d;
+                }
+
+                .spinner-wrap {
+                    width: 88px;
+                    height: 88px;
+                    position: relative;
+                    display: grid;
+                    place-items: center;
+                }
+
+                .spinner-ring {
+                    width: 88px;
+                    height: 88px;
+                    border-radius: 50%;
+                    border: 6px solid #cfe8df;
+                    border-top-color: #258d6b;
+                    animation: home-login-spin 0.9s linear infinite;
+                    box-sizing: border-box;
+                }
+
+                .spinner-icon {
+                    position: absolute;
+                    color: #258d6b;
+                    display: grid;
+                    place-items: center;
+                }
+
+                @@keyframes home-login-spin {
+                    to {
+                        transform: rotate(360deg);
+                    }
+                }
+            </style>
+            
         }
         else if (_selectedItems.Count == 0)
         {
@@ -57,7 +113,6 @@ else
                         <div class="card-content">
                             <div class="top-line">
                                 <h2>@item.MedicationName</h2>
-                                <span class="open-hint">Ava</span>
                             </div>
 
                             @if (!string.IsNullOrWhiteSpace(item.ActiveIngredient))
@@ -94,6 +149,12 @@ else
                                 <p class="note-line">Markus: @item.Notes</p>
                             }
                         </div>
+
+                        <span class="open-arrow" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </span>
                     </button>
                 }
             </div>
@@ -213,7 +274,8 @@ else
         box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
         padding: 12px;
         display: grid;
-        grid-template-columns: 64px 1fr;
+        grid-template-columns: 64px 1fr auto;
+        align-items: center;
         gap: 12px;
     }
 
@@ -253,13 +315,17 @@ else
         font-weight: 800;
     }
 
-    .open-hint {
-        color: #2f6f58;
-        font-weight: 700;
-        font-size: 12px;
-        background: #e6efec;
-        border-radius: 999px;
-        padding: 3px 10px;
+    .open-arrow {
+        color: #a0b0aa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-right: 4px;
+    }
+
+    .open-arrow svg {
+        width: 24px;
+        height: 24px;
     }
 
     .meta-line {
@@ -409,15 +475,26 @@ else
         return _itemsByProfile.TryGetValue(profileId, out var items) ? items.Count : 0;
     }
 
-    private void OpenAddPage()
+    private async Task OpenAddPageAsync()
     {
-        if (_selectedProfileId > 0)
+        var scanResult = await ScannerFlowService.ScanAsync();
+
+        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
         {
-            Navigation.NavigateTo($"/mymedicine/add?profileId={_selectedProfileId}");
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
             return;
         }
 
-        Navigation.NavigateTo("/mymedicine/add");
+        if (scanResult.Status == BarcodeScanStatus.ManualSearch)
+        {
+            if (_selectedProfileId > 0)
+            {
+                Navigation.NavigateTo($"/mymedicine/add?profileId={_selectedProfileId}");
+                return;
+            }
+
+            Navigation.NavigateTo("/mymedicine/add");
+        }
     }
 
     private void OpenDetails(int itemId)

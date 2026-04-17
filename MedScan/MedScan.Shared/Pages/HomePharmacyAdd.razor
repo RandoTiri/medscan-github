@@ -5,7 +5,7 @@
 @using MedScan.Shared.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IScannerFlowService ScannerFlowService
 @inject IHomePharmacyService HomePharmacyService
 
@@ -19,7 +19,13 @@ else
 {
     <div class="medicine-screen">
         <div class="medicine-header">
-            <button class="back-btn" @onclick="BackToList">Tagasi</button>
+            <button class="back-link" @onclick="BackToScannerAsync">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Tagasi
+            </button>
             <h1>Lisa koduapteeki</h1>
             <span class="header-spacer"></span>
         </div>
@@ -30,10 +36,6 @@ else
         }
 
         <section class="search-card">
-            <button class="scan-btn" @onclick="ScanBarcodeAsync" disabled="@_isBusy">
-                @(_isBusy ? "Tootlen..." : "Skaneeri triipkood")
-            </button>
-
             <div class="manual-search-bar">
                 <input class="field-input"
                        placeholder="Otsi ravimit nime jargi"
@@ -51,8 +53,11 @@ else
                     @foreach (var item in _results)
                     {
                         <button class="manual-result-item" @onclick="() => SelectMedication(item)">
-                            <strong>@item.Name</strong>
-                            <span>@item.ActiveIngredient</span>
+                            <div class="manual-result-text">
+                                <strong>@item.Name</strong>
+                                <span>@item.ActiveIngredient</span>
+                            </div>
+                            <span class="add-indicator" aria-hidden="true">+</span>
                         </button>
                     }
                 </div>
@@ -127,14 +132,21 @@ else
         width: 56px;
     }
 
-    .back-btn {
-        border: 0;
-        border-radius: 12px;
-        background: #e7efed;
-        color: #2f6f58;
-        padding: 7px 12px;
-        font-size: 14px;
-        font-weight: 700;
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        background: transparent;
+        color: #267863;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        padding: 10px 0;
+    }
+
+    .back-link svg {
+        margin-right: 8px;
     }
 
     .search-card, .edit-card {
@@ -145,19 +157,7 @@ else
         margin-top: 12px;
     }
 
-    .scan-btn {
-        width: 100%;
-        border: 1px solid #2f6f58;
-        color: #2f6f58;
-        background: #f7fbf9;
-        border-radius: 12px;
-        padding: 11px 12px;
-        font-size: 16px;
-        font-weight: 700;
-    }
-
     .manual-search-bar {
-        margin-top: 10px;
         display: grid;
         grid-template-columns: 1fr auto;
         gap: 8px;
@@ -183,20 +183,39 @@ else
         border: 1px solid #e2e8e7;
         border-radius: 12px;
         background: #fbfdfc;
-        padding: 10px 12px;
+        padding: 10px 14px;
         text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .manual-result-text {
         display: grid;
         gap: 2px;
     }
 
-    .manual-result-item strong {
+    .manual-result-text strong {
         color: #132340;
         font-size: 15px;
     }
 
-    .manual-result-item span {
+    .manual-result-text span {
         color: #6a7a7c;
         font-size: 13px;
+    }
+
+    .add-indicator {
+        color: #2f6f58;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding-right: 2px;
+        flex-shrink: 0;
     }
 
     .edit-card h3 {
@@ -309,44 +328,6 @@ else
         return AuthService.CurrentUser?.DefaultProfileId ?? 0;
     }
 
-    private async Task ScanBarcodeAsync()
-    {
-        if (_isBusy)
-        {
-            return;
-        }
-
-        _isBusy = true;
-        _message = null;
-
-        try
-        {
-            var scanResult = await ScannerFlowService.ScanAsync();
-            if (scanResult.Status != BarcodeScanStatus.Success || string.IsNullOrWhiteSpace(scanResult.Barcode))
-            {
-                _message = "Skannimine katkestati.";
-                return;
-            }
-
-            var found = await ScannerFlowService.FindByBarcodeAsync(scanResult.Barcode);
-            if (found is null)
-            {
-                _message = "Tundmatu triipkood.";
-                return;
-            }
-
-            SelectMedication(found);
-        }
-        catch
-        {
-            _message = "Skannimine ebaonnestus.";
-        }
-        finally
-        {
-            _isBusy = false;
-        }
-    }
-
     private async Task SearchAsync()
     {
         if (_isBusy)
@@ -439,8 +420,13 @@ else
         return DateOnly.FromDateTime(value.Value);
     }
 
-    private void BackToList()
+    private async Task BackToScannerAsync()
     {
-        Navigation.NavigateTo("/mymedicine");
+        var scanResult = await ScannerFlowService.ScanAsync();
+
+        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
+        {
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}", replace: true);
+        }
     }
 }

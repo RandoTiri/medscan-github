@@ -2,6 +2,8 @@ using MedScan.Api.Data;
 using MedScan.Api.Models;
 using MedScan.Api.Repositories;
 using MedScan.Api.Services;
+using MedScan.Shared.Models;
+using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -112,4 +114,101 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+await SeedMedicationsAsync(app.Services);
+
 app.Run();
+
+static async Task SeedMedicationsAsync(IServiceProvider services)
+{
+    await using var scope = services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (await dbContext.Medications.AnyAsync())
+    {
+        return;
+    }
+
+    var now = DateTime.UtcNow;
+
+    var medications = new List<Medication>
+    {
+        new()
+        {
+            Barcode = "4740006010012",
+            Name = "Paratsetamool",
+            ActiveIngredient = "Paratsetamool",
+            StrengthMg = 500,
+            Indication = "Valu ja palavik",
+            Warnings = "Mitte ületada ööpäevast annust.",
+            MedicationForm = MedicationFormEnum.Tablett,
+            MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+            PrescriptionType = PrescriptionTypeEnum.Kasimuugiravim,
+            Manufacturer = "Test Pharma",
+            MarketingAuthNr = "TEST-001",
+            CachedAt = now
+        },
+        new()
+        {
+            Barcode = "4740006010029",
+            Name = "Ibuprofeen",
+            ActiveIngredient = "Ibuprofeen",
+            StrengthMg = 400,
+            Indication = "Põletik ja valu",
+            Warnings = "Võtta koos toiduga.",
+            MedicationForm = MedicationFormEnum.Tablett,
+            MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+            PrescriptionType = PrescriptionTypeEnum.Kasimuugiravim,
+            Manufacturer = "Test Pharma",
+            MarketingAuthNr = "TEST-002",
+            CachedAt = now
+        },
+        new()
+        {
+            Barcode = "4740006010036",
+            Name = "Amoksitsilliin",
+            ActiveIngredient = "Amoksitsilliin",
+            StrengthMg = 500,
+            Indication = "Bakteriaalsed infektsioonid",
+            Warnings = "Kasutada arsti juhisel.",
+            MedicationForm = MedicationFormEnum.Kapsel,
+            MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+            PrescriptionType = PrescriptionTypeEnum.Retseptiravim,
+            Manufacturer = "Test Pharma",
+            MarketingAuthNr = "TEST-003",
+            CachedAt = now
+        },
+        new()
+        {
+            Barcode = "4740006010043",
+            Name = "Metformiin",
+            ActiveIngredient = "Metformiin",
+            StrengthMg = 500,
+            Indication = "2. tüüpi diabeet",
+            Warnings = "Võtta vastavalt raviskeemile.",
+            MedicationForm = MedicationFormEnum.Tablett,
+            MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+            PrescriptionType = PrescriptionTypeEnum.Retseptiravim,
+            Manufacturer = "Test Pharma",
+            MarketingAuthNr = "TEST-004",
+            CachedAt = now
+        },
+        new()
+        {
+            Barcode = "4740006010050",
+            Name = "Loratadiin",
+            ActiveIngredient = "Loratadiin",
+            StrengthMg = 10,
+            Indication = "Allergia sümptomid",
+            Warnings = "Võib põhjustada uimasust.",
+            MedicationForm = MedicationFormEnum.Tablett,
+            MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+            PrescriptionType = PrescriptionTypeEnum.Kasimuugiravim,
+            Manufacturer = "Test Pharma",
+            MarketingAuthNr = "TEST-005",
+            CachedAt = now
+        }
+    };
+
+    await dbContext.Medications.AddRangeAsync(medications);
+    await dbContext.SaveChangesAsync();
+}

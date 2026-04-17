@@ -4,7 +4,7 @@
 @using MedScan.Shared.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IHomePharmacyService HomePharmacyService
 
 <PageTitle>Ravimi detail</PageTitle>
@@ -17,7 +17,13 @@ else
 {
     <div class="medicine-screen">
         <div class="medicine-header">
-            <button class="back-btn" @onclick="BackToList">Tagasi</button>
+            <button class="back-link" @onclick="BackToList">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Tagasi
+            </button>
             <h1>Ravimi detail</h1>
             <span class="header-spacer"></span>
         </div>
@@ -46,7 +52,7 @@ else
                     <p><span>Karp nr</span><strong>@(_item.PackageNumber?.ToString() ?? "-")</strong></p>
                     <p><span>Aegub</span><strong>@(_item.ExpiresOn?.ToString("dd.MM.yyyy") ?? "-")</strong></p>
                     <p><span>Kogus</span><strong>@_item.Quantity</strong></p>
-                    <p><span>Naitus</span><strong>@(_item.Indication ?? "-")</strong></p>
+                    <p><span>Näitus</span><strong>@(_item.Indication ?? "-")</strong></p>
                     <p><span>Hoiatused</span><strong>@(_item.Warnings ?? "-")</strong></p>
                 </div>
 
@@ -129,14 +135,21 @@ else
         width: 56px;
     }
 
-    .back-btn {
-        border: 0;
-        border-radius: 12px;
-        background: #e7efed;
-        color: #2f6f58;
-        padding: 7px 12px;
-        font-size: 14px;
-        font-weight: 700;
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        background: transparent;
+        color: #267863;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        padding: 10px 0;
+    }
+
+    .back-link svg {
+        margin-right: 8px;
     }
 
     .detail-card, .edit-card {
