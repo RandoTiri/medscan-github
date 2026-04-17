@@ -3,6 +3,7 @@ using System;
 using MedScan.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260413133311_HardenHomePharmacyConstraints")]
+    partial class HardenHomePharmacyConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -132,17 +135,11 @@ namespace MedScan.Api.Migrations
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly?>("ExpiresOn")
-                        .HasColumnType("date");
-
                     b.Property<int>("MedicationId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Notes")
                         .HasColumnType("text");
-
-                    b.Property<int?>("PackageNumber")
-                        .HasColumnType("integer");
 
                     b.Property<int>("ProfileId")
                         .HasColumnType("integer");
@@ -154,11 +151,10 @@ namespace MedScan.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ExpiresOn");
-
                     b.HasIndex("MedicationId");
 
-                    b.HasIndex("ProfileId");
+                    b.HasIndex("ProfileId", "MedicationId")
+                        .IsUnique();
 
                     b.ToTable("HomePharmacyItems", t =>
                         {
@@ -236,10 +232,6 @@ namespace MedScan.Api.Migrations
 
                     b.Property<DateOnly?>("BirthDate")
                         .HasColumnType("date");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()

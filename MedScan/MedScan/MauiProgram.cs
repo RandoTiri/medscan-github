@@ -39,6 +39,7 @@ namespace MedScan
             builder.Services.AddScoped<MedicineReminderCoordinator>();
             builder.Services.AddScoped<IMedicationService,ApiMedicationService>();
             builder.Services.AddScoped<IProfileService, ApiProfileService>();
+            builder.Services.AddScoped<IHomePharmacyService, ApiHomePharmacyService>();
 
 
 #if DEBUG

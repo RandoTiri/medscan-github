@@ -1,0 +1,446 @@
+@page "/mymedicine/add"
+@page "/home-pharmacy/add"
+@using MedScan.Shared.DTOs.HomePharmacy
+@using MedScan.Shared.Models
+@using MedScan.Shared.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigation
+@inject AuthService AuthService
+@inject IScannerFlowService ScannerFlowService
+@inject IHomePharmacyService HomePharmacyService
+
+<PageTitle>Lisa koduapteeki</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else
+{
+    <div class="medicine-screen">
+        <div class="medicine-header">
+            <button class="back-btn" @onclick="BackToList">Tagasi</button>
+            <h1>Lisa koduapteeki</h1>
+            <span class="header-spacer"></span>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_message))
+        {
+            <div class="error-box">@_message</div>
+        }
+
+        <section class="search-card">
+            <button class="scan-btn" @onclick="ScanBarcodeAsync" disabled="@_isBusy">
+                @(_isBusy ? "Tootlen..." : "Skaneeri triipkood")
+            </button>
+
+            <div class="manual-search-bar">
+                <input class="field-input"
+                       placeholder="Otsi ravimit nime jargi"
+                       @bind="_query" />
+                <button class="search-btn"
+                        @onclick="SearchAsync"
+                        disabled="@_isBusy">
+                    Otsi
+                </button>
+            </div>
+
+            @if (_results.Count > 0)
+            {
+                <div class="manual-results">
+                    @foreach (var item in _results)
+                    {
+                        <button class="manual-result-item" @onclick="() => SelectMedication(item)">
+                            <strong>@item.Name</strong>
+                            <span>@item.ActiveIngredient</span>
+                        </button>
+                    }
+                </div>
+            }
+        </section>
+
+        @if (_selectedMedication is not null)
+        {
+            <section class="edit-card">
+                <h3>@_selectedMedication.Name</h3>
+                <p class="meta-line">@_selectedMedication.ActiveIngredient</p>
+
+                <label class="field-label">Kogus</label>
+                <input class="field-input" type="number" min="1" @bind="_quantity" />
+
+                <label class="field-label">Karbi number (valikuline)</label>
+                <input class="field-input" type="number" min="1" @bind="_packageNumber" />
+
+                <label class="field-label">Aegumiskuupaev (valikuline)</label>
+                <InputDate class="field-input" @bind-Value="_expiresOnDate" />
+
+                <label class="field-label">Markmed</label>
+                <textarea class="field-input field-textarea" @bind="_notes"></textarea>
+            </section>
+
+            <div class="action-bar">
+                <button class="action-save" @onclick="SaveAsync" disabled="@_isBusy">
+                    @(_isBusy ? "Salvestan..." : "Salvesta koduapteeki")
+                </button>
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .medicine-screen {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f3f4f4;
+        min-height: 100vh;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        box-sizing: border-box;
+        padding: 20px;
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
+        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 170px);
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    .medicine-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 6px 14px 6px;
+        border-bottom: 1px solid #dfe3e2;
+    }
+
+    .medicine-header h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        color: #132340;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .header-spacer {
+        width: 56px;
+    }
+
+    .back-btn {
+        border: 0;
+        border-radius: 12px;
+        background: #e7efed;
+        color: #2f6f58;
+        padding: 7px 12px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .search-card, .edit-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
+        padding: 14px;
+        margin-top: 12px;
+    }
+
+    .scan-btn {
+        width: 100%;
+        border: 1px solid #2f6f58;
+        color: #2f6f58;
+        background: #f7fbf9;
+        border-radius: 12px;
+        padding: 11px 12px;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .manual-search-bar {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+    }
+
+    .search-btn {
+        border: 0;
+        border-radius: 12px;
+        background: #2f6f58;
+        color: #fff;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .manual-results {
+        margin-top: 12px;
+        display: grid;
+        gap: 8px;
+    }
+
+    .manual-result-item {
+        border: 1px solid #e2e8e7;
+        border-radius: 12px;
+        background: #fbfdfc;
+        padding: 10px 12px;
+        text-align: left;
+        display: grid;
+        gap: 2px;
+    }
+
+    .manual-result-item strong {
+        color: #132340;
+        font-size: 15px;
+    }
+
+    .manual-result-item span {
+        color: #6a7a7c;
+        font-size: 13px;
+    }
+
+    .edit-card h3 {
+        margin: 0 0 6px 0;
+        font-size: 22px;
+        color: #132340;
+        font-weight: 800;
+    }
+
+    .meta-line {
+        margin: 0 0 10px 0;
+        color: #5e7072;
+        font-size: 15px;
+    }
+
+    .field-label {
+        display: block;
+        margin-top: 8px;
+        margin-bottom: 6px;
+        color: #132340;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .field-input {
+        width: 100%;
+        border: 1px solid #d9dfde;
+        border-radius: 12px;
+        background: #f9fbfa;
+        padding: 10px 12px;
+        font-size: 16px;
+        color: #1f2a3d;
+    }
+
+    .field-textarea {
+        min-height: 92px;
+        resize: vertical;
+    }
+
+    .action-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px);
+        padding: 0 16px;
+        z-index: 40;
+    }
+
+    .action-save {
+        border: 0;
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 16px;
+        font-weight: 700;
+        background: #2f6f58;
+        color: #fff;
+    }
+
+    .error-box {
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 15px;
+        margin-top: 12px;
+        background: #fde9eb;
+        color: #ab3f4c;
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery] public int? ProfileId { get; set; }
+
+    private bool _isReady;
+    private bool _isBusy;
+    private int _targetProfileId;
+    private int _quantity = 1;
+    private int? _packageNumber;
+    private DateTime? _expiresOnDate;
+    private string _query = string.Empty;
+    private string? _notes;
+    private string? _message;
+    private IReadOnlyList<MedicationLookupResult> _results = [];
+    private MedicationLookupResult? _selectedMedication;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _targetProfileId = ResolveTargetProfileId();
+        if (_targetProfileId <= 0)
+        {
+            _message = "Vaikimisi profiili ei leitud.";
+        }
+
+        _isReady = true;
+    }
+
+    private int ResolveTargetProfileId()
+    {
+        if (ProfileId is int routeProfileId && routeProfileId > 0)
+        {
+            return routeProfileId;
+        }
+
+        return AuthService.CurrentUser?.DefaultProfileId ?? 0;
+    }
+
+    private async Task ScanBarcodeAsync()
+    {
+        if (_isBusy)
+        {
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+
+        try
+        {
+            var scanResult = await ScannerFlowService.ScanAsync();
+            if (scanResult.Status != BarcodeScanStatus.Success || string.IsNullOrWhiteSpace(scanResult.Barcode))
+            {
+                _message = "Skannimine katkestati.";
+                return;
+            }
+
+            var found = await ScannerFlowService.FindByBarcodeAsync(scanResult.Barcode);
+            if (found is null)
+            {
+                _message = "Tundmatu triipkood.";
+                return;
+            }
+
+            SelectMedication(found);
+        }
+        catch
+        {
+            _message = "Skannimine ebaonnestus.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        if (_isBusy)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_query))
+        {
+            _message = "Sisesta ravimi nimi.";
+            _results = [];
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+        _results = [];
+
+        try
+        {
+            _results = await ScannerFlowService.SearchByNameAsync(_query, 20);
+            if (_results.Count == 0)
+            {
+                _message = "Vastavaid ravimeid ei leitud.";
+            }
+        }
+        catch
+        {
+            _message = "Otsing ebaonnestus.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void SelectMedication(MedicationLookupResult medication)
+    {
+        _selectedMedication = medication;
+        _message = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_isBusy || _selectedMedication is null)
+        {
+            return;
+        }
+
+        if (_targetProfileId <= 0)
+        {
+            _message = "Profiili ei leitud.";
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+
+        try
+        {
+            await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto
+            {
+                ProfileId = _targetProfileId,
+                MedicationId = _selectedMedication.Id,
+                PackageNumber = _packageNumber,
+                ExpiresOn = ToDateOnlyOrNull(_expiresOnDate),
+                Quantity = Math.Max(1, _quantity),
+                Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
+            });
+
+            Navigation.NavigateTo("/mymedicine");
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private static DateOnly? ToDateOnlyOrNull(DateTime? value)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        return DateOnly.FromDateTime(value.Value);
+    }
+
+    private void BackToList()
+    {
+        Navigation.NavigateTo("/mymedicine");
+    }
+}

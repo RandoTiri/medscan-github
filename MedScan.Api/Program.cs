@@ -20,8 +20,10 @@ builder.Services
 
 builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<IUserMedicationRepository, UserMedicationRepository>();
+builder.Services.AddScoped<IHomePharmacyRepository, HomePharmacyRepository>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IMedicationCatalogService, MedicationCatalogService>();
+builder.Services.AddScoped<MedScan.Api.Services.IHomePharmacyService, HomePharmacyService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
