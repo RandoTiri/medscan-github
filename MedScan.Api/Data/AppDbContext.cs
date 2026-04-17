@@ -54,8 +54,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
             {
                 table.HasCheckConstraint("CK_HomePharmacyItems_Quantity_Positive", "\"Quantity\" > 0");
             });
-            entity.HasIndex(x => new { x.ProfileId, x.MedicationId }).IsUnique();
+            entity.HasIndex(x => x.ProfileId);
+            entity.HasIndex(x => x.MedicationId);
+            entity.HasIndex(x => x.ExpiresOn);
             entity.Property(x => x.Quantity).HasDefaultValue(1);
+            entity.Property(x => x.ExpiresOn).HasColumnType("date");
             entity.Property(x => x.AddedAt).HasColumnType("timestamp with time zone");
             entity.HasOne(x => x.Profile)
                 .WithMany()

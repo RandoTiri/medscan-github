@@ -96,7 +96,7 @@ else
             <div class="settings-section">
                 <span class="section-label">ANDMED</span>
                 <div class="settings-card">
-                    <div class="settings-item" @onclick="GoToMyMedicine">
+                    @* <div class="settings-item" @onclick="GoToMyMedicine">
                         <div class="icon-wrapper">
                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5l-6-6a4.95 4.95 0 1 1 7-7l6 6a4.95 4.95 0 1 1-7 7z"></path><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"></line></svg>
                         </div>
@@ -106,7 +106,7 @@ else
                         </div>
                         <div class="right-arrow">›</div>
                     </div>
-                    <div class="item-divider"></div>
+                    <div class="item-divider"></div> *@
                     <div class="settings-item">
                         <div class="icon-wrapper">
                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
@@ -346,8 +346,4 @@ else
         Navigation.NavigateTo("/login", true);
     }
 
-    private void GoToMyMedicine()
-    {
-        Navigation.NavigateTo("/home-pharmacy");
-    }
 }

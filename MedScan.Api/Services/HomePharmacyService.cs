@@ -22,12 +22,6 @@ public sealed class HomePharmacyService(
 
     public async Task<HomePharmacyItemDto> AddAsync(AddHomePharmacyItemDto dto)
     {
-        var existing = await homePharmacyRepository.GetByProfileAndMedicationAsync(dto.ProfileId, dto.MedicationId);
-        if (existing is not null)
-        {
-            throw new HomePharmacyConflictException("See ravim on selles profiilis juba koduapteegis olemas.");
-        }
-
         var medication = await medicationRepository.FindByIdAsync(dto.MedicationId);
         if (medication is null)
         {
@@ -38,6 +32,8 @@ public sealed class HomePharmacyService(
         {
             ProfileId = dto.ProfileId,
             MedicationId = dto.MedicationId,
+            PackageNumber = dto.PackageNumber,
+            ExpiresOn = dto.ExpiresOn,
             Quantity = Math.Max(1, dto.Quantity),
             Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
             AddedAt = DateTime.UtcNow
@@ -61,6 +57,8 @@ public sealed class HomePharmacyService(
         }
 
         existing.Quantity = Math.Max(1, dto.Quantity);
+        existing.PackageNumber = dto.PackageNumber;
+        existing.ExpiresOn = dto.ExpiresOn;
         existing.Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim();
 
         await homePharmacyRepository.SaveChangesAsync();
@@ -96,8 +94,15 @@ public sealed class HomePharmacyService(
             Barcode = item.Medication?.Barcode,
             ActiveIngredient = item.Medication?.ActiveIngredient,
             Strength = item.Medication?.StrengthMg is int mg ? $"{mg} mg" : null,
+            PackageNumber = item.PackageNumber,
+            ExpiresOn = item.ExpiresOn,
             Quantity = item.Quantity,
             Notes = item.Notes,
+            Indication = item.Medication?.Indication,
+            Warnings = item.Medication?.Warnings,
+            PdfUrl = item.Medication?.PdfUrl,
+            Manufacturer = item.Medication?.Manufacturer,
+            MarketingAuthNumber = item.Medication?.MarketingAuthNr,
             AddedAt = item.AddedAt
         };
     }

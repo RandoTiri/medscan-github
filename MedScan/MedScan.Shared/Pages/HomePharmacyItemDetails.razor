@@ -1,15 +1,13 @@
-@page "/mymedicine/add"
-@page "/home-pharmacy/add"
+@page "/mymedicine/{Id:int}"
+@page "/home-pharmacy/{Id:int}"
 @using MedScan.Shared.DTOs.HomePharmacy
-@using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject NavigationManager Navigation
 @inject AuthService AuthService
-@inject IScannerFlowService ScannerFlowService
 @inject IHomePharmacyService HomePharmacyService
 
-<PageTitle>Lisa koduapteeki</PageTitle>
+<PageTitle>Ravimi detail</PageTitle>
 
 @if (!_isReady)
 {
@@ -20,50 +18,51 @@ else
     <div class="medicine-screen">
         <div class="medicine-header">
             <button class="back-btn" @onclick="BackToList">Tagasi</button>
-            <h1>Lisa koduapteeki</h1>
+            <h1>Ravimi detail</h1>
             <span class="header-spacer"></span>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(_message))
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
         {
-            <div class="error-box">@_message</div>
+            <div class="error-box">@_errorMessage</div>
         }
-
-        <section class="search-card">
-            <button class="scan-btn" @onclick="ScanBarcodeAsync" disabled="@_isBusy">
-                @(_isBusy ? "Tootlen..." : "Skaneeri triipkood")
-            </button>
-
-            <div class="manual-search-bar">
-                <input class="field-input"
-                       placeholder="Otsi ravimit nime jargi"
-                       @bind="_query" />
-                <button class="search-btn"
-                        @onclick="SearchAsync"
-                        disabled="@_isBusy">
-                    Otsi
-                </button>
-            </div>
-
-            @if (_results.Count > 0)
-            {
-                <div class="manual-results">
-                    @foreach (var item in _results)
-                    {
-                        <button class="manual-result-item" @onclick="() => SelectMedication(item)">
-                            <strong>@item.Name</strong>
-                            <span>@item.ActiveIngredient</span>
-                        </button>
-                    }
-                </div>
-            }
-        </section>
-
-        @if (_selectedMedication is not null)
+        else if (_item is null)
         {
+            <div class="empty-state">Kirjet ei leitud.</div>
+        }
+        else
+        {
+            <article class="detail-card">
+                <div class="title-row">
+                    <div class="left-icon">R</div>
+                    <div>
+                        <h2>@_item.MedicationName</h2>
+                        <p class="meta-line">@(_item.ActiveIngredient ?? "-") @(string.IsNullOrWhiteSpace(_item.Strength) ? string.Empty : $"· {_item.Strength}")</p>
+                    </div>
+                </div>
+
+                <div class="info-grid">
+                    <p><span>Profiil</span><strong>@_item.ProfileName</strong></p>
+                    <p><span>Karp nr</span><strong>@(_item.PackageNumber?.ToString() ?? "-")</strong></p>
+                    <p><span>Aegub</span><strong>@(_item.ExpiresOn?.ToString("dd.MM.yyyy") ?? "-")</strong></p>
+                    <p><span>Kogus</span><strong>@_item.Quantity</strong></p>
+                    <p><span>Naitus</span><strong>@(_item.Indication ?? "-")</strong></p>
+                    <p><span>Hoiatused</span><strong>@(_item.Warnings ?? "-")</strong></p>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(_item.PdfUrl))
+                {
+                    <a class="leaflet-link" href="@_item.PdfUrl" target="_blank">Ava infoleht</a>
+                }
+            </article>
+
             <section class="edit-card">
-                <h3>@_selectedMedication.Name</h3>
-                <p class="meta-line">@_selectedMedication.ActiveIngredient</p>
+                <h3>Muuda kirjet</h3>
+
+                @if (!string.IsNullOrWhiteSpace(_message))
+                {
+                    <div class="success-box">@_message</div>
+                }
 
                 <label class="field-label">Kogus</label>
                 <input class="field-input" type="number" min="1" @bind="_quantity" />
@@ -80,7 +79,10 @@ else
 
             <div class="action-bar">
                 <button class="action-save" @onclick="SaveAsync" disabled="@_isBusy">
-                    @(_isBusy ? "Salvestan..." : "Salvesta koduapteeki")
+                    @(_isBusy ? "Salvestan..." : "Salvesta")
+                </button>
+                <button class="action-delete" @onclick="DeleteAsync" disabled="@_isBusy">
+                    Kustuta
                 </button>
             </div>
         }
@@ -137,7 +139,7 @@ else
         font-weight: 700;
     }
 
-    .search-card, .edit-card {
+    .detail-card, .edit-card {
         background: #fff;
         border-radius: 16px;
         box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
@@ -145,71 +147,76 @@ else
         margin-top: 12px;
     }
 
-    .scan-btn {
-        width: 100%;
-        border: 1px solid #2f6f58;
+    .title-row {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        gap: 12px;
+        align-items: start;
+        margin-bottom: 8px;
+    }
+
+    .left-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: #e7efed;
         color: #2f6f58;
-        background: #f7fbf9;
-        border-radius: 12px;
-        padding: 11px 12px;
-        font-size: 16px;
+        font-size: 28px;
         font-weight: 700;
     }
 
-    .manual-search-bar {
-        margin-top: 10px;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 8px;
+    .title-row h2 {
+        margin: 0;
+        color: #132340;
+        font-size: 24px;
+        font-weight: 800;
+        line-height: 1.1;
     }
 
-    .search-btn {
-        border: 0;
-        border-radius: 12px;
-        background: #2f6f58;
-        color: #fff;
-        padding: 10px 14px;
-        font-size: 14px;
-        font-weight: 700;
+    .meta-line {
+        margin: 6px 0 0 0;
+        color: #5e7072;
+        font-size: 15px;
     }
 
-    .manual-results {
-        margin-top: 12px;
+    .info-grid {
         display: grid;
         gap: 8px;
+        margin-top: 8px;
     }
 
-    .manual-result-item {
-        border: 1px solid #e2e8e7;
-        border-radius: 12px;
-        background: #fbfdfc;
-        padding: 10px 12px;
-        text-align: left;
+    .info-grid p {
+        margin: 0;
         display: grid;
         gap: 2px;
     }
 
-    .manual-result-item strong {
-        color: #132340;
-        font-size: 15px;
-    }
-
-    .manual-result-item span {
-        color: #6a7a7c;
+    .info-grid p span {
+        color: #6b7c7d;
         font-size: 13px;
     }
 
+    .info-grid p strong {
+        color: #132340;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .leaflet-link {
+        margin-top: 10px;
+        display: inline-block;
+        color: #2f6f58;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
     .edit-card h3 {
-        margin: 0 0 6px 0;
+        margin: 0 0 10px 0;
         font-size: 22px;
         color: #132340;
         font-weight: 800;
-    }
-
-    .meta-line {
-        margin: 0 0 10px 0;
-        color: #5e7072;
-        font-size: 15px;
     }
 
     .field-label {
@@ -242,44 +249,65 @@ else
         right: 0;
         bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px);
         padding: 0 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
         z-index: 40;
     }
 
-    .action-save {
+    .action-save, .action-delete {
         border: 0;
-        width: 100%;
         border-radius: 14px;
         padding: 12px 14px;
         font-size: 16px;
         font-weight: 700;
+    }
+
+    .action-save {
         background: #2f6f58;
         color: #fff;
     }
 
-    .error-box {
+    .action-delete {
+        background: #fbe8ea;
+        color: #ab3f4c;
+    }
+
+    .error-box, .success-box, .empty-state {
         border-radius: 14px;
         padding: 12px;
         font-size: 15px;
         margin-top: 12px;
+    }
+
+    .error-box {
         background: #fde9eb;
         color: #ab3f4c;
+    }
+
+    .success-box {
+        background: #e7f4ed;
+        color: #2f6f58;
+    }
+
+    .empty-state {
+        background: #fff;
+        color: #607175;
     }
 </style>
 
 @code {
-    [SupplyParameterFromQuery] public int? ProfileId { get; set; }
+    [Parameter] public int Id { get; set; }
 
     private bool _isReady;
     private bool _isBusy;
-    private int _targetProfileId;
+    private string? _errorMessage;
+    private string? _message;
+    private HomePharmacyItemDto? _item;
     private int _quantity = 1;
     private int? _packageNumber;
     private DateTime? _expiresOnDate;
-    private string _query = string.Empty;
     private string? _notes;
-    private string? _message;
-    private IReadOnlyList<MedicationLookupResult> _results = [];
-    private MedicationLookupResult? _selectedMedication;
 
     protected override async Task OnInitializedAsync()
     {
@@ -290,138 +318,100 @@ else
             return;
         }
 
-        _targetProfileId = ResolveTargetProfileId();
-        if (_targetProfileId <= 0)
-        {
-            _message = "Vaikimisi profiili ei leitud.";
-        }
-
         _isReady = true;
+        await LoadAsync();
     }
 
-    private int ResolveTargetProfileId()
+    private async Task LoadAsync()
     {
-        if (ProfileId is int routeProfileId && routeProfileId > 0)
-        {
-            return routeProfileId;
-        }
-
-        return AuthService.CurrentUser?.DefaultProfileId ?? 0;
-    }
-
-    private async Task ScanBarcodeAsync()
-    {
-        if (_isBusy)
-        {
-            return;
-        }
-
-        _isBusy = true;
+        _errorMessage = null;
         _message = null;
 
         try
         {
-            var scanResult = await ScannerFlowService.ScanAsync();
-            if (scanResult.Status != BarcodeScanStatus.Success || string.IsNullOrWhiteSpace(scanResult.Barcode))
+            _item = await HomePharmacyService.GetByIdAsync(Id);
+            if (_item is null)
             {
-                _message = "Skannimine katkestati.";
+                _errorMessage = "Kirjet ei leitud.";
                 return;
             }
 
-            var found = await ScannerFlowService.FindByBarcodeAsync(scanResult.Barcode);
-            if (found is null)
-            {
-                _message = "Tundmatu triipkood.";
-                return;
-            }
-
-            SelectMedication(found);
+            _quantity = Math.Max(1, _item.Quantity);
+            _packageNumber = _item.PackageNumber;
+            _expiresOnDate = _item.ExpiresOn?.ToDateTime(TimeOnly.MinValue);
+            _notes = _item.Notes;
         }
-        catch
+        catch (Exception ex)
         {
-            _message = "Skannimine ebaonnestus.";
+            _errorMessage = ex.Message;
         }
-        finally
-        {
-            _isBusy = false;
-        }
-    }
-
-    private async Task SearchAsync()
-    {
-        if (_isBusy)
-        {
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(_query))
-        {
-            _message = "Sisesta ravimi nimi.";
-            _results = [];
-            return;
-        }
-
-        _isBusy = true;
-        _message = null;
-        _results = [];
-
-        try
-        {
-            _results = await ScannerFlowService.SearchByNameAsync(_query, 20);
-            if (_results.Count == 0)
-            {
-                _message = "Vastavaid ravimeid ei leitud.";
-            }
-        }
-        catch
-        {
-            _message = "Otsing ebaonnestus.";
-        }
-        finally
-        {
-            _isBusy = false;
-        }
-    }
-
-    private void SelectMedication(MedicationLookupResult medication)
-    {
-        _selectedMedication = medication;
-        _message = null;
     }
 
     private async Task SaveAsync()
     {
-        if (_isBusy || _selectedMedication is null)
+        if (_isBusy || _item is null)
         {
-            return;
-        }
-
-        if (_targetProfileId <= 0)
-        {
-            _message = "Profiili ei leitud.";
             return;
         }
 
         _isBusy = true;
         _message = null;
+        _errorMessage = null;
 
         try
         {
-            await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto
+            var updated = await HomePharmacyService.UpdateAsync(_item.Id, new UpdateHomePharmacyItemDto
             {
-                ProfileId = _targetProfileId,
-                MedicationId = _selectedMedication.Id,
+                Quantity = Math.Max(1, _quantity),
                 PackageNumber = _packageNumber,
                 ExpiresOn = ToDateOnlyOrNull(_expiresOnDate),
-                Quantity = Math.Max(1, _quantity),
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
             });
+
+            if (updated is null)
+            {
+                _errorMessage = "Kirjet ei leitud.";
+                return;
+            }
+
+            _item = updated;
+            _message = "Muudatused salvestatud.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_isBusy || _item is null)
+        {
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            var removed = await HomePharmacyService.RemoveAsync(_item.Id);
+            if (!removed)
+            {
+                _errorMessage = "Kirjet ei leitud.";
+                return;
+            }
 
             Navigation.NavigateTo("/mymedicine");
         }
         catch (Exception ex)
         {
-            _message = ex.Message;
+            _errorMessage = ex.Message;
         }
         finally
         {

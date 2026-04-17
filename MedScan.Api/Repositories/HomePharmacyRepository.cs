@@ -25,14 +25,6 @@ public sealed class HomePharmacyRepository(AppDbContext dbContext) : IHomePharma
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<HomePharmacyItem?> GetByProfileAndMedicationAsync(int profileId, int medicationId)
-    {
-        return await dbContext.HomePharmacyItems
-            .Include(x => x.Profile)
-            .Include(x => x.Medication)
-            .FirstOrDefaultAsync(x => x.ProfileId == profileId && x.MedicationId == medicationId);
-    }
-
     public async Task AddAsync(HomePharmacyItem item)
     {
         await dbContext.HomePharmacyItems.AddAsync(item);

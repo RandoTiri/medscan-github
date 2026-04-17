@@ -86,10 +86,6 @@ public sealed class HomePharmacyController(
         {
             return BadRequest(new { message = ex.Message });
         }
-        catch (HomePharmacyConflictException ex)
-        {
-            return Conflict(new { message = ex.Message });
-        }
 
         return Ok(created);
     }

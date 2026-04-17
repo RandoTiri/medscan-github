@@ -11,6 +11,11 @@ public sealed class AddHomePharmacyItemDto
     public int MedicationId { get; set; }
 
     [Range(1, int.MaxValue)]
+    public int? PackageNumber { get; set; }
+
+    public DateOnly? ExpiresOn { get; set; }
+
+    [Range(1, int.MaxValue)]
     public int Quantity { get; set; } = 1;
 
     [MaxLength(1000)]
