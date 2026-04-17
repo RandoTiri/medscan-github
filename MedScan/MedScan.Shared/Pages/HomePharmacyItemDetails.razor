@@ -1,4 +1,3 @@
-@page "/mymedicine/{Id:int}"
 @page "/home-pharmacy/{Id:int}"
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Services
@@ -420,7 +419,7 @@ else
                 return;
             }
 
-            Navigation.NavigateTo("/mymedicine");
+            Navigation.NavigateTo("/home-pharmacy");
         }
         catch (Exception ex)
         {
@@ -444,6 +443,6 @@ else
 
     private void BackToList()
     {
-        Navigation.NavigateTo("/mymedicine");
+        Navigation.NavigateTo("/home-pharmacy");
     }
 }

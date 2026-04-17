@@ -878,7 +878,7 @@ else
 
     private void OpenTodayOverview()
     {
-        Navigation.NavigateTo($"/mymedicine?profileId={ProfileId}");
+        Navigation.NavigateTo($"/home-pharmacy?profileId={ProfileId}");
     }
 
     private sealed record DoseEntry(TimeOnly Time, string DisplayName, UserMedicationDto Source);

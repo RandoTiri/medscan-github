@@ -1,4 +1,3 @@
-@page "/mymedicine/add"
 @page "/home-pharmacy/add"
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Models
@@ -398,7 +397,7 @@ else
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
             });
 
-            Navigation.NavigateTo("/mymedicine");
+            Navigation.NavigateTo("/home-pharmacy");
         }
         catch (Exception ex)
         {
@@ -427,6 +426,12 @@ else
         if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
         {
             Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}", replace: true);
+            return;
+        }
+
+        if (scanResult.Status == BarcodeScanStatus.Canceled)
+        {
+            Navigation.NavigateTo("/home-pharmacy", replace: true);
         }
     }
 }
