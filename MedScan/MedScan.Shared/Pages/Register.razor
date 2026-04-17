@@ -1,7 +1,7 @@
-ï»¿@page "/register"
+@page "/register"
 @layout MedScan.Shared.Layout.AuthLayout
 @using MedScan.Shared.Services
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>Registreeru</PageTitle>
@@ -276,7 +276,7 @@
                             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                         </svg>
                     </div>
-                    <input id="password" type="@PasswordInputType" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" @bind="Password" disabled="@IsBusy" />
+                    <input id="password" type="@PasswordInputType" placeholder="••••••••" @bind="Password" disabled="@IsBusy" />
                     <div class="input-action" @onclick="TogglePasswordVisibility">
                         @if (ShowPassword)
                         {
@@ -317,56 +317,66 @@
     private string PasswordInputType => ShowPassword ? "text" : "password";
     private bool RegistrationSuccessful = false;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
 
-        if (AuthService.IsLoggedIn)
-        {
+        if (AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/");
         }
     }
 
-    private async Task HandleRegister()
-    {
-        if (IsBusy)
-        {
-            return;
-        }
+    private async Task HandleRegister() {
+        if (IsBusy) return;
 
         IsBusy = true;
         ErrorMessage = string.Empty;
         RegistrationSuccessful = false;
 
-        try
-        {
-            var result = await AuthService.RegisterAsync(FullName, Email, Password);
+        try {
+            var normalizedEmail = Email.Trim();
 
-            if (result.Success)
-            {
+            if (!HasValidEmailSuffix(normalizedEmail)) {
+                ErrorMessage = "Invalid email.";
+                return;
+            }
+
+            var result = await AuthService.RegisterAsync(FullName, normalizedEmail, Password);
+
+            if (result.Success) {
                 RegistrationSuccessful = true;
                 return;
             }
 
             ErrorMessage = result.ErrorMessage;
         }
-        catch (Exception ex)
-        {
+        catch (Exception ex) {
             ErrorMessage = ex.ToString();
         }
-        finally
-        {
+        finally {
             IsBusy = false;
         }
     }
 
-    private void GoToLogin()
-    {
+    private void GoToLogin() {
         Navigation.NavigateTo("/login");
     }
 
-    private void TogglePasswordVisibility()
-    {
+    private void TogglePasswordVisibility() {
         ShowPassword = !ShowPassword;
+    }
+
+    private static bool HasValidEmailSuffix(string email) {
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')) return false;
+
+        if (email.Length >= 3 && email[^3] == '.' && 
+            char.IsLetter(email[^2]) && 
+            char.IsLetter(email[^1])) return true;
+
+        if (email.Length >= 4 && email[^4] == '.' && 
+            char.IsLetter(email[^3]) && 
+            char.IsLetter(email[^2]) && 
+            char.IsLetter(email[^1])) return true;
+
+        return false;
     }
 }

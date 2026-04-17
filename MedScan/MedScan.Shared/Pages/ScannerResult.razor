@@ -1,7 +1,7 @@
 @page "/scanner/result/{Barcode}"
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
@@ -192,3 +192,4 @@ else
         _scheduledTimeTexts[index] = args.Value?.ToString() ?? _scheduledTimeTexts[index];
     }
 }
+

@@ -5,7 +5,7 @@ using MedScan.Shared.Models;
 
 namespace MedScan.Shared.Services;
 
-public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
+public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private bool _isInitialized;
@@ -127,6 +127,155 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore)
         catch (Exception ex)
         {
             return (false, $"LOGIN ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> ForgotPasswordAsync(string email)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return (false, "Sisesta email.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/forgot-password", new ForgotPasswordRequest
+            {
+                Email = email.Trim()
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"FORGOT PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> VerifyCodeAsync(string email, string code)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code))
+            {
+                return (false, "Sisesta e-mail ja kood.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/verify-code", new VerifyCodeRequest
+            {
+                Email = email.Trim(),
+                Code = code.Trim()
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"VERIFY CODE ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> ResetPasswordAsync(string email, string code, string newPassword)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(newPassword))
+            {
+                return (false, "Kõik väljad on kohustuslikud.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/reset-password", new ResetPasswordRequest
+            {
+                Email = email.Trim(),
+                Code = code.Trim(),
+                NewPassword = newPassword
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"RESET PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> ChangePasswordAsync(string currentPassword, string newPassword)
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            {
+                return (false, "Kõik väljad on kohustuslikud.");
+            }
+
+            var response = await httpClient.PostAsJsonAsync("/api/auth/change-password", new ChangePasswordRequest
+            {
+                CurrentPassword = currentPassword,
+                NewPassword = newPassword
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"CHANGE PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+        }
+    }
+
+    public async Task<(bool Success, string ErrorMessage)> DeleteAccountAsync()
+    {
+        var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
+
+        try
+        {
+            var response = await httpClient.DeleteAsync("/api/auth/me");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return (false, await ReadErrorMessageAsync(response));
+            }
+
+            CurrentUser = null;
+            IsLoggedIn = false;
+            _isInitialized = true;
+
+            await tokenStore.RemoveTokenAsync();
+            SetAccessToken(null);
+            NotifyStateChanged();
+
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            return (false, $"DELETE ACCOUNT ERROR\nBaseAddress={baseAddress}\n{ex}");
         }
     }
 

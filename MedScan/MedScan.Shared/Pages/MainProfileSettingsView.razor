@@ -1,0 +1,659 @@
+@page "/settings/main-profile/{ProfileId:int}"
+@using MedScan.Shared.Models
+@using MedScan.Shared.Services
+@inject IAuthService AuthService
+@inject IProfileService ProfileService
+@inject NavigationManager Navigation
+
+<PageTitle>Põhikasutaja seaded</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else if (_profile is null)
+{
+    <div class="main-profile-page">
+        <div class="main-profile-content">
+            <button class="back-link" @onclick="GoBack">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Tagasi
+            </button>
+            <div class="error-box">Põhiprofiili ei leitud.</div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="main-profile-page">
+        <div class="main-profile-content">
+            <button class="back-link" @onclick="GoBack">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Tagasi
+            </button>
+
+            <section class="profile-summary-card">
+                <div class="profile-avatar">@_profile.Initials</div>
+                <div class="profile-main-info">
+                    <h1>@_profile.Name</h1>
+                    <p>@GetProfileDetails(_profile)</p>
+                </div>
+            </section>
+
+            @if (!string.IsNullOrWhiteSpace(_errorMessage))
+            {
+                <div class="error-box">@_errorMessage</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(_successMessage))
+            {
+                <div class="success-box">@_successMessage</div>
+            }
+
+            <section class="crud-panel">
+                <button class="crud-toggle" @onclick="ToggleEdit">
+                    @(_isEditing ? "Sulge muutmine" : "Muuda kasutaja andmeid")
+                </button>
+
+                @if (_isEditing)
+                {
+                    <div class="edit-form">
+                        <label>Nimi</label>
+                        <input class="form-control" @bind="_editModel.Name" />
+
+                        <label>Sugu</label>
+                        <select class="form-control" @bind="_editModel.Gender">
+                            <option value="Mees">Mees</option>
+                            <option value="Naine">Naine</option>
+                            <option value="Määramata">Määramata</option>
+                        </select>
+
+                        <label>Sünniaeg</label>
+                        <div class="birthdate-picker">
+                            <div class="birth-field">
+                                <label>Päev</label>
+                                <select class="birth-select" @bind="_birthDay">
+                                    <option value="">DD</option>
+                                    @foreach (var day in _days)
+                                    {
+                                        <option value="@day">@day</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="birth-field">
+                                <label>Kuu</label>
+                                <select class="birth-select" @bind="_birthMonth">
+                                    <option value="">MM</option>
+                                    @foreach (var month in _months)
+                                    {
+                                        <option value="@month">@month</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="birth-field">
+                                <label>Aasta</label>
+                                <select class="birth-select" @bind="_birthYear">
+                                    <option value="">YYYY</option>
+                                    @foreach (var year in _years)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="edit-actions">
+                            <button class="save-btn" @onclick="SaveProfileAsync">Salvesta</button>
+                        </div>
+                    </div>
+                }
+            </section>
+
+            <section class="crud-panel">
+                <button class="crud-toggle" @onclick="TogglePasswordForm">
+                    @(_isChangingPassword ? "Sulge parooli muutmine" : "Muuda parooli")
+                </button>
+
+                @if (_isChangingPassword)
+                {
+                    <div class="edit-form">
+                        <label>Praegune parool</label>
+                        <input class="form-control" type="password" @bind="_currentPassword" />
+
+                        <label>Uus parool</label>
+                        <input class="form-control" type="password" @bind="_newPassword" />
+
+                        <label>Korda uut parooli</label>
+                        <input class="form-control" type="password" @bind="_confirmNewPassword" />
+
+                        <div class="edit-actions">
+                            <button class="save-btn" @onclick="ChangePasswordAsync">Salvesta</button>
+                        </div>
+                    </div>
+                }
+            </section>
+
+            <section class="crud-panel">
+                <button class="delete-btn" @onclick="PromptDeleteAccount">Kustuta kasutaja</button>
+            </section>
+
+            @if (_showDeleteConfirm)
+            {
+                <div class="confirm-overlay">
+                    <div class="confirm-dialog">
+                        <p>Kas soovite kasutaja ära kustutada?</p>
+                        <div class="confirm-actions">
+                            <button class="confirm-yes" @onclick="ConfirmDeleteAccountAsync">Jah</button>
+                            <button class="confirm-no" @onclick="CancelDeleteAccount">Ei</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .main-profile-page {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        min-height: 100vh;
+        background: #f3f5f6;
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 18px);
+        padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 84px);
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        box-sizing: border-box;
+    }
+
+    .main-profile-content {
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        background: transparent;
+        color: #267863;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 10px 0;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+    .back-link svg {
+        margin-right: 8px;
+    }
+
+    .profile-summary-card {
+        background-color: #2e8b6c;
+        color: white;
+        padding: 20px;
+        gap: 16px;
+        margin-bottom: 20px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+    }
+
+    .profile-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .profile-main-info h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .profile-main-info p {
+        margin: 4px 0 0;
+        font-size: 14px;
+        color: white;
+    }
+
+    .crud-panel {
+        margin-top: 14px;
+        background: #fff;
+        border: 1px solid #d7dce0;
+        border-radius: 14px;
+        padding: 12px;
+    }
+
+    .crud-toggle {
+        width: 100%;
+        border: none;
+        background: #f1f5f7;
+        color: #334155;
+        border-radius: 10px;
+        padding: 10px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .edit-form {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .edit-form label {
+        color: #4b5563;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #cfd8de;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .birthdate-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .birth-field {
+        display: grid;
+        gap: 6px;
+    }
+
+    .birth-select {
+        width: 100%;
+        height: 46px;
+        border: 2px solid #7a7a7a;
+        border-radius: 10px;
+        padding: 0 12px;
+        padding-right: 36px;
+        font-size: 14px;
+        font-weight: 700;
+        background: #fff;
+        color: #111827;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 18px 18px;
+    }
+
+    .edit-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+    }
+
+    .save-btn,
+    .delete-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 700;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .save-btn {
+        background: #1d735c;
+        color: #fff;
+    }
+
+    .delete-btn {
+        background: #fbe8ea;
+        color: #be3b46;
+    }
+
+    .error-box {
+        background: #feecee;
+        border: 1px solid #fac9cf;
+        border-radius: 12px;
+        padding: 12px;
+        color: #b42332;
+        margin-bottom: 12px;
+    }
+
+    .success-box {
+        background: #ecfdf3;
+        border: 1px solid #abefc6;
+        border-radius: 12px;
+        padding: 12px;
+        color: #067647;
+        margin-bottom: 12px;
+    }
+
+    .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+    }
+
+    .confirm-dialog {
+        width: 100%;
+        max-width: 340px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .confirm-dialog p {
+        margin: 0 0 14px 0;
+        color: #1f2937;
+        font-size: 15px;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .confirm-yes,
+    .confirm-no {
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .confirm-yes {
+        background: #be3b46;
+        color: #fff;
+    }
+
+    .confirm-no {
+        background: #e8edf1;
+        color: #475569;
+    }
+</style>
+
+@code {
+    [Parameter] public int ProfileId { get; set; }
+
+    private bool _isReady;
+    private bool _isEditing;
+    private bool _isChangingPassword;
+    private bool _showDeleteConfirm;
+    private string? _errorMessage;
+    private string? _successMessage;
+    private Patient? _profile;
+    private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
+    private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
+    private readonly List<int> _years = Enumerable.Range(1900, 201).ToList();
+    private string _birthDay = string.Empty;
+    private string _birthMonth = string.Empty;
+    private string _birthYear = string.Empty;
+    private string _currentPassword = string.Empty;
+    private string _newPassword = string.Empty;
+    private string _confirmNewPassword = string.Empty;
+    private CreatePatientProfileRequest _editModel = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isReady = false;
+        _errorMessage = null;
+
+        try
+        {
+            var profile = await ProfileService.GetByIdAsync(ProfileId);
+            if (profile is null)
+            {
+                _profile = null;
+                return;
+            }
+
+            _profile = new Patient
+            {
+                Id = profile.Id,
+                Name = profile.Name,
+                Gender = string.IsNullOrWhiteSpace(profile.Gender) ? "Määramata" : profile.Gender,
+                BirthDate = profile.BirthDate
+            };
+
+            _editModel = new CreatePatientProfileRequest
+            {
+                Name = _profile.Name,
+                Gender = _profile.Gender,
+                BirthDate = _profile.BirthDate
+            };
+        }
+        catch
+        {
+            _errorMessage = "Profiili laadimine ebaõnnestus.";
+        }
+        finally
+        {
+            _isReady = true;
+        }
+    }
+
+    private static string GetProfileDetails(Patient patient)
+    {
+        var age = patient.Age > 0 ? $"{patient.Age} a" : "Vanus puudub";
+        var gender = string.IsNullOrWhiteSpace(patient.Gender) ? "Määramata" : patient.Gender;
+        return $"{age} · {gender}";
+    }
+
+    private void ToggleEdit()
+    {
+        _isEditing = !_isEditing;
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (_isEditing && _profile is not null)
+        {
+            _editModel = new CreatePatientProfileRequest
+            {
+                Name = _profile.Name,
+                Gender = _profile.Gender,
+                BirthDate = _profile.BirthDate
+            };
+
+            if (_editModel.BirthDate.HasValue)
+            {
+                _birthDay = _editModel.BirthDate.Value.Day.ToString();
+                _birthMonth = _editModel.BirthDate.Value.Month.ToString();
+                _birthYear = _editModel.BirthDate.Value.Year.ToString();
+            }
+            else
+            {
+                _birthDay = string.Empty;
+                _birthMonth = string.Empty;
+                _birthYear = string.Empty;
+            }
+        }
+    }
+
+    private async Task SaveProfileAsync()
+    {
+        if (_profile is null || string.IsNullOrWhiteSpace(_editModel.Name))
+        {
+            return;
+        }
+
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (!ApplyBirthDateFromPicker())
+        {
+            return;
+        }
+
+        try
+        {
+            var updated = await ProfileService.UpdatePatientProfileAsync(ProfileId, _editModel);
+            if (updated is null)
+            {
+                _errorMessage = "Kasutaja andmete uuendamine ebaõnnestus.";
+                return;
+            }
+
+            _profile.Name = updated.Name;
+            _profile.Gender = string.IsNullOrWhiteSpace(updated.Gender) ? "Määramata" : updated.Gender;
+            _profile.BirthDate = updated.BirthDate;
+            _isEditing = false;
+            _successMessage = "Kasutaja andmed salvestatud.";
+        }
+        catch
+        {
+            _errorMessage = "Kasutaja andmete uuendamine ebaõnnestus.";
+        }
+    }
+
+    private bool ApplyBirthDateFromPicker()
+    {
+        var hasAny = !string.IsNullOrWhiteSpace(_birthDay) || !string.IsNullOrWhiteSpace(_birthMonth) || !string.IsNullOrWhiteSpace(_birthYear);
+        var hasAll = !string.IsNullOrWhiteSpace(_birthDay) && !string.IsNullOrWhiteSpace(_birthMonth) && !string.IsNullOrWhiteSpace(_birthYear);
+
+        if (!hasAny)
+        {
+            _editModel.BirthDate = null;
+            return true;
+        }
+
+        if (!hasAll)
+        {
+            _errorMessage = "Palun vali sünniajast päev, kuu ja aasta.";
+            return false;
+        }
+
+        if (!int.TryParse(_birthYear, out var year) || !int.TryParse(_birthMonth, out var month) || !int.TryParse(_birthDay, out var day))
+        {
+            _errorMessage = "Sünniaja väärtused on vigased.";
+            return false;
+        }
+
+        try
+        {
+            _editModel.BirthDate = new DateOnly(year, month, day);
+            return true;
+        }
+        catch
+        {
+            _errorMessage = "Valitud sünniaeg ei ole korrektne kuupäev.";
+            return false;
+        }
+    }
+
+    private void TogglePasswordForm()
+    {
+        _isChangingPassword = !_isChangingPassword;
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (!_isChangingPassword)
+        {
+            _currentPassword = string.Empty;
+            _newPassword = string.Empty;
+            _confirmNewPassword = string.Empty;
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_currentPassword) || string.IsNullOrWhiteSpace(_newPassword) || string.IsNullOrWhiteSpace(_confirmNewPassword))
+        {
+            _errorMessage = "Kõik parooli väljad on kohustuslikud.";
+            return;
+        }
+
+        if (_newPassword != _confirmNewPassword)
+        {
+            _errorMessage = "Uued paroolid ei kattu.";
+            return;
+        }
+
+        var result = await AuthService.ChangePasswordAsync(_currentPassword, _newPassword);
+        if (!result.Success)
+        {
+            _errorMessage = result.ErrorMessage;
+            return;
+        }
+
+        _currentPassword = string.Empty;
+        _newPassword = string.Empty;
+        _confirmNewPassword = string.Empty;
+        _isChangingPassword = false;
+        _successMessage = "Parool edukalt muudetud.";
+    }
+
+    private void PromptDeleteAccount()
+    {
+        _showDeleteConfirm = true;
+        _errorMessage = null;
+        _successMessage = null;
+    }
+
+    private void CancelDeleteAccount()
+    {
+        _showDeleteConfirm = false;
+    }
+
+    private async Task ConfirmDeleteAccountAsync()
+    {
+        _showDeleteConfirm = false;
+
+        var result = await AuthService.DeleteAccountAsync();
+        if (!result.Success)
+        {
+            _errorMessage = result.ErrorMessage;
+            return;
+        }
+
+        Navigation.NavigateTo("/login", true);
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/settings");
+}

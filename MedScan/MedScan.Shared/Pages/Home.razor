@@ -1,7 +1,7 @@
-﻿@page "/"
+@page "/"
 @using MedScan.Shared.Services
 @inject IFormFactor FormFactor
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
@@ -15,7 +15,7 @@
             <div class="header-top">
                 <div class="header-title"></div>
                 <div class="header-icons">
-                    <span class="notification-icon">🔔<span class="badge">2</span></span>
+                    <span class="notification-icon">??<span class="badge">2</span></span>
                     <span class="user-initials">@GetInitials()</span>
                 </div>
             </div>
@@ -54,31 +54,31 @@
                     <h3>Skaneeri ravim</h3>
                     <p>Skan triipkoodi infole</p>
                 </div>
-                <div class="scan-arrow">›</div>
+                <div class="scan-arrow">�</div>
             </div>
 
             <!-- Today's Plan -->
             <div class="section-header">
-                <h2>Minu tänane raviskeem</h2>
-                <a href="#">Kõik</a>
+                <h2>Minu t�nane raviskeem</h2>
+                <a href="#">K�ik</a>
             </div>
 
             <div class="med-card tehtud">
-                <div class="med-icon">✔️</div>
+                <div class="med-icon">??</div>
                 <div class="med-info">
                     <h3>Metformiin 500mg</h3>
-                    <p>08:00, 20:00 • 2x päevas</p>
+                    <p>08:00, 20:00 � 2x p�evas</p>
                 </div>
-                <div class="med-status tehtud-status">✓ Tehtud</div>
+                <div class="med-status tehtud-status">? Tehtud</div>
             </div>
 
             <div class="med-card ootel">
-                <div class="med-icon">🕒</div>
+                <div class="med-icon">??</div>
                 <div class="med-info">
                     <h3>Bisoprolool 5mg</h3>
-                    <p>08:00 • 1x päevas</p>
+                    <p>08:00 � 1x p�evas</p>
                 </div>
-                <div class="med-status ootel-status">🕒 Ootel</div>
+                <div class="med-status ootel-status">?? Ootel</div>
             </div>
 
             <!-- Family -->
@@ -89,9 +89,9 @@
                 <div class="family-avatar">MT</div>
                 <div class="family-info">
                     <h3>Marta</h3>
-                    <p>Nurofen 200mg – 14:00 ootel</p>
+                    <p>Nurofen 200mg � 14:00 ootel</p>
                 </div>
-                <div class="family-action">🔔</div>
+                <div class="family-action">??</div>
             </div>
         </main>
     </div>
@@ -179,7 +179,60 @@
 }
 else
 {
-    <p>Suunan sisselogimislehele</p>
+    <div class="redirect-loading-container">
+        <div class="spinner-wrap" aria-label="Laadimine">
+            <div class="spinner-ring"></div>
+            <div class="spinner-icon">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                    <path d="m8.5 8.5 7 7"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .redirect-loading-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            color: #5f6f7d;
+        }
+
+        .spinner-wrap {
+            width: 88px;
+            height: 88px;
+            position: relative;
+            display: grid;
+            place-items: center;
+        }
+
+        .spinner-ring {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            border: 6px solid #cfe8df;
+            border-top-color: #258d6b;
+            animation: home-login-spin 0.9s linear infinite;
+            box-sizing: border-box;
+        }
+
+        .spinner-icon {
+            position: absolute;
+            color: #258d6b;
+            display: grid;
+            place-items: center;
+        }
+
+        @@keyframes home-login-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 }
 
 @code {
@@ -218,3 +271,4 @@ else
         return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
     }
 }
+

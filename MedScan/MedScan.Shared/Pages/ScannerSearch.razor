@@ -1,7 +1,7 @@
 @page "/scanner/search"
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
@@ -112,3 +112,4 @@ else
         Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(barcode)}");
     }
 }
+

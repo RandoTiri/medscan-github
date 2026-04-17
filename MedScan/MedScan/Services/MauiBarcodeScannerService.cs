@@ -23,11 +23,8 @@ public sealed class MauiBarcodeScannerService : IBarcodeScannerService
 
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            var navigation = Application.Current?.Windows.FirstOrDefault()?.Page?.Navigation;
-            if (navigation is null)
-            {
-                throw new InvalidOperationException("Skannerit ei saa avada, navigeerimine puudub.");
-            }
+            var navigation = (Application.Current?.Windows.FirstOrDefault()?.Page?.Navigation) 
+                ?? throw new InvalidOperationException("Skannerit ei saa avada, navigeerimine puudub.");
 
             await navigation.PushModalAsync(scannerPage);
         });

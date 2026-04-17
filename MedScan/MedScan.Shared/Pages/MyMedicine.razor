@@ -3,7 +3,7 @@
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject NavigationManager Navigation
-@inject AuthService AuthService
+@inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IHomePharmacyService HomePharmacyService
 
@@ -301,6 +301,9 @@ else
 </style>
 
 @code {
+    [SupplyParameterFromQuery(Name = "profileId")]
+    public int? RequestedProfileId { get; set; }
+
     private bool _isReady;
     private bool _isLoading;
     private string? _errorMessage;
@@ -351,6 +354,11 @@ else
 
     private int ResolveDefaultProfileId()
     {
+        if (RequestedProfileId is int requestedProfileId && _profiles.Any(profile => profile.Id == requestedProfileId))
+        {
+            return requestedProfileId;
+        }
+
         if (AuthService.CurrentUser?.DefaultProfileId is int defaultProfileId &&
             _profiles.Any(profile => profile.Id == defaultProfileId))
         {
@@ -417,3 +425,4 @@ else
         Navigation.NavigateTo($"/mymedicine/{itemId}");
     }
 }
+

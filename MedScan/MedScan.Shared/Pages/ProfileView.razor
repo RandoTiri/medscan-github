@@ -1,0 +1,886 @@
+@page "/profile/view/{ProfileId:int}"
+@using MedScan.Shared.DTOs.Medication
+@using MedScan.Shared.Models
+@using MedScan.Shared.Models.Enums
+@using MedScan.Shared.Services
+@inject IAuthService AuthService
+@inject IProfileService ProfileService
+@inject IMedicationService MedicationService
+@inject IScannerFlowService ScannerFlowService
+@inject NavigationManager Navigation
+
+<PageTitle>Profiili vaade</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else if (_patient is null)
+{
+    <div class="profile-view-page">
+        <div class="profile-view-content">
+            <button class="back-link" @onclick="GoBack">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Tagasi
+            </button>
+            <div class="empty-box">Profiili ei leitud.</div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="profile-view-page">
+        <div class="profile-view-content">
+            <button class="back-link" @onclick="GoBack">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Tagasi
+            </button>
+
+            <section class="profile-summary-card @(_isPatientProfile ? "patient-card-view" : "main-card-view")">
+                <div class="profile-avatar @(_isPatientProfile ? "patient-avatar-view" : "main-avatar-view")">@_patient.Initials</div>
+                <div class="profile-main-info @(_isPatientProfile ? "patient-info-view" : "main-info-view")">
+                    <h1>@_patient.Name</h1>
+                    <p>@GetProfileDetails(_patient)</p>
+                </div>
+            </section>
+
+            @if (!string.IsNullOrWhiteSpace(_errorMessage))
+            {
+                <div class="error-box">@_errorMessage</div>
+            }
+
+            <section class="dose-list">
+                @if (_entries.Count == 0)
+                {
+                    <div class="empty-box">Sellel profiilil pole tänaseid ravikirjeid.</div>
+                }
+                else
+                {
+                    @foreach (var entry in _entries)
+                    {
+                        var status = GetStatusView(entry.Source.LatestDoseStatus);
+
+                        <article class="dose-card">
+                            <div class="dose-title-row">
+                                <span class="status-pill @status.CssClass">@status.Label</span>
+                                <strong>@entry.Time.ToString("HH:mm") – @entry.DisplayName</strong>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(status.Detail))
+                            {
+                                <p class="dose-detail">@status.Detail</p>
+                            }
+                        </article>
+                    }
+                }
+            </section>
+
+            <button class="primary-action" @onclick="StartScannerAsync">
+                <span class="action-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M4 17v3h3"></path><path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                </span>
+                Kontrolli ravimit
+            </button>
+
+            <button class="secondary-action" @onclick="OpenTodayOverview">
+                <span class="action-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M9 14h.01"></path><path d="M12 14h.01"></path><path d="M15 14h.01"></path></svg>
+                </span>
+                Tänane koondvaade
+            </button>
+
+            @if (_isPatientProfile)
+            {
+                <section class="crud-panel">
+                    <button class="crud-toggle" @onclick="ToggleEdit">
+                        @(_isEditing ? "Sulge muutmine" : "Muuda hooldatava andmeid")
+                    </button>
+
+                    @if (_isEditing)
+                    {
+                        <div class="edit-form">
+                            <label>Nimi</label>
+                            <input class="form-control" @bind="_editModel.Name" />
+
+                            <label>Sugu</label>
+                            <select class="form-control" @bind="_editModel.Gender">
+                                <option value="Mees">Mees</option>
+                                <option value="Naine">Naine</option>
+                                <option value="Määramata">Määramata</option>
+                            </select>
+
+                            <label>Sünniaeg</label>
+                            <div class="birthdate-picker">
+                                <div class="birth-field">
+                                    <label>Päev</label>
+                                    <select class="birth-select" @bind="_birthDay">
+                                        <option value="">DD</option>
+                                        @foreach (var day in _days)
+                                        {
+                                            <option value="@day">@day</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Kuu</label>
+                                    <select class="birth-select" @bind="_birthMonth">
+                                        <option value="">MM</option>
+                                        @foreach (var month in _months)
+                                        {
+                                            <option value="@month">@month</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Aasta</label>
+                                    <select class="birth-select" @bind="_birthYear">
+                                        <option value="">YYYY</option>
+                                        @foreach (var year in _years)
+                                        {
+                                            <option value="@year">@year</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="edit-actions">
+                                <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
+                            </div>
+                        </div>
+                    }
+
+                    <button class="delete-btn" @onclick="PromptDelete">Kustuta hooldatav</button>
+                </section>
+            }
+            else
+            {
+                <section class="crud-panel">
+                    <button class="crud-toggle" @onclick="ToggleEdit">
+                        @(_isEditing ? "Sulge muutmine" : "Muuda kasutaja andmeid")
+                    </button>
+
+                    @if (_isEditing)
+                    {
+                        <div class="edit-form">
+                            <label>Nimi</label>
+                            <input class="form-control" @bind="_editModel.Name" />
+
+                            <label>Sugu</label>
+                            <select class="form-control" @bind="_editModel.Gender">
+                                <option value="Mees">Mees</option>
+                                <option value="Naine">Naine</option>
+                                <option value="Määramata">Määramata</option>
+                            </select>
+
+                            <label>Sünniaeg</label>
+                            <div class="birthdate-picker">
+                                <div class="birth-field">
+                                    <label>Päev</label>
+                                    <select class="birth-select" @bind="_birthDay">
+                                        <option value="">DD</option>
+                                        @foreach (var day in _days)
+                                        {
+                                            <option value="@day">@day</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Kuu</label>
+                                    <select class="birth-select" @bind="_birthMonth">
+                                        <option value="">MM</option>
+                                        @foreach (var month in _months)
+                                        {
+                                            <option value="@month">@month</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Aasta</label>
+                                    <select class="birth-select" @bind="_birthYear">
+                                        <option value="">YYYY</option>
+                                        @foreach (var year in _years)
+                                        {
+                                            <option value="@year">@year</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="edit-actions">
+                                <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
+                            </div>
+                        </div>
+                    }
+                </section>
+            }
+
+            @if (_showDeleteConfirm && _patient is not null && _isPatientProfile)
+            {
+                <div class="confirm-overlay">
+                    <div class="confirm-dialog">
+                        <p>Kas soovite @_patient.Name ära kustutada?</p>
+                        <div class="confirm-actions">
+                            <button class="confirm-yes" @onclick="ConfirmDeleteAsync">Jah</button>
+                            <button class="confirm-no" @onclick="CancelDelete">Ei</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .profile-view-page {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        min-height: 100vh;
+        background: #f3f5f6;
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 18px);
+        padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 84px);
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        box-sizing: border-box;
+    }
+
+    .profile-view-content {
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        background: transparent;
+        color: #267863;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        padding: 10px 0;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+    .back-link svg {
+        margin-right: 8px;
+    }
+
+    .profile-summary-card {
+        display: flex;
+        align-items: center;
+        border-radius: 16px;
+    }
+
+    .main-card-view {
+        background-color: #2e8b6c;
+        color: white;
+        padding: 20px;
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .patient-card-view {
+        background: #fff;
+        border: 2px solid #2e8b6c;
+        padding: 16px;
+        gap: 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .profile-avatar {
+        border-radius: 50%;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .main-avatar-view {
+        width: 50px;
+        height: 50px;
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        color: white;
+        font-size: 18px;
+    }
+
+    .patient-avatar-view {
+        width: 48px;
+        height: 48px;
+        background-color: #e6f4f1;
+        color: #2e8b6c;
+        border: 2px solid #bce0d5;
+        font-size: 18px;
+    }
+
+    .profile-main-info h1 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .profile-main-info p {
+        margin: 4px 0 0;
+        font-size: 14px;
+    }
+
+    .main-info-view h1 {
+        font-size: 18px;
+    }
+
+    .main-info-view h1,
+    .main-info-view p {
+        color: white;
+    }
+
+    .patient-info-view h1 {
+        color: #0d2034;
+        font-size: 16px;
+    }
+
+    .patient-info-view p {
+        color: #718096;
+    }
+
+    .dose-list {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .dose-card {
+        background: #fff;
+        border: 1px solid #d7dce0;
+        border-radius: 14px;
+        padding: 12px 14px;
+    }
+
+    .dose-title-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        color: #13233b;
+        font-size: 16px;
+    }
+
+    .dose-detail {
+        margin: 6px 0 0 0;
+        color: #5d6771;
+        font-size: 14px;
+    }
+
+    .status-pill {
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 4px 10px;
+    }
+
+    .status-done {
+        background: #e2f1ea;
+        color: #20835d;
+    }
+
+    .status-pending {
+        background: #f9efe0;
+        color: #d48714;
+    }
+
+    .status-missed {
+        background: #f8dfe1;
+        color: #b7454f;
+    }
+
+    .primary-action,
+    .secondary-action {
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        cursor: pointer;
+    }
+
+    .primary-action {
+        border: none;
+        background: #1d735c;
+        color: #fff;
+    }
+
+    .secondary-action {
+        border: 1px solid #1d735c;
+        background: #fff;
+        color: #1d735c;
+    }
+
+    .crud-panel {
+        margin-top: 14px;
+        background: #fff;
+        border: 1px solid #d7dce0;
+        border-radius: 14px;
+        padding: 12px;
+    }
+
+    .crud-toggle {
+        width: 100%;
+        border: none;
+        background: #f1f5f7;
+        color: #334155;
+        border-radius: 10px;
+        padding: 10px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .edit-form {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .edit-form label {
+        color: #4b5563;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #cfd8de;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .birthdate-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .birth-field {
+        display: grid;
+        gap: 6px;
+    }
+
+    .birth-select {
+        width: 100%;
+        height: 46px;
+        border: 2px solid #7a7a7a;
+        border-radius: 10px;
+        padding: 0 12px;
+        padding-right: 36px;
+        font-size: 14px;
+        font-weight: 700;
+        background: #fff;
+        color: #111827;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 18px 18px;
+    }
+
+    .edit-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 4px;
+    }
+
+    .save-btn,
+    .cancel-btn,
+    .delete-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .save-btn {
+        background: #1d735c;
+        color: #fff;
+        flex: 1;
+    }
+
+    .cancel-btn {
+        background: #e8edf1;
+        color: #475569;
+        flex: 1;
+    }
+
+    .delete-btn {
+        width: 100%;
+        background: #fbe8ea;
+        color: #be3b46;
+    }
+
+    .error-box,
+    .empty-box {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #d7dce0;
+        padding: 12px;
+        color: #4b5563;
+        margin-bottom: 12px;
+    }
+
+    .error-box {
+        background: #feecee;
+        border-color: #fac9cf;
+        color: #b42332;
+    }
+
+    .confirm-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 20px;
+    }
+
+    .confirm-dialog {
+        width: 100%;
+        max-width: 340px;
+        background: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .confirm-dialog p {
+        margin: 0 0 14px 0;
+        color: #1f2937;
+        font-size: 15px;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .confirm-yes,
+    .confirm-no {
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .confirm-yes {
+        background: #be3b46;
+        color: #fff;
+    }
+
+    .confirm-no {
+        background: #e8edf1;
+        color: #475569;
+    }
+
+</style>
+
+@code {
+    [Parameter] public int ProfileId { get; set; }
+
+    private bool _isReady;
+    private bool _isEditing;
+    private bool _isPatientProfile;
+    private bool _showDeleteConfirm;
+    private string? _errorMessage;
+    private Patient? _patient;
+    private readonly List<DoseEntry> _entries = [];
+    private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
+    private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
+    private readonly List<int> _years = Enumerable.Range(1900, 201).ToList();
+    private string _birthDay = string.Empty;
+    private string _birthMonth = string.Empty;
+    private string _birthYear = string.Empty;
+    private CreatePatientProfileRequest _editModel = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isReady = false;
+        _errorMessage = null;
+
+        try
+        {
+            var profile = await ProfileService.GetByIdAsync(ProfileId);
+            if (profile is null)
+            {
+                _patient = null;
+                _entries.Clear();
+                return;
+            }
+
+            _isPatientProfile = profile.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase);
+
+            _patient = new Patient
+            {
+                Id = profile.Id,
+                Name = profile.Name,
+                Gender = string.IsNullOrWhiteSpace(profile.Gender) ? "Määramata" : profile.Gender,
+                BirthDate = profile.BirthDate
+            };
+
+            _editModel = new CreatePatientProfileRequest
+            {
+                Name = _patient.Name,
+                Gender = _patient.Gender,
+                BirthDate = _patient.BirthDate
+            };
+
+            var medications = await MedicationService.GetScheduleAsync(ProfileId);
+            _entries.Clear();
+            _entries.AddRange(BuildEntries(medications));
+        }
+        catch
+        {
+            _errorMessage = "Profiili laadimine ebaõnnestus.";
+        }
+        finally
+        {
+            _isReady = true;
+        }
+    }
+
+    private void PromptDelete()
+    {
+        _showDeleteConfirm = true;
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteConfirm = false;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        _showDeleteConfirm = false;
+        await DeleteAsync();
+    }
+
+    private static IEnumerable<DoseEntry> BuildEntries(IEnumerable<UserMedicationDto> medications)
+    {
+        return medications
+            .Where(m => m.IsActive)
+            .SelectMany(m => m.ScheduledTimes.Select(time => new DoseEntry(time, BuildDisplayName(m), m)))
+            .OrderBy(entry => entry.Time)
+            .ThenBy(entry => entry.DisplayName)
+            .ToList();
+    }
+
+    private static string BuildDisplayName(UserMedicationDto medication)
+    {
+        var name = medication.MedicationName?.Trim() ?? string.Empty;
+        var strength = medication.Strength?.Trim();
+
+        if (string.IsNullOrWhiteSpace(strength) || name.Contains(strength, StringComparison.OrdinalIgnoreCase))
+        {
+            return name;
+        }
+
+        return $"{name} {strength}";
+    }
+
+    private static StatusView GetStatusView(DoseStatusEnum? status)
+    {
+        return status switch
+        {
+            DoseStatusEnum.Done => new StatusView("✓ Tehtud", "status-done", "Tehtud – kinnitatud"),
+            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("! Vahele", "status-missed", ""),
+            _ => new StatusView("◔ Ootel", "status-pending", "")
+        };
+    }
+
+    private static string GetProfileDetails(Patient patient)
+    {
+        var age = patient.Age > 0 ? $"{patient.Age} a" : "Vanus puudub";
+        var gender = string.IsNullOrWhiteSpace(patient.Gender) ? "Määramata" : patient.Gender;
+        return $"{age} · {gender}";
+    }
+
+    private async Task SaveChangesAsync()
+    {
+        if (_patient is null || string.IsNullOrWhiteSpace(_editModel.Name))
+        {
+            return;
+        }
+
+        _errorMessage = null;
+
+        if (!ApplyBirthDateFromPicker())
+        {
+            return;
+        }
+
+        try
+        {
+            var updated = await ProfileService.UpdatePatientProfileAsync(ProfileId, _editModel);
+            if (updated is null)
+            {
+                _errorMessage = "Profiili uuendamine ebaõnnestus.";
+                return;
+            }
+
+            _patient.Name = updated.Name;
+            _patient.Gender = string.IsNullOrWhiteSpace(updated.Gender) ? "Määramata" : updated.Gender;
+            _patient.BirthDate = updated.BirthDate;
+            _isEditing = false;
+        }
+        catch
+        {
+            _errorMessage = "Profiili uuendamine ebaõnnestus.";
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_patient is null)
+        {
+            return;
+        }
+
+        _errorMessage = null;
+
+        try
+        {
+            var deleted = await ProfileService.DeletePatientProfileAsync(ProfileId);
+            if (!deleted)
+            {
+                _errorMessage = "Hooldatava kustutamine ebaõnnestus.";
+                return;
+            }
+
+            Navigation.NavigateTo("/profile");
+        }
+        catch
+        {
+            _errorMessage = "Hooldatava kustutamine ebaõnnestus.";
+        }
+    }
+
+    private void ToggleEdit()
+    {
+        _isEditing = !_isEditing;
+
+        if (_isEditing && _patient is not null)
+        {
+            _editModel = new CreatePatientProfileRequest
+            {
+                Name = _patient.Name,
+                Gender = _patient.Gender,
+                BirthDate = _patient.BirthDate
+            };
+
+            if (_editModel.BirthDate.HasValue)
+            {
+                _birthDay = _editModel.BirthDate.Value.Day.ToString();
+                _birthMonth = _editModel.BirthDate.Value.Month.ToString();
+                _birthYear = _editModel.BirthDate.Value.Year.ToString();
+            }
+            else
+            {
+                _birthDay = string.Empty;
+                _birthMonth = string.Empty;
+                _birthYear = string.Empty;
+            }
+        }
+    }
+
+    private bool ApplyBirthDateFromPicker()
+    {
+        var hasAny = !string.IsNullOrWhiteSpace(_birthDay) || !string.IsNullOrWhiteSpace(_birthMonth) || !string.IsNullOrWhiteSpace(_birthYear);
+        var hasAll = !string.IsNullOrWhiteSpace(_birthDay) && !string.IsNullOrWhiteSpace(_birthMonth) && !string.IsNullOrWhiteSpace(_birthYear);
+
+        if (!hasAny)
+        {
+            _editModel.BirthDate = null;
+            return true;
+        }
+
+        if (!hasAll)
+        {
+            _errorMessage = "Palun vali sünniajast päev, kuu ja aasta.";
+            return false;
+        }
+
+        if (!int.TryParse(_birthYear, out var year) || !int.TryParse(_birthMonth, out var month) || !int.TryParse(_birthDay, out var day))
+        {
+            _errorMessage = "Sünniaja väärtused on vigased.";
+            return false;
+        }
+
+        try
+        {
+            _editModel.BirthDate = new DateOnly(year, month, day);
+            return true;
+        }
+        catch
+        {
+            _errorMessage = "Valitud sünniaeg ei ole korrektne kuupäev.";
+            return false;
+        }
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/profile");
+
+    private async Task StartScannerAsync()
+    {
+        var scanResult = await ScannerFlowService.ScanAsync();
+        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
+        {
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+        }
+        else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
+        {
+            Navigation.NavigateTo("/scanner/search");
+        }
+    }
+
+    private void OpenTodayOverview()
+    {
+        Navigation.NavigateTo($"/mymedicine?profileId={ProfileId}");
+    }
+
+    private sealed record DoseEntry(TimeOnly Time, string DisplayName, UserMedicationDto Source);
+    private sealed record StatusView(string Label, string CssClass, string Detail);
+}
