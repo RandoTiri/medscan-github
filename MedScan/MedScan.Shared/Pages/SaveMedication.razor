@@ -1,0 +1,492 @@
+@page "/home-pharmacy/save-medication/{Barcode}"
+@using MedScan.Shared.DTOs.HomePharmacy
+@using MedScan.Shared.Models
+@using MedScan.Shared.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@inject IScannerFlowService ScannerFlowService
+@inject IHomePharmacyService HomePharmacyService
+
+<PageTitle>Liiguta apteeki - @_medication?.Name</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else if (_isLoading)
+{
+    <p><em>Laadin ravimi andmeid...</em></p>
+}
+else if (_medication is null)
+{
+    <p><em>Ravimit ei leitud.</em></p>
+}
+else
+{
+    <div class="medicine-screen">
+        <div class="medicine-header">
+            <button class="back-link" @onclick="BackToSearch">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+            <h1>Ravimi info</h1>
+            <span class="badge-register">Ravimiregister</span>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_message))
+        {
+            <div class="error-box">@_message</div>
+        }
+
+        <div class="content-scroll">
+            <div class="header-card">
+                <div class="pill-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#267863" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.5 20.5L3.5 13.5C2.1 12.1 2.1 9.9 3.5 8.5L8.5 3.5C9.9 2.1 12.1 2.1 13.5 3.5L20.5 10.5C21.9 11.9 21.9 14.1 20.5 15.5L15.5 20.5C14.1 21.9 11.9 21.9 10.5 20.5Z"></path>
+                        <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"></line>
+                    </svg>
+                </div>
+                <div class="header-info">
+                    <h2>@_medication.Name@(!string.IsNullOrWhiteSpace(_medication.Strength) ? " " + _medication.Strength : "")</h2>
+                    <p>@_medication.ActiveIngredient</p>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#267863" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
+                    Põhiinfo
+                </div>
+                <div class="info-row">
+                    <span class="label">Toimeaine</span>
+                    <span class="val">@_medication.ActiveIngredient</span>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(_medication.Strength))
+                {
+                    <div class="info-row">
+                        <span class="label">Tugevus</span>
+                        <span class="val">@_medication.Strength</span>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(_medication.ShortDescription))
+                {
+                    <div class="info-row">
+                        <span class="label">Näidustus</span>
+                        <span class="val">@_medication.ShortDescription</span>
+                    </div>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_medication.Warnings))
+            {
+                <div class="warnings-card">
+                    <div class="card-title warning-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Hoiatused
+                    </div>
+                    <div class="warning-list">
+                        @foreach (var warning in _medication.Warnings.Split(new[] { '\n', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <div class="warning-item">
+                                <span class="warning-icon">⚠</span>
+                                <span>@warning.Trim()</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="info-card">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#267863" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Registreering
+                </div>
+                <div class="info-row">
+                    <span class="label">Müügiloa number</span>
+                    <span class="val">-</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="action-btn action-pdf">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Ametlik infoleht (PDF)
+            </button>
+            <button class="action-btn action-save" @onclick="SaveAsync" disabled="@_isBusy">
+                + Lisa nimekirja
+            </button>
+        </div>
+    </div>
+}
+
+<style>
+    .medicine-screen {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f3f4f4;
+        min-height: 100vh;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        box-sizing: border-box;
+        padding-bottom: 200px;
+    }
+
+    .medicine-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: calc(max(16px, env(safe-area-inset-top)) + 20px) 20px 16px 20px;
+        background: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .medicine-header h1 {
+        margin: 0;
+        font-size: 20px;
+        color: #132340;
+        font-weight: 700;
+        flex: 1;
+        text-align: left;
+        margin-left: 16px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: #f3f4f4;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        color: #132340;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .badge-register {
+        background: #f3f4f4;
+        color: #5e7072;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .content-scroll {
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .header-card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .pill-icon {
+        background: #e6f2ee;
+        border-radius: 16px;
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .header-info h2 {
+        margin: 0 0 4px 0;
+        font-size: 20px;
+        color: #132340;
+        font-weight: 800;
+    }
+
+    .header-info p {
+        margin: 0;
+        color: #5e7072;
+        font-size: 14px;
+    }
+
+    .info-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 16px;
+        color: #132340;
+        font-weight: 700;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f3f4f4;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+        padding: 12px 0;
+    }
+
+    .info-row:not(:last-child) {
+        border-bottom: 1px dashed #f3f4f4;
+    }
+
+    .info-row .label {
+        color: #5e7072;
+        font-size: 14px;
+    }
+
+    .info-row .val {
+        color: #132340;
+        font-size: 15px;
+        font-weight: 600;
+        text-align: right;
+        flex: 1;
+        word-break: break-word;
+    }
+
+    .warnings-card {
+        background: #fffbef;
+        border: 1px solid #fde68a;
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .warning-title {
+        color: #b45309;
+        border-bottom-color: #fde68a;
+    }
+
+    .warning-list {
+        display: grid;
+        gap: 12px;
+    }
+
+    .warning-item {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        color: #92400e;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .warning-icon {
+        color: #d97706;
+    }
+
+    .action-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        padding: 16px 20px calc(max(16px, env(safe-area-inset-bottom)) + 16px);
+        display: grid;
+        gap: 12px;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        z-index: 40;
+    }
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        border-radius: 14px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .action-pdf {
+        background: #fff;
+        color: #267863;
+        border: 2px solid #267863;
+    }
+
+    .action-save {
+        background: #2f6f58;
+        color: #fff;
+        border: none;
+    }
+
+    .action-save:disabled {
+        opacity: 0.7;
+    }
+
+    .error-box {
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 15px;
+        margin: 16px 16px 0 16px;
+        background: #fde9eb;
+        color: #ab3f4c;
+    }
+</style>
+
+@code {
+    [Parameter] public string Barcode { get; set; } = string.Empty;
+    [SupplyParameterFromQuery] public int? ProfileId { get; set; }
+
+    private bool _isReady;
+    private bool _isLoading;
+    private bool _isBusy;
+    private int _targetProfileId;
+    
+    private MedicationLookupResult? _medication;
+    private int _quantity = 1;
+    private int? _packageNumber;
+    private DateTime? _expiresOnDate;
+    private string? _notes;
+    private string? _message;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _targetProfileId = ResolveTargetProfileId();
+        if (_targetProfileId <= 0)
+        {
+            _message = "Vaikimisi profiili ei leitud.";
+        }
+
+        _isReady = true;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_isReady)
+        {
+            _isLoading = true;
+            try
+            {
+                _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
+                if (_medication == null)
+                {
+                    _message = "Ravimit ei leitud.";
+                }
+            }
+            catch
+            {
+                _message = "Ravimi andmete laadimine ebaõnnestus.";
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+    }
+
+    private int ResolveTargetProfileId()
+    {
+        if (ProfileId is int routeProfileId && routeProfileId > 0)
+        {
+            return routeProfileId;
+        }
+
+        return AuthService.CurrentUser?.DefaultProfileId ?? 0;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_isBusy || _medication is null)
+        {
+            return;
+        }
+
+        if (_targetProfileId <= 0)
+        {
+            _message = "Profiili ei leitud.";
+            return;
+        }
+
+        _isBusy = true;
+        _message = null;
+
+        try
+        {
+            await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto
+            {
+                ProfileId = _targetProfileId,
+                MedicationId = _medication.Id,
+                PackageNumber = _packageNumber,
+                ExpiresOn = ToDateOnlyOrNull(_expiresOnDate),
+                Quantity = Math.Max(1, _quantity),
+                Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
+            });
+
+            Navigation.NavigateTo("/home-pharmacy");
+        }
+        catch (Exception ex)
+        {
+            _message = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private static DateOnly? ToDateOnlyOrNull(DateTime? value)
+    {
+        if (value is null)
+        {
+            return null;
+        }
+
+        return DateOnly.FromDateTime(value.Value);
+    }
+
+    private void BackToSearch()
+    {
+        Navigation.NavigateTo($"/home-pharmacy/search?ProfileId={ProfileId}");
+    }
+}

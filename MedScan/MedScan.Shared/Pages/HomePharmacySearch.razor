@@ -1,4 +1,4 @@
-@page "/home-pharmacy/add"
+@page "/home-pharmacy/search"
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
@@ -8,7 +8,7 @@
 @inject IScannerFlowService ScannerFlowService
 @inject IHomePharmacyService HomePharmacyService
 
-<PageTitle>Lisa koduapteeki</PageTitle>
+<PageTitle>Lisa ravim</PageTitle>
 
 @if (!_isReady)
 {
@@ -25,7 +25,7 @@ else
                 </svg>
                 Tagasi
             </button>
-            <h1>Lisa koduapteeki</h1>
+            <h1>Lisa ravim</h1>
             <span class="header-spacer"></span>
         </div>
 
@@ -62,32 +62,6 @@ else
                 </div>
             }
         </section>
-
-        @if (_selectedMedication is not null)
-        {
-            <section class="edit-card">
-                <h3>@_selectedMedication.Name</h3>
-                <p class="meta-line">@_selectedMedication.ActiveIngredient</p>
-
-                <label class="field-label">Kogus</label>
-                <input class="field-input" type="number" min="1" @bind="_quantity" />
-
-                <label class="field-label">Karbi number (valikuline)</label>
-                <input class="field-input" type="number" min="1" @bind="_packageNumber" />
-
-                <label class="field-label">Aegumiskuupaev (valikuline)</label>
-                <InputDate class="field-input" @bind-Value="_expiresOnDate" />
-
-                <label class="field-label">Markmed</label>
-                <textarea class="field-input field-textarea" @bind="_notes"></textarea>
-            </section>
-
-            <div class="action-bar">
-                <button class="action-save" @onclick="SaveAsync" disabled="@_isBusy">
-                    @(_isBusy ? "Salvestan..." : "Salvesta koduapteeki")
-                </button>
-            </div>
-        }
     </div>
 }
 
@@ -148,7 +122,7 @@ else
         margin-right: 8px;
     }
 
-    .search-card, .edit-card {
+    .search-card {
         background: #fff;
         border-radius: 16px;
         box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
@@ -217,63 +191,6 @@ else
         flex-shrink: 0;
     }
 
-    .edit-card h3 {
-        margin: 0 0 6px 0;
-        font-size: 22px;
-        color: #132340;
-        font-weight: 800;
-    }
-
-    .meta-line {
-        margin: 0 0 10px 0;
-        color: #5e7072;
-        font-size: 15px;
-    }
-
-    .field-label {
-        display: block;
-        margin-top: 8px;
-        margin-bottom: 6px;
-        color: #132340;
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .field-input {
-        width: 100%;
-        border: 1px solid #d9dfde;
-        border-radius: 12px;
-        background: #f9fbfa;
-        padding: 10px 12px;
-        font-size: 16px;
-        color: #1f2a3d;
-    }
-
-    .field-textarea {
-        min-height: 92px;
-        resize: vertical;
-    }
-
-    .action-bar {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px);
-        padding: 0 16px;
-        z-index: 40;
-    }
-
-    .action-save {
-        border: 0;
-        width: 100%;
-        border-radius: 14px;
-        padding: 12px 14px;
-        font-size: 16px;
-        font-weight: 700;
-        background: #2f6f58;
-        color: #fff;
-    }
-
     .error-box {
         border-radius: 14px;
         padding: 12px;
@@ -290,14 +207,9 @@ else
     private bool _isReady;
     private bool _isBusy;
     private int _targetProfileId;
-    private int _quantity = 1;
-    private int? _packageNumber;
-    private DateTime? _expiresOnDate;
     private string _query = string.Empty;
-    private string? _notes;
     private string? _message;
     private IReadOnlyList<MedicationLookupResult> _results = [];
-    private MedicationLookupResult? _selectedMedication;
 
     protected override async Task OnInitializedAsync()
     {
@@ -365,58 +277,7 @@ else
 
     private void SelectMedication(MedicationLookupResult medication)
     {
-        _selectedMedication = medication;
-        _message = null;
-    }
-
-    private async Task SaveAsync()
-    {
-        if (_isBusy || _selectedMedication is null)
-        {
-            return;
-        }
-
-        if (_targetProfileId <= 0)
-        {
-            _message = "Profiili ei leitud.";
-            return;
-        }
-
-        _isBusy = true;
-        _message = null;
-
-        try
-        {
-            await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto
-            {
-                ProfileId = _targetProfileId,
-                MedicationId = _selectedMedication.Id,
-                PackageNumber = _packageNumber,
-                ExpiresOn = ToDateOnlyOrNull(_expiresOnDate),
-                Quantity = Math.Max(1, _quantity),
-                Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
-            });
-
-            Navigation.NavigateTo("/home-pharmacy");
-        }
-        catch (Exception ex)
-        {
-            _message = ex.Message;
-        }
-        finally
-        {
-            _isBusy = false;
-        }
-    }
-
-    private static DateOnly? ToDateOnlyOrNull(DateTime? value)
-    {
-        if (value is null)
-        {
-            return null;
-        }
-
-        return DateOnly.FromDateTime(value.Value);
+        Navigation.NavigateTo($"/home-pharmacy/save-medication/{Uri.EscapeDataString(medication.Barcode)}?ProfileId={_targetProfileId}");
     }
 
     private async Task BackToScannerAsync()

@@ -529,11 +529,11 @@ else
         {
             if (_selectedProfileId > 0)
             {
-                Navigation.NavigateTo($"/home-pharmacy/add?profileId={_selectedProfileId}");
+                Navigation.NavigateTo($"/home-pharmacy/search?profileId={_selectedProfileId}");
                 return;
             }
 
-            Navigation.NavigateTo("/home-pharmacy/add");
+            Navigation.NavigateTo("/home-pharmacy/search");
         }
     }
 
