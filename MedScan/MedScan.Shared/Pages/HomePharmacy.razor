@@ -405,16 +405,56 @@ else
             var profiles = await ProfileService.GetMyProfilesAsync();
             _profiles.Clear();
             _profiles.AddRange(profiles.OrderBy(p => p.Id));
+            _itemsByProfile.Clear();
 
             _selectedProfileId = ResolveDefaultProfileId();
-            if (_selectedProfileId != 0)
+            if (_profiles.Count != 0)
             {
-                await LoadProfileItemsAsync(_selectedProfileId);
+                await LoadAllProfileItemsAsync();
             }
         }
         catch
         {
             _errorMessage = "Koduapteegi laadimine ebaonnestus.";
+        }
+    }
+
+    private async Task LoadAllProfileItemsAsync()
+    {
+        _isLoading = true;
+        var hasLoadError = false;
+
+        try
+        {
+            var loadTasks = _profiles.Select(async profile =>
+            {
+                try
+                {
+                    var items = await HomePharmacyService.GetByProfileIdAsync(profile.Id);
+                    return (profile.Id, Items: items.ToList(), HasError: false);
+                }
+                catch
+                {
+                    return (profile.Id, Items: new List<HomePharmacyItemDto>(), HasError: true);
+                }
+            });
+
+            var results = await Task.WhenAll(loadTasks);
+
+            foreach (var result in results)
+            {
+                _itemsByProfile[result.Id] = result.Items;
+                hasLoadError |= result.HasError;
+            }
+
+            if (hasLoadError)
+            {
+                _errorMessage = "Koduapteegi laadimine ebaonnestus.";
+            }
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
