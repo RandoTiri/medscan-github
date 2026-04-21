@@ -10,6 +10,7 @@ builder.Services.AddRazorComponents()
 
 // Add device-specific services used by the MedScan.Shared project
 builder.Services.AddSingleton<IFormFactor,FormFactor>();
+builder.Services.AddScoped<IThemeService, ThemeService>();
 
 var app = builder.Build();
 
