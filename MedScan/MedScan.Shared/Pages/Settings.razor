@@ -3,6 +3,7 @@
 @using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
+@inject IExternalNavigationService ExternalNavigationService
 @inject NavigationManager Navigation
 
 <PageTitle>Seaded</PageTitle>
@@ -96,7 +97,7 @@ else
                         <div class="right-arrow">›</div>
                     </div>
                     <div class="item-divider"></div> *@
-                    <div class="settings-item">
+                    <div class="settings-item" @onclick="OpenRavimiregisterAsync">
                         <div class="icon-wrapper">
                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                         </div>
@@ -111,13 +112,13 @@ else
                         </div>
                     </div>
                     <div class="item-divider"></div>
-                    <div class="settings-item">
+                    <div class="settings-item" @onclick="OpenSupportSettings">
                         <div class="icon-wrapper">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a4baf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         </div>
                         <div class="item-text">
                             <h3>Abi ja tugi</h3>
-                            <p>KKK ja kontakt</p>
+                            <p>medscan.loputoo@gmail.com</p>
                         </div>
                         <div class="right-arrow">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -397,6 +398,16 @@ else
     private void OpenLanguageSettings()
     {
         Navigation.NavigateTo("/settings/language");
+    }
+
+    private async Task OpenRavimiregisterAsync()
+    {
+        await ExternalNavigationService.OpenUrlAsync("https://www.ravimiregister.ee/");
+    }
+
+    private void OpenSupportSettings()
+    {
+        Navigation.NavigateTo("/settings/support");
     }
 
     private string GetInitials()

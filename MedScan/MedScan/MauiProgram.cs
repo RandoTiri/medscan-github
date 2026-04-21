@@ -1,4 +1,4 @@
-﻿using MedScan.Services;
+using MedScan.Services;
 using MedScan.Shared.Services;
 using Microsoft.Extensions.Logging;
 using MedScan.MAUI.Services;
@@ -35,6 +35,7 @@ namespace MedScan
             builder.Services.AddSingleton<IMedicationCatalogClient, MedicationCatalogClient>();
             builder.Services.AddSingleton<IScannerFlowService, ScannerFlowService>();
             builder.Services.AddScoped<IThemeService, ThemeService>();
+            builder.Services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
 
             builder.Services.AddScoped<IMedicineReminderScheduler,MauiMedicineReminderScheduler>();
             builder.Services.AddScoped<MedicineReminderCoordinator>();
