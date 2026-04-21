@@ -1,4 +1,4 @@
-@page "/home-pharmacy/{Id:int}"
+﻿@page "/home-pharmacy/{Id:int}"
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Services
 @using Microsoft.AspNetCore.Components.Forms
@@ -97,7 +97,7 @@ else
 <style>
     .medicine-screen {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: #f3f4f4;
+        background: var(--ms-bg);
         min-height: 100vh;
         width: 100vw;
         position: relative;
@@ -118,14 +118,14 @@ else
         align-items: center;
         gap: 8px;
         padding: 6px 6px 14px 6px;
-        border-bottom: 1px solid #dfe3e2;
+        border-bottom: 1px solid var(--ms-divider);
     }
 
     .medicine-header h1 {
         margin: 0;
         font-size: 22px;
         letter-spacing: -0.02em;
-        color: #132340;
+        color: var(--ms-text);
         font-weight: 800;
         text-align: center;
     }
@@ -139,7 +139,7 @@ else
         align-items: center;
         border: none;
         background: transparent;
-        color: #267863;
+        color: var(--ms-accent);
         font-size: 16px;
         font-weight: 600;
         text-decoration: none;
@@ -152,7 +152,7 @@ else
     }
 
     .detail-card, .edit-card {
-        background: #fff;
+        background: var(--ms-surface);
         border-radius: 16px;
         box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
         padding: 14px;
@@ -173,15 +173,15 @@ else
         border-radius: 14px;
         display: grid;
         place-items: center;
-        background: #e7efed;
-        color: #2f6f58;
+        background: var(--ms-surface-soft);
+        color: var(--ms-accent);
         font-size: 28px;
         font-weight: 700;
     }
 
     .title-row h2 {
         margin: 0;
-        color: #132340;
+        color: var(--ms-text);
         font-size: 24px;
         font-weight: 800;
         line-height: 1.1;
@@ -189,7 +189,7 @@ else
 
     .meta-line {
         margin: 6px 0 0 0;
-        color: #5e7072;
+        color: var(--ms-text-muted);
         font-size: 15px;
     }
 
@@ -206,12 +206,12 @@ else
     }
 
     .info-grid p span {
-        color: #6b7c7d;
+        color: var(--ms-text-muted);
         font-size: 13px;
     }
 
     .info-grid p strong {
-        color: #132340;
+        color: var(--ms-text);
         font-size: 15px;
         font-weight: 700;
     }
@@ -219,7 +219,7 @@ else
     .leaflet-link {
         margin-top: 10px;
         display: inline-block;
-        color: #2f6f58;
+        color: var(--ms-accent);
         font-weight: 700;
         text-decoration: none;
     }
@@ -227,7 +227,7 @@ else
     .edit-card h3 {
         margin: 0 0 10px 0;
         font-size: 22px;
-        color: #132340;
+        color: var(--ms-text);
         font-weight: 800;
     }
 
@@ -235,19 +235,19 @@ else
         display: block;
         margin-top: 8px;
         margin-bottom: 6px;
-        color: #132340;
+        color: var(--ms-text);
         font-size: 14px;
         font-weight: 700;
     }
 
     .field-input {
         width: 100%;
-        border: 1px solid #d9dfde;
+        border: 1px solid var(--ms-divider);
         border-radius: 12px;
-        background: #f9fbfa;
+        background: var(--ms-surface-soft);
         padding: 10px 12px;
         font-size: 16px;
-        color: #1f2a3d;
+        color: var(--ms-text);
     }
 
     .field-textarea {
@@ -281,8 +281,8 @@ else
     }
 
     .action-delete {
-        background: #fbe8ea;
-        color: #ab3f4c;
+        background: var(--ms-danger-bg);
+        color: var(--ms-danger-text);
     }
 
     .error-box, .success-box, .empty-state {
@@ -293,18 +293,18 @@ else
     }
 
     .error-box {
-        background: #fde9eb;
-        color: #ab3f4c;
+        background: var(--ms-danger-bg);
+        color: var(--ms-danger-text);
     }
 
     .success-box {
         background: #e7f4ed;
-        color: #2f6f58;
+        color: var(--ms-accent);
     }
 
     .empty-state {
-        background: #fff;
-        color: #607175;
+        background: var(--ms-surface);
+        color: var(--ms-text-muted);
     }
 </style>
 

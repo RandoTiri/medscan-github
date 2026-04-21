@@ -6,9 +6,15 @@
     --ms-text-muted: #90a09a;
     --ms-divider: #f0f0f0;
     --ms-accent: #258d6b;
+    --ms-primary-card-bg: #1f765b;
     --ms-danger-bg: #fef2f2;
     --ms-danger-border: #fce7e7;
     --ms-danger-text: #cf3d3d;
+    --ms-nav-bg: #ffffff;
+    --ms-nav-border: #e6ece9;
+    --ms-nav-icon: #9aaca5;
+    --ms-nav-icon-active: #258d6b;
+    --ms-nav-shadow: 0 -2px 10px rgba(0,0,0,0.05);
 }
 
 html[data-theme='dark'] {
@@ -19,9 +25,15 @@ html[data-theme='dark'] {
     --ms-text-muted: #9eb6af;
     --ms-divider: #2b3d38;
     --ms-accent: #3aa982;
+    --ms-primary-card-bg: #256f57;
     --ms-danger-bg: #3a1f23;
     --ms-danger-border: #5a3138;
     --ms-danger-text: #ff9aa6;
+    --ms-nav-bg: #13201d;
+    --ms-nav-border: #27403a;
+    --ms-nav-icon: #8fa59f;
+    --ms-nav-icon-active: #51c198;
+    --ms-nav-shadow: 0 -2px 12px rgba(0,0,0,0.35);
 }
 
 .page-container {
@@ -159,4 +171,113 @@ h1:focus {
     background: #fff;
     display: grid;
     gap: 0.2rem;
+}
+
+html[data-theme='dark'] .mobile-container,
+html[data-theme='dark'] .page-container,
+html[data-theme='dark'] .home-page,
+html[data-theme='dark'] .home-pharmacy-page,
+html[data-theme='dark'] .home-pharmacy-add-page,
+html[data-theme='dark'] .home-pharmacy-item-page,
+html[data-theme='dark'] .profile-page,
+html[data-theme='dark'] .profile-view-page,
+html[data-theme='dark'] .main-profile-page,
+html[data-theme='dark'] .support-page,
+html[data-theme='dark'] .settings-subpage {
+    background: var(--ms-bg) !important;
+    color: var(--ms-text) !important;
+}
+
+html[data-theme='dark'] .settings-card,
+html[data-theme='dark'] .support-card,
+html[data-theme='dark'] .scan-card,
+html[data-theme='dark'] .med-card,
+html[data-theme='dark'] .family-card,
+html[data-theme='dark'] .crud-panel,
+html[data-theme='dark'] .profile-card,
+html[data-theme='dark'] .info-card,
+html[data-theme='dark'] .manual-result-item,
+html[data-theme='dark'] .search-bar,
+html[data-theme='dark'] .results-card,
+html[data-theme='dark'] .home-pharmacy-list,
+html[data-theme='dark'] .medication-list,
+html[data-theme='dark'] .item-card,
+html[data-theme='dark'] .details-card {
+    background: var(--ms-surface) !important;
+    border-color: var(--ms-divider) !important;
+}
+
+html[data-theme='dark'] .item-divider,
+html[data-theme='dark'] .divider,
+html[data-theme='dark'] .section-divider {
+    background: var(--ms-divider) !important;
+    border-color: var(--ms-divider) !important;
+}
+
+html[data-theme='dark'] .item-text h3,
+html[data-theme='dark'] .scan-text h3,
+html[data-theme='dark'] .med-info h3,
+html[data-theme='dark'] .family-info h3,
+html[data-theme='dark'] .section-header h2,
+html[data-theme='dark'] .text h3,
+html[data-theme='dark'] .page-title,
+html[data-theme='dark'] .form-label {
+    color: var(--ms-text) !important;
+}
+
+html[data-theme='dark'] .item-text p,
+html[data-theme='dark'] .scan-text p,
+html[data-theme='dark'] .med-info p,
+html[data-theme='dark'] .family-info p,
+html[data-theme='dark'] .section-label,
+html[data-theme='dark'] .version-info,
+html[data-theme='dark'] .text p {
+    color: var(--ms-text-muted) !important;
+}
+
+html[data-theme='dark'] .login-container,
+html[data-theme='dark'] .forgot-container,
+html[data-theme='dark'] .update-container {
+    background: var(--ms-surface) !important;
+    color: var(--ms-text) !important;
+}
+
+html[data-theme='dark'] .header-section {
+    background: linear-gradient(180deg, #17312a 0%, #14201d 100%) !important;
+}
+
+html[data-theme='dark'] .form-section .auth-input-group label,
+html[data-theme='dark'] .brand-name,
+html[data-theme='dark'] .title {
+    color: var(--ms-text) !important;
+}
+
+html[data-theme='dark'] .brand-subtitle,
+html[data-theme='dark'] .subtitle {
+    color: var(--ms-text-muted) !important;
+}
+
+html[data-theme='dark'] .input-wrapper {
+    background: #1d2d29 !important;
+    border-color: #35534c !important;
+}
+
+html[data-theme='dark'] .input-wrapper:focus-within {
+    background: #1f322d !important;
+    border-color: var(--ms-accent) !important;
+    box-shadow: 0 0 0 4px rgba(58, 169, 130, 0.16) !important;
+}
+
+html[data-theme='dark'] input,
+html[data-theme='dark'] select,
+html[data-theme='dark'] textarea,
+html[data-theme='dark'] .form-control {
+    background: #1d2d29 !important;
+    color: var(--ms-text) !important;
+    border-color: #35534c !important;
+}
+
+html[data-theme='dark'] input::placeholder,
+html[data-theme='dark'] textarea::placeholder {
+    color: #8aa29b !important;
 }

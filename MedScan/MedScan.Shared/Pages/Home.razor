@@ -1,4 +1,4 @@
-@page "/"
+Ôªø@page "/"
 @using MedScan.Shared.Services
 @inject IFormFactor FormFactor
 @inject IAuthService AuthService
@@ -54,20 +54,20 @@
                     <h3>Skaneeri ravim</h3>
                     <p>Skan triipkoodi infole</p>
                 </div>
-                <div class="scan-arrow">õ</div>
+                <div class="scan-arrow">‚Ä∫</div>
             </div>
 
             <!-- Today's Plan -->
             <div class="section-header">
-                <h2>Minu t‰nane raviskeem</h2>
-                <a href="#">Kıik</a>
+                <h2>Minu t√§nane raviskeem</h2>
+                <a href="#">K√µik</a>
             </div>
 
             <div class="med-card tehtud">
                 <div class="med-icon">??</div>
                 <div class="med-info">
                     <h3>Metformiin 500mg</h3>
-                    <p>08:00, 20:00 ï 2x p‰evas</p>
+                    <p>08:00, 20:00 ‚Ä¢ 2x p√§evas</p>
                 </div>
                 <div class="med-status tehtud-status">? Tehtud</div>
             </div>
@@ -76,7 +76,7 @@
                 <div class="med-icon">??</div>
                 <div class="med-info">
                     <h3>Bisoprolool 5mg</h3>
-                    <p>08:00 ï 1x p‰evas</p>
+                    <p>08:00 ‚Ä¢ 1x p√§evas</p>
                 </div>
                 <div class="med-status ootel-status">?? Ootel</div>
             </div>
@@ -89,7 +89,7 @@
                 <div class="family-avatar">MT</div>
                 <div class="family-info">
                     <h3>Marta</h3>
-                    <p>Nurofen 200mg ñ 14:00 ootel</p>
+                    <p>Nurofen 200mg ‚Äì 14:00 ootel</p>
                 </div>
                 <div class="family-action">??</div>
             </div>
@@ -99,7 +99,7 @@
     <style>
         .mobile-container {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: var(--ms-bg);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -145,35 +145,35 @@
 
         .main-content { padding: 20px; margin-top: -10px; }
 
-        .scan-card { background: white; border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; cursor: pointer; }
+        .scan-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; cursor: pointer; }
         .scan-icon-wrapper { background: #e8f5f1; color: #258d6b; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; }
         .scan-text { flex-grow: 1; }
-        .scan-text h3 { margin: 0; font-size: 18px; color: #1a4a3c; }
-        .scan-text p { margin: 5px 0 0 0; font-size: 14px; color: #7a8c87; }
-        .scan-arrow { font-size: 24px; color: #a0b0aa; font-weight: bold; }
+        .scan-text h3 { margin: 0; font-size: 18px; color: var(--ms-text); }
+        .scan-text p { margin: 5px 0 0 0; font-size: 14px; color: var(--ms-text-muted); }
+        .scan-arrow { font-size: 24px; color: var(--ms-text-muted); font-weight: bold; }
 
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .section-header h2 { margin: 0; font-size: 18px; color: #1a4a3c; font-weight: bold; }
+        .section-header h2 { margin: 0; font-size: 18px; color: var(--ms-text); font-weight: bold; }
         .section-header a { color: #258d6b; text-decoration: none; font-size: 14px; font-weight: 500; }
 
-        .med-card { background: white; border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .med-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
         .med-card.tehtud .med-icon { background: #e8f5f1; color: #258d6b; }
         .med-card.ootel .med-icon { background: #fff5e6; color: #f5a623; }
         .med-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 15px; flex-shrink: 0; }
         .med-info { flex-grow: 1; }
-        .med-info h3 { margin: 0; font-size: 16px; color: #1a4a3c; }
-        .med-info p { margin: 5px 0 0 0; font-size: 13px; color: #7a8c87; }
+        .med-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
+        .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
 
         .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
         .tehtud-status { background: #e8f5f1; color: #258d6b; }
         .ootel-status { background: #fff5e6; color: #f5a623; }
 
-        .family-card { background: white; border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .family-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
         .family-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee1fa; color: #8a4baf; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; position:relative; }
-        .family-avatar::after { content:''; position:absolute; bottom:0; right:0; width:10px; height:10px; background:#f5a623; border-radius:50%; border:2px solid white; }
+        .family-avatar::after { content:''; position:absolute; bottom:0; right:0; width:10px; height:10px; background:#f5a623; border-radius:50%; border:2px solid var(--ms-surface); }
         .family-info { flex-grow: 1; }
-        .family-info h3 { margin: 0; font-size: 16px; color: #1a4a3c; }
-        .family-info p { margin: 5px 0 0 0; font-size: 13px; color: #7a8c87; }
+        .family-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
+        .family-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
         .family-action { background: #fff5e6; color: #f5a623; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
     </style>
 }
@@ -199,7 +199,7 @@ else
             align-items: center;
             justify-content: center;
             gap: 14px;
-            color: #5f6f7d;
+            color: var(--ms-text-muted);
         }
 
         .spinner-wrap {
