@@ -1,0 +1,199 @@
+@page "/settings/appearance"
+@using MedScan.Shared.Services
+@inject IAuthService AuthService
+@inject IThemeService ThemeService
+@inject NavigationManager Navigation
+
+<PageTitle>Välimus</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else
+{
+    <div class="settings-subpage">
+        <div class="settings-subpage-content">
+            <button class="back-link" @onclick="GoBack">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Seaded
+            </button>
+
+            <h1 class="page-title">Välimus</h1>
+
+            <div class="settings-card">
+                <div class="settings-item">
+                    <div class="item-text">
+                        <h3>Teema</h3>
+                        <p>@(_darkModeEnabled ? "Tume teema" : "Hele teema")</p>
+                    </div>
+                    <label class="toggle-switch" aria-label="Teema">
+                        <input type="checkbox"
+                               checked="@_darkModeEnabled"
+                               @onchange="OnThemeToggleChanged" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .settings-subpage {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        min-height: 100vh;
+        background: var(--ms-bg);
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 18px);
+        padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 84px);
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        box-sizing: border-box;
+    }
+
+    .settings-subpage-content {
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        background: transparent;
+        color: var(--ms-accent);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 10px 0;
+        margin-bottom: 12px;
+        margin-top: 16px;
+    }
+
+    .back-link svg {
+        margin-right: 8px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--ms-text);
+        margin: 0 0 20px 0;
+    }
+
+    .settings-card {
+        background: var(--ms-surface);
+        border-radius: 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        overflow: hidden;
+    }
+
+    .settings-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 16px;
+        gap: 14px;
+    }
+
+    .item-text h3 {
+        margin: 0;
+        font-size: 16px;
+        color: var(--ms-text);
+        font-weight: 700;
+    }
+
+    .item-text p {
+        margin: 3px 0 0 0;
+        font-size: 13px;
+        color: var(--ms-text-muted);
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 30px;
+        flex-shrink: 0;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: var(--ms-divider);
+        transition: .2s;
+        border-radius: 999px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 24px;
+        width: 24px;
+        left: 3px;
+        top: 3px;
+        background-color: white;
+        transition: .2s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    }
+
+    .toggle-switch input:checked + .toggle-slider {
+        background: var(--ms-accent);
+    }
+
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(22px);
+    }
+</style>
+
+@code {
+    private bool _isReady;
+    private bool _darkModeEnabled;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _isReady = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await ThemeService.InitializeAsync();
+        _darkModeEnabled = ThemeService.IsDarkMode;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnThemeToggleChanged(ChangeEventArgs args)
+    {
+        _darkModeEnabled = args.Value is bool value && value;
+        await ThemeService.SetDarkModeAsync(_darkModeEnabled);
+    }
+
+    private void GoBack() => Navigation.NavigateTo("/settings");
+}

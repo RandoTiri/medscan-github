@@ -1,4 +1,4 @@
-@page "/login"
+Ôªø@page "/login"
 @layout MedScan.Shared.Layout.AuthLayout
 @using MedScan.Shared.Services
 @inject IAuthService AuthService
@@ -14,7 +14,7 @@
 
         width: 100%;
         min-height: 100vh;
-        background-color: #fff;
+        background-color: var(--ms-surface);
         max-width: 450px;
         margin: 0 auto;
         color: #1c3d4f;
@@ -84,7 +84,7 @@
         border-radius: 16px;
         overflow: hidden;
         padding: 0 15px;
-        background: #fff;
+        background: var(--ms-surface);
         width: 100%;
         box-sizing: border-box;
         transition: all 0.2s ease;
@@ -169,7 +169,7 @@
         padding: 0 15px;
     }
     .btn-secondary {
-        background-color: #fff;
+        background-color: var(--ms-surface);
         color: #267863;
         border: 2px solid #267863;
         border-radius: 12px;
@@ -215,7 +215,7 @@
             </svg>
         </div>
         <h1 class="brand-name">MedScan</h1>
-        <p class="brand-subtitle">Sinu ravimite usaldusv‰‰rne kaaslane</p>
+        <p class="brand-subtitle">Sinu ravimite usaldusv√§√§rne kaaslane</p>
     </div>
 
     @if (!string.IsNullOrWhiteSpace(ErrorMessage))
@@ -246,7 +246,7 @@
                         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
                 </div>
-                <input id="password" type="@PasswordInputType" placeholder="ïïïïïïïï" @bind="Password" disabled="@IsBusy" />
+                <input id="password" type="@PasswordInputType" placeholder="‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢‚Ä¢" @bind="Password" disabled="@IsBusy" />
                 <div class="input-action" @onclick="TogglePasswordVisibility">
                     @if (ShowPassword)
                     {
@@ -275,7 +275,7 @@
         </button>
 
         <div class="divider">
-            <span>vıi</span>
+            <span>v√µi</span>
         </div>
 
         <button class="btn-secondary" @onclick="GoToRegister" disabled="@IsBusy">

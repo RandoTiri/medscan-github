@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject MedScan.Shared.Services.IThemeService ThemeService
 
 <div class="page">
     <main>
@@ -8,3 +10,26 @@
     </main>
     <NavMenu />
 </div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        ThemeService.OnChanged += HandleThemeChanged;
+        await ThemeService.InitializeAsync();
+    }
+
+    private void HandleThemeChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnChanged -= HandleThemeChanged;
+    }
+}
