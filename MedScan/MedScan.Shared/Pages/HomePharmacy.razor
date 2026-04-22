@@ -1,4 +1,4 @@
-@page "/home-pharmacy"
+﻿@page "/home-pharmacy"
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
@@ -165,7 +165,7 @@ else
 <style>
     .medicine-screen {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: #f3f4f4;
+        background: var(--ms-bg);
         min-height: 100vh;
         width: 100vw;
         position: relative;
@@ -186,14 +186,14 @@ else
         align-items: center;
         gap: 8px;
         padding: 6px 6px 14px 6px;
-        border-bottom: 1px solid #dfe3e2;
+        border-bottom: 1px solid var(--ms-divider);
     }
 
     .medicine-header h1 {
         margin: 0;
         font-size: 22px;
         letter-spacing: -0.02em;
-        color: #132340;
+        color: var(--ms-text);
         font-weight: 800;
         text-align: center;
     }
@@ -217,7 +217,7 @@ else
         display: flex;
         gap: 14px;
         padding: 12px 6px 10px;
-        border-bottom: 1px solid #dfe3e2;
+        border-bottom: 1px solid var(--ms-divider);
         margin-bottom: 12px;
         overflow-x: auto;
     }
@@ -226,7 +226,7 @@ else
         border: 0;
         border-bottom: 4px solid transparent;
         background: transparent;
-        color: #607175;
+        color: var(--ms-text-muted);
         font-size: 17px;
         font-weight: 600;
         padding: 0 2px 8px;
@@ -244,8 +244,8 @@ else
         min-width: 28px;
         height: 28px;
         border-radius: 999px;
-        background: #d8dce2;
-        color: #4f5f6a;
+        background: var(--ms-divider);
+        color: var(--ms-text-muted);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -269,7 +269,7 @@ else
         width: 100%;
         text-align: left;
         cursor: pointer;
-        background: #fff;
+        background: var(--ms-surface);
         border-radius: 16px;
         box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
         padding: 12px;
@@ -309,14 +309,14 @@ else
 
     .top-line h2 {
         margin: 0;
-        color: #132340;
+        color: var(--ms-text);
         font-size: 18px;
         line-height: 1.08;
         font-weight: 800;
     }
 
     .open-arrow {
-        color: #a0b0aa;
+        color: var(--ms-text-muted);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -330,7 +330,7 @@ else
 
     .meta-line {
         margin: 0;
-        color: #5e7072;
+        color: var(--ms-text-muted);
         font-size: 15px;
     }
 
@@ -349,7 +349,7 @@ else
     }
 
     .error-box, .empty-state {
-        background: #fff;
+        background: var(--ms-surface);
         border-radius: 16px;
         padding: 12px;
         font-size: 15px;
@@ -362,7 +362,7 @@ else
     }
 
     .empty-state {
-        color: #607175;
+        color: var(--ms-text-muted);
     }
 </style>
 

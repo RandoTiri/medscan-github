@@ -3,6 +3,7 @@
 @using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
+@inject IExternalNavigationService ExternalNavigationService
 @inject NavigationManager Navigation
 
 <PageTitle>Seaded</PageTitle>
@@ -35,7 +36,7 @@ else
             <div class="settings-section">
                 <span class="section-label">RAKENDUS</span>
                 <div class="settings-card">
-                    <div class="settings-item">
+                    <div class="settings-item" @onclick="OpenReminderSettings">
                         <div class="icon-wrapper">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5a623" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3zm-8.27 4a2 2 0 0 1-3.46 0"></path></svg>
                         </div>
@@ -50,13 +51,13 @@ else
                         </div>
                     </div>
                     <div class="item-divider"></div>
-                    <div class="settings-item">
+                    <div class="settings-item" @onclick="OpenAppearanceSettings">
                         <div class="icon-wrapper">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a4baf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
                         </div>
                         <div class="item-text">
                             <h3>Välimus</h3>
-                            <p>Heledus ja teema</p>
+                            <p>Teema</p>
                         </div>
                         <div class="right-arrow">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -65,7 +66,7 @@ else
                         </div>
                     </div>
                     <div class="item-divider"></div>
-                    <div class="settings-item">
+                    <div class="settings-item" @onclick="OpenLanguageSettings">
                         <div class="icon-wrapper">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                         </div>
@@ -96,7 +97,7 @@ else
                         <div class="right-arrow">›</div>
                     </div>
                     <div class="item-divider"></div> *@
-                    <div class="settings-item">
+                    <div class="settings-item" @onclick="OpenRavimiregisterAsync">
                         <div class="icon-wrapper">
                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                         </div>
@@ -111,13 +112,13 @@ else
                         </div>
                     </div>
                     <div class="item-divider"></div>
-                    <div class="settings-item">
+                    <div class="settings-item" @onclick="OpenSupportSettings">
                         <div class="icon-wrapper">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8a4baf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         </div>
                         <div class="item-text">
                             <h3>Abi ja tugi</h3>
-                            <p>KKK ja kontakt</p>
+                            <p>medscan.loputoo@gmail.com</p>
                         </div>
                         <div class="right-arrow">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -144,7 +145,7 @@ else
     <style>
         .mobile-container {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: var(--ms-bg);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -172,13 +173,13 @@ else
         .page-title {
             font-size: 24px;
             font-weight: bold;
-            color: #1a4a3c;
+            color: var(--ms-text);
             margin-bottom: 20px;
             margin-top: 10px;
         }
 
         .profile-summary-card {
-            background-color: #2e8b6c;
+            background-color: var(--ms-primary-card-bg);
             color: white;
             border-radius: 16px;
             padding: 20px;
@@ -227,7 +228,7 @@ else
         }
         
         .right-arrow {
-            color: #a0b0aa;
+            color: var(--ms-text-muted);
             margin-left: 10px;
             display: flex;
             align-items: center;
@@ -247,7 +248,7 @@ else
         .section-label {
             font-size: 12px;
             font-weight: bold;
-            color: #90a09a;
+            color: var(--ms-text-muted);
             margin-bottom: 10px;
             display: block;
             letter-spacing: 1px;
@@ -255,7 +256,7 @@ else
         }
 
         .settings-card {
-            background: white;
+            background: var(--ms-surface);
             border-radius: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         }
@@ -268,7 +269,7 @@ else
         }
         .item-divider {
             height: 1px;
-            background-color: #f0f0f0;
+            background-color: var(--ms-divider);
             margin: 0 15px;
         }
 
@@ -291,20 +292,20 @@ else
         .item-text h3 {
             margin: 0;
             font-size: 16px;
-            color: #1a4a3c;
+            color: var(--ms-text);
             font-weight: bold;
         }
         .item-text p {
             margin: 2px 0 0 0;
             font-size: 13px;
-            color: #90a09a;
+            color: var(--ms-text-muted);
         }
         
         .logout-btn {
             width: 100%;
-            background-color: #fef2f2;
-            color: #cf3d3d;
-            border: 1px solid #fce7e7;
+            background-color: var(--ms-danger-bg);
+            color: var(--ms-danger-text);
+            border: 1px solid var(--ms-danger-border);
             padding: 15px;
             border-radius: 12px;
             font-size: 16px;
@@ -321,7 +322,7 @@ else
             text-align: center;
             margin-top: 20px;
             font-size: 12px;
-            color: #b0c0ba;
+            color: var(--ms-text-muted);
         }
     </style>
 }
@@ -382,6 +383,31 @@ else
         {
             Navigation.NavigateTo($"/settings/main-profile/{_mainProfileId}");
         }
+    }
+
+    private void OpenReminderSettings()
+    {
+        Navigation.NavigateTo("/settings/notifications");
+    }
+
+    private void OpenAppearanceSettings()
+    {
+        Navigation.NavigateTo("/settings/appearance");
+    }
+
+    private void OpenLanguageSettings()
+    {
+        Navigation.NavigateTo("/settings/language");
+    }
+
+    private async Task OpenRavimiregisterAsync()
+    {
+        await ExternalNavigationService.OpenUrlAsync("https://www.ravimiregister.ee/");
+    }
+
+    private void OpenSupportSettings()
+    {
+        Navigation.NavigateTo("/settings/support");
     }
 
     private string GetInitials()

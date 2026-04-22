@@ -1,4 +1,4 @@
-@page "/settings/main-profile/{ProfileId:int}"
+﻿@page "/settings/main-profile/{ProfileId:int}"
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject IAuthService AuthService
@@ -169,7 +169,7 @@ else
         margin-left: -50vw;
         margin-top: -1.1rem;
         min-height: 100vh;
-        background: #f3f5f6;
+        background: var(--ms-bg);
         padding-top: calc(max(20px, env(safe-area-inset-top)) + 18px);
         padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 84px);
         padding-left: max(20px, env(safe-area-inset-left));
@@ -187,7 +187,7 @@ else
         align-items: center;
         border: none;
         background: transparent;
-        color: #267863;
+        color: var(--ms-accent);
         font-size: 16px;
         font-weight: 600;
         cursor: pointer;
@@ -201,7 +201,7 @@ else
     }
 
     .profile-summary-card {
-        background-color: #2e8b6c;
+        background-color: var(--ms-accent);
         color: white;
         padding: 20px;
         gap: 16px;
@@ -239,8 +239,8 @@ else
 
     .crud-panel {
         margin-top: 14px;
-        background: #fff;
-        border: 1px solid #d7dce0;
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
         border-radius: 14px;
         padding: 12px;
     }
@@ -248,8 +248,8 @@ else
     .crud-toggle {
         width: 100%;
         border: none;
-        background: #f1f5f7;
-        color: #334155;
+        background: var(--ms-surface-soft);
+        color: var(--ms-text-muted);
         border-radius: 10px;
         padding: 10px;
         font-weight: 700;
@@ -263,7 +263,7 @@ else
     }
 
     .edit-form label {
-        color: #4b5563;
+        color: var(--ms-text-muted);
         font-size: 13px;
         font-weight: 600;
     }
@@ -271,7 +271,7 @@ else
     .form-control {
         width: 100%;
         box-sizing: border-box;
-        border: 1px solid #cfd8de;
+        border: 1px solid var(--ms-divider);
         border-radius: 8px;
         padding: 10px;
         font-size: 14px;
@@ -297,8 +297,8 @@ else
         padding-right: 36px;
         font-size: 14px;
         font-weight: 700;
-        background: #fff;
-        color: #111827;
+        background: var(--ms-surface);
+        color: var(--ms-text);
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -330,25 +330,25 @@ else
     }
 
     .delete-btn {
-        background: #fbe8ea;
-        color: #be3b46;
+        background: var(--ms-danger-bg);
+        color: var(--ms-danger-text);
     }
 
     .error-box {
-        background: #feecee;
-        border: 1px solid #fac9cf;
+        background: var(--ms-danger-bg);
+        border: 1px solid var(--ms-danger-border);
         border-radius: 12px;
         padding: 12px;
-        color: #b42332;
+        color: var(--ms-danger-text);
         margin-bottom: 12px;
     }
 
     .success-box {
-        background: #ecfdf3;
-        border: 1px solid #abefc6;
+        background: #e2f5ea;
+        border: 1px solid #86d4aa;
         border-radius: 12px;
         padding: 12px;
-        color: #067647;
+        color: #0f7d4f;
         margin-bottom: 12px;
     }
 
@@ -366,7 +366,7 @@ else
     .confirm-dialog {
         width: 100%;
         max-width: 340px;
-        background: #fff;
+        background: var(--ms-surface);
         border-radius: 12px;
         padding: 16px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -374,7 +374,7 @@ else
 
     .confirm-dialog p {
         margin: 0 0 14px 0;
-        color: #1f2937;
+        color: var(--ms-text);
         font-size: 15px;
     }
 
@@ -399,8 +399,8 @@ else
     }
 
     .confirm-no {
-        background: #e8edf1;
-        color: #475569;
+        background: var(--ms-surface-soft);
+        color: var(--ms-text-muted);
     }
 </style>
 

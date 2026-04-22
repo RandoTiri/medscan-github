@@ -1,4 +1,4 @@
-@page "/home-pharmacy/search"
+﻿@page "/home-pharmacy/search"
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
@@ -68,7 +68,7 @@ else
 <style>
     .medicine-screen {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: #f3f4f4;
+        background: var(--ms-bg);
         min-height: 100vh;
         width: 100vw;
         position: relative;
@@ -89,14 +89,14 @@ else
         align-items: center;
         gap: 8px;
         padding: 6px 6px 14px 6px;
-        border-bottom: 1px solid #dfe3e2;
+        border-bottom: 1px solid var(--ms-divider);
     }
 
     .medicine-header h1 {
         margin: 0;
         font-size: 22px;
         letter-spacing: -0.02em;
-        color: #132340;
+        color: var(--ms-text);
         font-weight: 800;
         text-align: center;
     }
@@ -110,7 +110,7 @@ else
         align-items: center;
         border: none;
         background: transparent;
-        color: #267863;
+        color: var(--ms-accent);
         font-size: 16px;
         font-weight: 600;
         text-decoration: none;
@@ -153,9 +153,9 @@ else
     }
 
     .manual-result-item {
-        border: 1px solid #e2e8e7;
+        border: 1px solid var(--ms-divider);
         border-radius: 12px;
-        background: #fbfdfc;
+        background: var(--ms-surface-soft);
         padding: 10px 14px;
         text-align: left;
         display: flex;
@@ -170,17 +170,17 @@ else
     }
 
     .manual-result-text strong {
-        color: #132340;
+        color: var(--ms-text);
         font-size: 15px;
     }
 
     .manual-result-text span {
-        color: #6a7a7c;
+        color: var(--ms-text-muted);
         font-size: 13px;
     }
 
     .add-indicator {
-        color: #2f6f58;
+        color: var(--ms-accent);
         font-size: 24px;
         font-weight: 700;
         line-height: 1;
@@ -191,13 +191,70 @@ else
         flex-shrink: 0;
     }
 
+    .edit-card h3 {
+        margin: 0 0 6px 0;
+        font-size: 22px;
+        color: #132340;
+        font-weight: 800;
+    }
+
+    .meta-line {
+        margin: 0 0 10px 0;
+        color: #5e7072;
+        font-size: 15px;
+    }
+
+    .field-label {
+        display: block;
+        margin-top: 8px;
+        margin-bottom: 6px;
+        color: #132340;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .field-input {
+        width: 100%;
+        border: 1px solid #d9dfde;
+        border-radius: 12px;
+        background: #f9fbfa;
+        padding: 10px 12px;
+        font-size: 16px;
+        color: #1f2a3d;
+    }
+
+    .field-textarea {
+        min-height: 92px;
+        resize: vertical;
+    }
+
+    .action-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px);
+        padding: 0 16px;
+        z-index: 40;
+    }
+
+    .action-save {
+        border: 0;
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 16px;
+        font-weight: 700;
+        background: #2f6f58;
+        color: #fff;
+    }
+
     .error-box {
         border-radius: 14px;
         padding: 12px;
         font-size: 15px;
         margin-top: 12px;
-        background: #fde9eb;
-        color: #ab3f4c;
+        background: var(--ms-danger-bg);
+        color: var(--ms-danger-text);
     }
 </style>
 

@@ -1,6 +1,6 @@
-﻿.auth-shell {
+.auth-shell {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    background-color: #f7f9fa; /* slightly off white to frame the 450px max width naturally */
+    background-color: var(--ms-bg);
 }
