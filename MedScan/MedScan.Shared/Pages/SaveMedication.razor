@@ -31,9 +31,10 @@ else
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
+                Tagasi
             </button>
             <h1>Ravimi info</h1>
-            <span class="badge-register">Ravimiregister</span>
+            <span class="header-spacer"></span>
         </div>
 
         @if (!string.IsNullOrWhiteSpace(_message))
@@ -81,6 +82,10 @@ else
                         <span class="val">@_medication.ShortDescription</span>
                     </div>
                 }
+                <div class="info-row">
+                    <span class="label">Säilimisaeg</span>
+                    <span class="val">@ShelfLifeDisplay</span>
+                </div>
             </div>
 
             @if (!string.IsNullOrWhiteSpace(_medication.Warnings))
@@ -105,23 +110,6 @@ else
                     </div>
                 </div>
             }
-
-            <div class="info-card">
-                <div class="card-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#267863" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    Registreering
-                </div>
-                <div class="info-row">
-                    <span class="label">Müügiloa number</span>
-                    <span class="val">-</span>
-                </div>
-            </div>
         </div>
 
         <div class="action-bar">
@@ -145,63 +133,63 @@ else
 <style>
     .medicine-screen {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: #f3f4f4;
+        background: var(--ms-bg);
         min-height: 100vh;
         width: 100vw;
         position: relative;
         left: 50%;
         margin-left: -50vw;
-        margin-top: -1.1rem;
+        margin-top: 0;
         box-sizing: border-box;
-        padding-bottom: 200px;
+        padding-top: 0;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 280px);
     }
 
     .medicine-header {
-        display: flex;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
         align-items: center;
-        justify-content: space-between;
-        padding: calc(max(16px, env(safe-area-inset-top)) + 20px) 20px 16px 20px;
-        background: #fff;
+        gap: 8px;
+        padding: calc(max(20px, env(safe-area-inset-top)) + 6px) calc(max(12px, env(safe-area-inset-right)) + 6px) 14px calc(max(12px, env(safe-area-inset-left)) + 6px);
+        background: var(--ms-bg);
         position: sticky;
         top: 0;
         z-index: 10;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        border-bottom: 1px solid var(--ms-divider);
     }
 
     .medicine-header h1 {
         margin: 0;
-        font-size: 20px;
-        color: #132340;
-        font-weight: 700;
-        flex: 1;
-        text-align: left;
-        margin-left: 16px;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        color: var(--ms-text);
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .header-spacer {
+        width: 56px;
     }
 
     .back-link {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
         border: none;
-        background: #f3f4f4;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        color: #132340;
+        background: transparent;
+        color: var(--ms-accent);
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
         cursor: pointer;
-        padding: 0;
+        padding: 10px 0;
     }
 
-    .badge-register {
-        background: #f3f4f4;
-        color: #5e7072;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 600;
+    .back-link svg {
+        margin-right: 8px;
     }
 
     .content-scroll {
+        background: #f3f4f4;
         padding: 16px;
         display: flex;
         flex-direction: column;
@@ -317,14 +305,14 @@ else
 
     .action-bar {
         position: fixed;
-        bottom: 0;
+        bottom: calc(env(safe-area-inset-bottom) + 70px);
         left: 0;
         right: 0;
-        background: #fff;
-        padding: 16px 20px calc(max(16px, env(safe-area-inset-bottom)) + 16px);
+        background: transparent;
+        padding: 16px 20px 16px;
         display: grid;
         gap: 12px;
-        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: none;
         z-index: 40;
     }
 
@@ -382,6 +370,7 @@ else
     private DateTime? _expiresOnDate;
     private string? _notes;
     private string? _message;
+    private string ShelfLifeDisplay => DateTime.Now.AddYears(2).ToString("dd/MM/yyyy");
 
     protected override async Task OnInitializedAsync()
     {
