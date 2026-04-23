@@ -1,0 +1,668 @@
+@page "/home-pharmacy/details/{Id:int}"
+@using MedScan.Shared.DTOs.Medication
+@using MedScan.Shared.DTOs.HomePharmacy
+@using MedScan.Shared.Services
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@inject IHomePharmacyService HomePharmacyService
+@inject IMedicationService MedicationService
+
+<PageTitle>Ravimi detail</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else if (_isLoading)
+{
+    <p><em>Laen ravimi andmeid...</em></p>
+}
+else if (_item is null)
+{
+    <p><em>Ravimit ei leitud.</em></p>
+}
+else
+{
+    <div class="medicine-screen">
+        <div class="medicine-header">
+            <button class="back-link" @onclick="BackToList">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Tagasi
+            </button>
+            <h1>Ravimi info</h1>
+            <span class="header-spacer"></span>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="error-box">@_errorMessage</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(_message))
+        {
+            <div class="success-box">@_message</div>
+        }
+
+        <div class="content-scroll">
+            <div class="header-card">
+                <div class="pill-icon">R</div>
+                <div class="header-info">
+                    <h2>@_item.MedicationName@(!string.IsNullOrWhiteSpace(_item.Strength) ? $" {_item.Strength}" : string.Empty)</h2>
+                    <p>@(_item.ActiveIngredient ?? "-")</p>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="card-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#267863" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <polyline points="9 12 11 14 15 10"></polyline>
+                    </svg>
+                    Põhiinfo
+                </div>
+                <div class="info-row">
+                    <span class="label">Toimeaine</span>
+                    <span class="val">@(_item.ActiveIngredient ?? "-")</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Tugevus</span>
+                    <span class="val">@(_item.Strength ?? "-")</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Näidustus</span>
+                    <span class="val">@(_item.Indication ?? "-")</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Säilimisaeg</span>
+                    <span class="val">@ShelfLifeDisplay</span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_item.Warnings))
+            {
+                <div class="warnings-card">
+                    <div class="card-title warning-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        Hoiatused
+                    </div>
+                    <div class="warning-list">
+                        @foreach (var warning in _item.Warnings.Split(new[] { '\n', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            <div class="warning-item">
+                                <span class="warning-icon">⚠</span>
+                                <span>@warning.Trim()</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (_hasSchedule || _isAddingSchedule)
+            {
+                <div class="schedule-card">
+                    <div class="card-title">Raviskeem</div>
+
+                    <div class="section-title">Manustamissagedus</div>
+                    <div class="frequency-grid">
+                        @foreach (var option in _frequencyOptions)
+                        {
+                            var active = _frequencyPerDay == option;
+                            <button class="frequency-btn @(active ? "active" : null)" @onclick="() => SetFrequency(option)">@option x</button>
+                        }
+                    </div>
+                    <div class="freq-caption">päevas</div>
+
+                    <div class="section-title time-title">Kellaajad</div>
+                    @for (var i = 0; i < _scheduledTimeTexts.Count; i++)
+                    {
+                        var index = i;
+                        <div class="time-row">
+                            <span class="clock-icon">◷</span>
+                            <div class="time-wheel-box">
+                                <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
+                                    @for (var hour = 0; hour < 24; hour++)
+                                    {
+                                        var hourText = hour.ToString("D2");
+                                        <option value="@hourText">@hourText</option>
+                                    }
+                                </select>
+                            </div>
+                            <span class="time-separator">:</span>
+                            <div class="time-wheel-box">
+                                <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
+                                    @for (var minute = 0; minute < 60; minute++)
+                                    {
+                                        var minuteText = minute.ToString("D2");
+                                        <option value="@minuteText">@minuteText</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="toggle-row">
+                        <span>Meeldetuletus</span>
+                        <label class="switch">
+                            <input type="checkbox" checked="@_remindersEnabled" @onchange="OnRemindersChanged" />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <label class="section-title" for="schedule-notes">Märkused (valikuline)</label>
+                    <textarea id="schedule-notes" class="notes-area" @bind="_scheduleNotes" placeholder="Lisa märkused..."></textarea>
+
+                    @if (_isAddingSchedule || _scheduleDirty)
+                    {
+                        <button class="save-schedule-btn" @onclick="SaveScheduleAsync" disabled="@_isSaving">
+                            @(_isSaving ? "Salvestan..." : "Salvesta")
+                        </button>
+                    }
+
+                    <button class="end-schedule-btn" @onclick="EndScheduleAsync" disabled="@_isSaving">
+                        Lõpeta raviskeem
+                    </button>
+
+                </div>
+            }
+            else
+            {
+                <div class="schedule-card">
+                    <div class="card-title">Raviskeem</div>
+                    <button class="add-schedule-btn" @onclick="StartAddSchedule">+ Lisa raviskeemi</button>
+                </div>
+            }
+
+            <button class="action-pdf" @onclick="OpenPdfAsync" disabled="@_isSaving">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Ametlik infoleht (PDF)
+            </button>
+
+            <button class="delete-med-btn" @onclick="DeleteMedicationAsync" disabled="@_isSaving">
+                Kustuta ravim
+            </button>
+        </div>
+    </div>
+}
+
+<style>
+    .medicine-screen { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: var(--ms-bg); min-height: 100vh; width: 100vw; position: relative; left: 50%; margin-left: -50vw; box-sizing: border-box; padding-bottom: calc(env(safe-area-inset-bottom) + 160px); }
+    .medicine-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: calc(max(20px, env(safe-area-inset-top)) + 6px) calc(max(12px, env(safe-area-inset-right)) + 6px) 14px calc(max(12px, env(safe-area-inset-left)) + 6px); background: var(--ms-bg); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--ms-divider); }
+    .medicine-header h1 { margin: 0; font-size: 22px; color: var(--ms-text); font-weight: 800; text-align: center; }
+    .header-spacer { width: 56px; }
+    .back-link { display: inline-flex; align-items: center; border: none; background: transparent; color: var(--ms-accent); font-size: 16px; font-weight: 600; cursor: pointer; padding: 10px 0; }
+    .back-link svg { margin-right: 8px; }
+    .content-scroll { background: #f3f4f4; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+    .header-card,.info-card,.schedule-card { background: #fff; border-radius: 16px; padding: 16px; }
+    .header-card { display: flex; gap: 14px; align-items: center; }
+    .pill-icon { width: 62px; height: 62px; border-radius: 14px; background: #e6f2ee; color: #267863; display: grid; place-items: center; font-size: 28px; font-weight: 700; }
+    .header-info h2 { margin: 0 0 4px; font-size: 22px; color: #132340; font-weight: 800; }
+    .header-info p { margin: 0; color: #5e7072; font-size: 14px; }
+    .card-title { display: flex; align-items: center; gap: 10px; font-size: 18px; color: #132340; font-weight: 800; margin-bottom: 12px; }
+    .info-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; }
+    .info-row:not(:last-child) { border-bottom: 1px dashed #edf0ef; }
+    .label { color: #5e7072; font-size: 14px; }
+    .val { color: #132340; font-size: 15px; font-weight: 700; text-align: right; }
+    .warnings-card { background: #fffbef; border: 1px solid #fde68a; border-radius: 16px; padding: 16px; }
+    .warning-title { color: #b45309; }
+    .warning-list { display: grid; gap: 8px; }
+    .warning-item { color: #92400e; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    .warning-icon { color: #d97706; }
+    .section-title { margin: 8px 0; font-size: 16px; color: var(--ms-text); font-weight: 700; }
+    .schedule-card .section-title { margin-top: 10px; }
+    .frequency-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .frequency-btn { border: 1px solid #d3d9db; border-radius: 14px; padding: 10px 8px; font-size: 22px; font-weight: 700; background: #fff; color: #304553; }
+    .frequency-btn.active { background: #1f7a60; color: #fff; border-color: #1f7a60; }
+    .freq-caption { color: #6a7a7e; font-size: 14px; margin-top: 4px; margin-bottom: 10px; }
+    .time-title { margin-top: 10px; }
+    .time-row {
+        border: 1px solid #d3d9db;
+        border-radius: 14px;
+        background: #fff;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    .clock-icon { color: #99a7ad; font-size: 22px; line-height: 1; margin-top: 0; }
+    .time-wheel-box {
+        border: 1px solid #d3d9db;
+        border-radius: 14px;
+        background: #f9fbfa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 10px;
+    }
+    .time-wheel-part {
+        width: 52px;
+        height: 36px;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #253645;
+        font-size: 22px;
+        font-weight: 700;
+        text-align: center;
+        padding: 0;
+        line-height: 1;
+    }
+    .time-wheel-part option { font-size: 20px; }
+    .time-separator { color: #253645; font-size: 22px; font-weight: 700; line-height: 1; }
+    .toggle-row { margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--ms-text); font-size: 16px; font-weight: 600; }
+    .notes-area { width: 100%; min-height: 90px; border: 1px solid #d3d9db; border-radius: 12px; padding: 10px 12px; font-size: 16px; color: #253645; background: #fff; resize: vertical; }
+    .switch { position: relative; display: inline-block; width: 48px; height: 28px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #d3d9db; transition: .2s; border-radius: 999px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; top: 4px; background-color: #fff; transition: .2s; border-radius: 50%; }
+    .switch input:checked + .slider { background-color: #1f7a60; }
+    .switch input:checked + .slider:before { transform: translateX(20px); }
+    .save-schedule-btn,.add-schedule-btn { margin-top: 14px; border: 0; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #1f7a60; color: #fff; }
+    .end-schedule-btn {
+        margin-top: 10px;
+        border: 1px solid #f1c27a;
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        background: #fff8eb;
+        color: #b45309;
+    }
+    .delete-med-btn {
+        margin-top: 4px;
+        border: 1px solid #f3b7be;
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        background: #fde9eb;
+        color: #ab3f4c;
+    }
+    .action-pdf {
+        margin-top: 10px;
+        border: 2px solid #267863;
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        background: transparent;
+        color: #267863;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .error-box,.success-box { border-radius: 14px; padding: 12px; font-size: 15px; margin: 12px 16px 0; }
+    .error-box { background: #fde9eb; color: #ab3f4c; }
+    .success-box { background: #e7f4ed; color: #1f7a60; }
+</style>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
+
+    private bool _isReady;
+    private bool _isLoading;
+    private bool _isSaving;
+    private string? _message;
+    private string? _errorMessage;
+    private HomePharmacyItemDto? _item;
+    private UserMedicationDto? _schedule;
+    private bool _hasSchedule;
+    private bool _isAddingSchedule;
+
+    private int _frequencyPerDay = 1;
+    private List<string> _scheduledTimeTexts = ["08:00"];
+    private bool _remindersEnabled = true;
+    private string? _scheduleNotes;
+
+    private int _originalFrequency = 1;
+    private List<string> _originalTimes = ["08:00"];
+    private bool _originalReminders = true;
+    private string? _originalNotes;
+
+    private bool _scheduleDirty =>
+        _frequencyPerDay != _originalFrequency ||
+        _remindersEnabled != _originalReminders ||
+        !_scheduledTimeTexts.SequenceEqual(_originalTimes) ||
+        !string.Equals(_scheduleNotes?.Trim(), _originalNotes?.Trim(), StringComparison.Ordinal);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _isReady = true;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            _item = await HomePharmacyService.GetByIdAsync(Id);
+            if (_item is null)
+            {
+                _errorMessage = "Ravimit ei leitud.";
+                return;
+            }
+
+            var schedules = await MedicationService.GetScheduleAsync(_item.ProfileId);
+            _schedule = schedules.FirstOrDefault(x => x.MedicationId == _item.MedicationId && x.IsActive);
+            _hasSchedule = _schedule is not null;
+
+            if (_schedule is not null)
+            {
+                ApplySchedule(_schedule);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task EndScheduleAsync()
+    {
+        if (_isSaving || _schedule is null)
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            var removed = await MedicationService.RemoveFromScheduleAsync(_schedule.Id);
+            if (!removed)
+            {
+                _errorMessage = "Raviskeemi ei leitud.";
+                return;
+            }
+
+            _schedule = null;
+            _hasSchedule = false;
+            _isAddingSchedule = false;
+            _frequencyPerDay = 1;
+            _scheduledTimeTexts = ["08:00"];
+            _remindersEnabled = true;
+            _scheduleNotes = null;
+            _originalFrequency = _frequencyPerDay;
+            _originalTimes = _scheduledTimeTexts.ToList();
+            _originalReminders = _remindersEnabled;
+            _originalNotes = _scheduleNotes;
+            _message = "Raviskeem lõpetatud.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void ApplySchedule(UserMedicationDto schedule)
+    {
+        _frequencyPerDay = Math.Clamp(schedule.FrequencyPerDay, 1, 4);
+        _scheduledTimeTexts = schedule.ScheduledTimes.Count > 0
+            ? schedule.ScheduledTimes.OrderBy(t => t).Select(t => t.ToString("HH:mm")).ToList()
+            : ["08:00"];
+
+        while (_scheduledTimeTexts.Count < _frequencyPerDay)
+        {
+            _scheduledTimeTexts.Add("08:00");
+        }
+
+        if (_scheduledTimeTexts.Count > _frequencyPerDay)
+        {
+            _scheduledTimeTexts = _scheduledTimeTexts.Take(_frequencyPerDay).ToList();
+        }
+
+        _remindersEnabled = schedule.RemindersEnabled;
+        _scheduleNotes = schedule.Notes;
+
+        _originalFrequency = _frequencyPerDay;
+        _originalTimes = _scheduledTimeTexts.ToList();
+        _originalReminders = _remindersEnabled;
+        _originalNotes = _scheduleNotes;
+    }
+
+    private void SetFrequency(int frequency)
+    {
+        _frequencyPerDay = frequency;
+
+        while (_scheduledTimeTexts.Count < _frequencyPerDay)
+        {
+            _scheduledTimeTexts.Add("08:00");
+        }
+
+        while (_scheduledTimeTexts.Count > _frequencyPerDay)
+        {
+            _scheduledTimeTexts.RemoveAt(_scheduledTimeTexts.Count - 1);
+        }
+    }
+
+    private void OnHourChanged(int index, ChangeEventArgs args)
+    {
+        var hour = args.Value?.ToString() ?? "00";
+        var minute = GetMinutePart(index);
+        _scheduledTimeTexts[index] = $"{hour}:{minute}";
+    }
+
+    private void OnMinuteChanged(int index, ChangeEventArgs args)
+    {
+        var hour = GetHourPart(index);
+        var minute = args.Value?.ToString() ?? "00";
+        _scheduledTimeTexts[index] = $"{hour}:{minute}";
+    }
+
+    private string GetHourPart(int index)
+    {
+        var value = _scheduledTimeTexts[index];
+        return value.Length >= 2 ? value[..2] : "00";
+    }
+
+    private string GetMinutePart(int index)
+    {
+        var value = _scheduledTimeTexts[index];
+        return value.Length >= 5 ? value.Substring(3, 2) : "00";
+    }
+
+    private void OnRemindersChanged(ChangeEventArgs args)
+    {
+        _remindersEnabled = args.Value is bool value && value;
+    }
+
+    private async Task SaveScheduleAsync()
+    {
+        if (_isSaving || _item is null)
+        {
+            return;
+        }
+
+        var times = new List<TimeOnly>();
+        foreach (var text in _scheduledTimeTexts)
+        {
+            if (!TimeOnly.TryParse(text, out var parsed))
+            {
+                _errorMessage = "Sisesta kõik kellaajad korrektselt.";
+                return;
+            }
+
+            times.Add(parsed);
+        }
+
+        if (times.Count != _frequencyPerDay)
+        {
+            _errorMessage = "Kellaaegade arv peab vastama manustamissagedusele.";
+            return;
+        }
+
+        if (times.Distinct().Count() != times.Count)
+        {
+            _errorMessage = "Kellaajad peavad olema erinevad.";
+            return;
+        }
+
+        _isSaving = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            if (_schedule is null)
+            {
+                var created = await MedicationService.AddToScheduleAsync(new AddMedicationDto
+                {
+                    ProfileId = _item.ProfileId,
+                    MedicationId = _item.MedicationId,
+                    FrequencyPerDay = _frequencyPerDay,
+                    ScheduledTimes = times.OrderBy(t => t).ToList(),
+                    RemindersEnabled = _remindersEnabled,
+                    Notes = string.IsNullOrWhiteSpace(_scheduleNotes) ? null : _scheduleNotes.Trim()
+                });
+
+                _schedule = created;
+                _hasSchedule = true;
+                _isAddingSchedule = false;
+                ApplySchedule(created);
+                _message = "Raviskeem salvestatud.";
+                return;
+            }
+
+            var updated = await MedicationService.UpdateScheduleAsync(_schedule.Id, new AddMedicationDto
+            {
+                ProfileId = _item.ProfileId,
+                MedicationId = _item.MedicationId,
+                FrequencyPerDay = _frequencyPerDay,
+                ScheduledTimes = times.OrderBy(t => t).ToList(),
+                RemindersEnabled = _remindersEnabled,
+                Notes = string.IsNullOrWhiteSpace(_scheduleNotes) ? null : _scheduleNotes.Trim()
+            });
+
+            if (updated is null)
+            {
+                _errorMessage = "Raviskeemi ei leitud.";
+                return;
+            }
+
+            _schedule = updated;
+            ApplySchedule(updated);
+            _message = "Raviskeem salvestatud.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void StartAddSchedule()
+    {
+        if (_item is null)
+        {
+            return;
+        }
+
+        _isAddingSchedule = true;
+        _hasSchedule = false;
+        _schedule = null;
+        _frequencyPerDay = 1;
+        _scheduledTimeTexts = ["08:00"];
+        _remindersEnabled = true;
+        _originalFrequency = _frequencyPerDay;
+        _originalTimes = _scheduledTimeTexts.ToList();
+        _originalReminders = _remindersEnabled;
+        _scheduleNotes = null;
+        _originalNotes = null;
+        _message = null;
+        _errorMessage = null;
+    }
+
+    private async Task DeleteMedicationAsync()
+    {
+        if (_isSaving || _item is null)
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            var removed = await HomePharmacyService.RemoveAsync(_item.Id);
+            if (!removed)
+            {
+                _errorMessage = "Ravimit ei leitud.";
+                return;
+            }
+
+            Navigation.NavigateTo($"/home-pharmacy?profileId={_item.ProfileId}");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void BackToList()
+    {
+        Navigation.NavigateTo($"/home-pharmacy?profileId={_item?.ProfileId}");
+    }
+
+    private string ShelfLifeDisplay => _item?.ExpiresOn?.ToString("dd/MM/yyyy")
+        ?? _item?.AddedAt.AddYears(2).ToString("dd/MM/yyyy")
+        ?? "-";
+
+    private void OpenPdfAsync()
+    {
+        if (_item is null || string.IsNullOrWhiteSpace(_item.PdfUrl))
+        {
+            _errorMessage = "Ametlik infoleht puudub.";
+            return;
+        }
+
+        Navigation.NavigateTo(_item.PdfUrl, true);
+    }
+}
