@@ -7,6 +7,7 @@
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
+@inject IHomePharmacyService HomePharmacyService
 @inject IMedicationStatusEvents MedicationStatusEvents
 @inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
@@ -121,19 +122,27 @@ else
             {
                 @foreach (var card in _familyMedicationCards)
                 {
-                    <div class="family-card">
-                        <div class="family-avatar">@card.Initials</div>
-                        <div class="family-info">
-                            <h3>@card.ProfileName</h3>
-                            <p>@card.Name – @card.NextTimeText @card.StatusLabel.ToLowerInvariant()</p>
+                    <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
+                        <div class="med-icon">
+                            @if (card.Status == DoseStatusEnum.Done)
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                            }
+                            else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+                            }
+                            else
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                            }
                         </div>
-                        <div class="family-action @card.StatusBadgeCss">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
+                        <div class="med-info">
+                            <h3>@card.ProfileName · @card.Name</h3>
+                            <p>@card.ScheduleText</p>
                         </div>
-                    </div>
+                        <div class="med-status @card.StatusBadgeCss">@card.StatusLabel</div>
+                    </button>
                 }
             }
         </main>
@@ -411,7 +420,7 @@ else
     private bool _isUpdatingDose;
     private string? _modalErrorMessage;
     private string? _modalInfoMessage;
-    private HomeMedicationCard? _selectedDoseCard;
+    private SelectedDoseCard? _selectedDoseCard;
     private bool _showEarlyDoneConfirmation;
     private int _earlyDoneMinutesRemaining;
 
@@ -443,7 +452,14 @@ else
         foreach (var profile in profiles)
         {
             var schedule = await MedicationService.GetScheduleAsync(profile.Id);
-            allMedications.AddRange(schedule.Select(m => (profile, m)));
+            var homePharmacyItems = await HomePharmacyService.GetByProfileIdAsync(profile.Id);
+            var allowedMedicationIds = homePharmacyItems
+                .Select(item => item.MedicationId)
+                .ToHashSet();
+
+            allMedications.AddRange(schedule
+                .Where(medication => allowedMedicationIds.Contains(medication.MedicationId))
+                .Select(medication => (profile, medication)));
         }
 
         var allTodayDoses = allMedications
@@ -466,9 +482,11 @@ else
         _familyMedicationCards.AddRange(allMedications
             .Where(tuple => tuple.Profile.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase))
             .Where(tuple => tuple.Medication.IsActive)
-            .Select(tuple => BuildFamilyMedicationCard(tuple.Profile, tuple.Medication))
+            .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile, tuple.Medication))
             .OrderBy(card => card.NextTimeSortKey)
-            .ThenBy(card => card.ProfileName));
+            .ThenBy(card => card.ProfileName)
+            .ThenBy(card => card.Name)
+            .ThenBy(card => card.ScheduledTime));
     }
 
     private static ProfileSummary? ResolveMainProfile(IReadOnlyList<ProfileSummary> profiles)
@@ -537,32 +555,66 @@ else
         }
     }
 
-    private static FamilyMedicationCard BuildFamilyMedicationCard(ProfileSummary profile, UserMedicationDto medication)
+    private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication)
     {
-        var status = ResolveMedicationStatus(medication.TodayDoses);
-        var nextTime = ResolveNextTime(medication.TodayDoses, medication.ScheduledTimes);
+        var todayDoses = medication.TodayDoses
+            .OrderBy(dose => dose.ScheduledTime)
+            .ToList();
 
-        return new FamilyMedicationCard(
-            ProfileName: profile.Name,
-            Initials: GetInitials(profile.Name),
-            Name: BuildMedicationDisplayName(medication),
-            NextTimeText: nextTime.HasValue ? nextTime.Value.ToString("HH:mm") : "--:--",
-            StatusLabel: status switch
+        if (todayDoses.Count > 0)
+        {
+            foreach (var dose in todayDoses)
             {
-                DoseStatusEnum.Done => "Tehtud",
-                DoseStatusEnum.Missed => "Tegemata",
-                DoseStatusEnum.Skipped => "Tegemata",
-                _ => "Ootel"
-            },
-            StatusBadgeCss: status switch
-            {
-                DoseStatusEnum.Done => "badge-done",
-                DoseStatusEnum.Missed => "badge-missed",
-                DoseStatusEnum.Skipped => "badge-missed",
-                _ => "badge-pending"
-            },
-            NextTimeSortKey: nextTime?.ToTimeSpan() ?? TimeSpan.MaxValue
-        );
+                yield return new FamilyMedicationCard(
+                    UserMedicationId: medication.Id,
+                    ProfileName: profile.Name,
+                    Name: BuildMedicationDisplayName(medication),
+                    ScheduledTime: dose.ScheduledTime,
+                    ScheduleText: dose.ScheduledTime.ToString("HH:mm"),
+                    Status: dose.Status,
+                    StatusLabel: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "Tehtud",
+                        DoseStatusEnum.Missed => "Tegemata",
+                        DoseStatusEnum.Skipped => "Tegemata",
+                        _ => "Ootel"
+                    },
+                    StatusCss: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "status-done",
+                        DoseStatusEnum.Missed => "status-missed",
+                        DoseStatusEnum.Skipped => "status-missed",
+                        _ => "status-pending"
+                    },
+                    StatusBadgeCss: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "badge-done",
+                        DoseStatusEnum.Missed => "badge-missed",
+                        DoseStatusEnum.Skipped => "badge-missed",
+                        _ => "badge-pending"
+                    },
+                    NextTimeSortKey: dose.ScheduledTime.ToTimeSpan()
+                );
+            }
+
+            yield break;
+        }
+
+        foreach (var fallbackTime in medication.ScheduledTimes.OrderBy(t => t))
+        {
+            yield return new FamilyMedicationCard(
+                UserMedicationId: medication.Id,
+                ProfileName: profile.Name,
+                Name: BuildMedicationDisplayName(medication),
+                ScheduledTime: fallbackTime,
+                ScheduleText: fallbackTime.ToString("HH:mm"),
+                Status: DoseStatusEnum.Pending,
+                StatusLabel: "Ootel",
+                StatusCss: "status-pending",
+                StatusBadgeCss: "badge-pending",
+                NextTimeSortKey: fallbackTime.ToTimeSpan()
+            );
+        }
     }
 
     private static string BuildMedicationDisplayName(UserMedicationDto medication)
@@ -573,55 +625,6 @@ else
         }
 
         return $"{medication.MedicationName} {medication.Strength}";
-    }
-
-    private static DoseStatusEnum ResolveMedicationStatus(IEnumerable<ScheduledDoseStatusDto> doses)
-    {
-        var list = doses.ToList();
-        if (list.Count == 0)
-        {
-            return DoseStatusEnum.Pending;
-        }
-
-        if (list.Any(d => d.Status is DoseStatusEnum.Missed or DoseStatusEnum.Skipped))
-        {
-            return DoseStatusEnum.Missed;
-        }
-
-        if (list.All(d => d.Status == DoseStatusEnum.Done))
-        {
-            return DoseStatusEnum.Done;
-        }
-
-        return DoseStatusEnum.Pending;
-    }
-
-    private static TimeOnly? ResolveNextTime(IEnumerable<ScheduledDoseStatusDto> doses, IEnumerable<TimeOnly> fallbackTimes)
-    {
-        var now = TimeOnly.FromDateTime(DateTime.Now);
-
-        var nextPending = doses
-            .Where(d => d.Status == DoseStatusEnum.Pending)
-            .Select(d => d.ScheduledTime)
-            .OrderBy(t => t)
-            .FirstOrDefault();
-
-        if (nextPending != default || doses.Any(d => d.Status == DoseStatusEnum.Pending && d.ScheduledTime == default))
-        {
-            return nextPending;
-        }
-
-        var nextTimeToday = fallbackTimes
-            .Where(t => t >= now)
-            .OrderBy(t => t)
-            .FirstOrDefault();
-
-        if (nextTimeToday != default || fallbackTimes.Any(t => t == default && t >= now))
-        {
-            return nextTimeToday;
-        }
-
-        return fallbackTimes.OrderBy(t => t).FirstOrDefault();
     }
 
     private static string GetInitials(string? name)
@@ -666,7 +669,16 @@ else
 
     private void OpenDoseModal(HomeMedicationCard card)
     {
-        _selectedDoseCard = card;
+        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, card.Name, card.ScheduledTime, card.Status);
+        _modalErrorMessage = null;
+        _modalInfoMessage = null;
+        _showEarlyDoneConfirmation = false;
+        _earlyDoneMinutesRemaining = 0;
+    }
+
+    private void OpenDoseModal(FamilyMedicationCard card)
+    {
+        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} · {card.Name}", card.ScheduledTime, card.Status);
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
@@ -824,11 +836,20 @@ else
         TimeSpan NextTimeSortKey);
 
     private sealed record FamilyMedicationCard(
+        int UserMedicationId,
         string ProfileName,
-        string Initials,
         string Name,
-        string NextTimeText,
+        TimeOnly ScheduledTime,
+        string ScheduleText,
+        DoseStatusEnum Status,
         string StatusLabel,
+        string StatusCss,
         string StatusBadgeCss,
         TimeSpan NextTimeSortKey);
+
+    private sealed record SelectedDoseCard(
+        int UserMedicationId,
+        string Name,
+        TimeOnly ScheduledTime,
+        DoseStatusEnum Status);
 }
