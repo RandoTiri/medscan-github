@@ -868,7 +868,19 @@ else
         var scanResult = await ScannerFlowService.ScanAsync();
         if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
         {
-            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+            var route = $"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}";
+            if (scanResult.ExpirationDate is DateOnly expirationDate)
+            {
+                route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
+            }
+            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
+            {
+                route += route.Contains('?')
+                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
+                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
+            }
+
+            Navigation.NavigateTo(route);
         }
         else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
         {

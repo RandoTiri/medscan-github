@@ -46,6 +46,7 @@ public sealed class ScannerFlowService(
         IReadOnlyList<TimeOnly> scheduledTimes,
         bool remindersEnabled,
         string? notes,
+        DateOnly? expiresOn = null,
         CancellationToken cancellationToken = default)
     {
         if (medicationId <= 0)
@@ -92,6 +93,7 @@ public sealed class ScannerFlowService(
             MedicationId = medicationId,
             FrequencyPerDay = Math.Clamp(frequencyPerDay, 1, 24),
             ScheduledTimes = normalizedTimes,
+            ExpiresOn = expiresOn,
             RemindersEnabled = remindersEnabled,
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
         };

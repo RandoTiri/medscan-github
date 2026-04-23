@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using MedScan.Shared.Models;
@@ -74,7 +75,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
         catch (Exception ex)
         {
-            return (false, $"REGISTER ERROR\nBaseAddress={baseAddress}\n{ex}");
+            LogException("REGISTER", baseAddress, ex);
+            return (false, BuildFriendlyExceptionMessage("Registreerimine", ex));
         }
     }
 
@@ -126,7 +128,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
         catch (Exception ex)
         {
-            return (false, $"LOGIN ERROR\nBaseAddress={baseAddress}\n{ex}");
+            LogException("LOGIN", baseAddress, ex);
+            return (false, BuildFriendlyExceptionMessage("Sisselogimine", ex));
         }
     }
 
@@ -155,7 +158,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
         catch (Exception ex)
         {
-            return (false, $"FORGOT PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+            LogException("FORGOT PASSWORD", baseAddress, ex);
+            return (false, BuildFriendlyExceptionMessage("Parooli taastamine", ex));
         }
     }
 
@@ -185,7 +189,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
         catch (Exception ex)
         {
-            return (false, $"VERIFY CODE ERROR\nBaseAddress={baseAddress}\n{ex}");
+            LogException("VERIFY CODE", baseAddress, ex);
+            return (false, BuildFriendlyExceptionMessage("Koodi kontroll", ex));
         }
     }
 
@@ -216,7 +221,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
         catch (Exception ex)
         {
-            return (false, $"RESET PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+            LogException("RESET PASSWORD", baseAddress, ex);
+            return (false, BuildFriendlyExceptionMessage("Parooli vahetamine", ex));
         }
     }
 
@@ -246,7 +252,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
         catch (Exception ex)
         {
-            return (false, $"CHANGE PASSWORD ERROR\nBaseAddress={baseAddress}\n{ex}");
+            LogException("CHANGE PASSWORD", baseAddress, ex);
+            return (false, BuildFriendlyExceptionMessage("Parooli muutmine", ex));
         }
     }
 
@@ -275,7 +282,8 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
         catch (Exception ex)
         {
-            return (false, $"DELETE ACCOUNT ERROR\nBaseAddress={baseAddress}\n{ex}");
+            LogException("DELETE ACCOUNT", baseAddress, ex);
+            return (false, BuildFriendlyExceptionMessage("Konto kustutamine", ex));
         }
     }
 
@@ -366,5 +374,25 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         }
 
         return raw;
+    }
+
+    private static void LogException(string operation, string baseAddress, Exception ex)
+    {
+        Debug.WriteLine($"{operation} ERROR | BaseAddress={baseAddress} | {ex}");
+    }
+
+    private static string BuildFriendlyExceptionMessage(string operation, Exception ex)
+    {
+        if (ex is HttpRequestException)
+        {
+            return "Serveriga ei saadud ühendust. Kontrolli internetti ja serveri aadressi.";
+        }
+
+        if (ex is TaskCanceledException)
+        {
+            return "Päring aegus. Proovi uuesti.";
+        }
+
+        return $"{operation} ebaõnnestus. Proovi uuesti.";
     }
 }

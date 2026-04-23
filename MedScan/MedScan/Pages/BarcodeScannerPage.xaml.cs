@@ -1,4 +1,5 @@
 using MedScan.Shared.Models;
+using MedScan.Services;
 using ZXing.Net.Maui;
 
 namespace MedScan.Pages;
@@ -15,7 +16,13 @@ public partial class BarcodeScannerPage : ContentPage
 
         CameraView.Options = new BarcodeReaderOptions
         {
-            Formats = BarcodeFormat.Ean13 | BarcodeFormat.Ean8 | BarcodeFormat.Code128 | BarcodeFormat.Code39 | BarcodeFormat.UpcA | BarcodeFormat.UpcE,
+            Formats = BarcodeFormat.Ean13
+                | BarcodeFormat.Ean8
+                | BarcodeFormat.Code128
+                | BarcodeFormat.Code39
+                | BarcodeFormat.UpcA
+                | BarcodeFormat.UpcE
+                | BarcodeFormat.DataMatrix,
             AutoRotate = true,
             Multiple = false
         };
@@ -144,13 +151,35 @@ public partial class BarcodeScannerPage : ContentPage
             return;
         }
 
-        var barcodeValue = e.Results
-            .Select(result => result.Value)
-            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
+        var firstDetected = e.Results
+            .FirstOrDefault(result => !string.IsNullOrWhiteSpace(result.Value));
 
+        if (firstDetected is null)
+        {
+            return;
+        }
+
+        var barcodeValue = firstDetected.Value.Trim();
         if (string.IsNullOrWhiteSpace(barcodeValue))
         {
             return;
+        }
+
+        var lookupBarcode = barcodeValue;
+        DateOnly? expirationDate = null;
+        string? batchNumber = null;
+        if (firstDetected.Format == BarcodeFormat.DataMatrix &&
+            Gs1DataMatrixParser.TryExtract(
+                barcodeValue,
+                out var parsedBarcode,
+                out var parsedExpirationDate,
+                out var parsedBatchNumber,
+                out _) &&
+            !string.IsNullOrWhiteSpace(parsedBarcode))
+        {
+            lookupBarcode = parsedBarcode;
+            expirationDate = parsedExpirationDate;
+            batchNumber = parsedBatchNumber;
         }
 
         CameraView.IsDetecting = false;
@@ -163,7 +192,7 @@ public partial class BarcodeScannerPage : ContentPage
         var scannerFlowService = services?.GetService<MedScan.Shared.Services.IScannerFlowService>();
         if (scannerFlowService != null)
         {
-            var medication = await scannerFlowService.FindByBarcodeAsync(barcodeValue.Trim());
+            var medication = await scannerFlowService.FindByBarcodeAsync(lookupBarcode);
             if (medication == null)
             {
                 bool retry = await MainThread.InvokeOnMainThreadAsync(async () => 
@@ -189,7 +218,9 @@ public partial class BarcodeScannerPage : ContentPage
         Complete(new BarcodeScanResult
         {
             Status = BarcodeScanStatus.Success,
-            Barcode = barcodeValue.Trim()
+            Barcode = lookupBarcode,
+            ExpirationDate = expirationDate,
+            BatchNumber = batchNumber
         });
 
         await CloseAsync();

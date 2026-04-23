@@ -13,6 +13,9 @@ public sealed class AddHomePharmacyItemDto
     [Range(1, int.MaxValue)]
     public int? PackageNumber { get; set; }
 
+    [MaxLength(100)]
+    public string? BatchNumber { get; set; }
+
     public DateOnly? ExpiresOn { get; set; }
 
     [Range(1, int.MaxValue)]
