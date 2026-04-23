@@ -28,6 +28,19 @@ else if (_medication is null)
 else
 {
     <div class="add-med-screen">
+        @if (_willTakeMedication is null)
+        {
+            <div class="decision-overlay">
+                <div class="decision-modal">
+                    <h2>Kas plaanite seda ravimit võtma hakata?</h2>
+                    <div class="decision-actions">
+                        <button class="decision-btn yes" @onclick="() => SetWillTakeMedication(true)">Jah</button>
+                        <button class="decision-btn no" @onclick="() => SetWillTakeMedication(false)">Ei</button>
+                    </div>
+                </div>
+            </div>
+        }
+
         <div class="medicine-header">
             <button class="back-link" @onclick="GoBack">
                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -72,56 +85,62 @@ else
                 </select>
             </section>
 
-            <section class="section-card">
-                <div class="section-title">Manustamissagedus</div>
-                <div class="frequency-grid">
-                    @foreach (var option in _frequencyOptions)
-                    {
-                        var active = _frequencyPerDay == option;
-                        <button class="frequency-btn @(active ? "active" : null)" @onclick="() => SetFrequency(option)">@option x</button>
-                    }
-                </div>
-                <div class="freq-caption">päevas</div>
-
-                <div class="section-title time-title">Kellaajad</div>
-                @for (var i = 0; i < _scheduledTimeTexts.Count; i++)
-                {
-                    var index = i;
-                    <div class="time-row">
-                        <span class="clock-icon">◷</span>
-                        <div class="time-wheel-box">
-                            <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
-                                @for (var hour = 0; hour < 24; hour++)
-                                {
-                                    var hourText = hour.ToString("D2");
-                                    <option value="@hourText">@hourText</option>
-                                }
-                            </select>
-                        </div>
-                        <span class="time-separator">:</span>
-                        <div class="time-wheel-box">
-                            <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
-                                @for (var minute = 0; minute < 60; minute++)
-                                {
-                                    var minuteText = minute.ToString("D2");
-                                    <option value="@minuteText">@minuteText</option>
-                                }
-                            </select>
-                        </div>
+            @if (_willTakeMedication == true)
+            {
+                <section class="section-card">
+                    <div class="section-title">Manustamissagedus</div>
+                    <div class="frequency-grid">
+                        @foreach (var option in _frequencyOptions)
+                        {
+                            var active = _frequencyPerDay == option;
+                            <button class="frequency-btn @(active ? "active" : null)" @onclick="() => SetFrequency(option)">@option x</button>
+                        }
                     </div>
-                }
-            </section>
+                    <div class="freq-caption">päevas</div>
 
-            <section class="section-card toggle-card">
-                <div>
-                    <div class="section-title">Meeldetuletused</div>
-                    <div class="toggle-caption">Teavita enne manustamist</div>
-                </div>
-                <label class="switch">
-                    <input type="checkbox" @bind="_remindersEnabled" />
-                    <span class="slider"></span>
-                </label>
-            </section>
+                    <div class="section-title time-title">Kellaajad</div>
+                    @for (var i = 0; i < _scheduledTimeTexts.Count; i++)
+                    {
+                        var index = i;
+                        <div class="time-row">
+                            <span class="clock-icon">◷</span>
+                            <div class="time-wheel-box">
+                                <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
+                                    @for (var hour = 0; hour < 24; hour++)
+                                    {
+                                        var hourText = hour.ToString("D2");
+                                        <option value="@hourText">@hourText</option>
+                                    }
+                                </select>
+                            </div>
+                            <span class="time-separator">:</span>
+                            <div class="time-wheel-box">
+                                <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
+                                    @for (var minute = 0; minute < 60; minute++)
+                                    {
+                                        var minuteText = minute.ToString("D2");
+                                        <option value="@minuteText">@minuteText</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    }
+                </section>
+            }
+
+            @if (_willTakeMedication == true)
+            {
+                <section class="section-card toggle-card">
+                    <div>
+                        <div class="section-title">Meeldetuletused</div>
+                        <div class="toggle-caption">Teavita enne manustamist</div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" @bind="_remindersEnabled" />
+                        <span class="slider"></span>
+                    </label>
+                </section>
+            }
 
             <section class="section-card">
                 <label class="section-title" for="notes">Märkused (valikuline)</label>
@@ -159,6 +178,55 @@ else
         top: 0;
         z-index: 10;
         border-bottom: 1px solid var(--ms-divider);
+    }
+
+    .decision-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        z-index: 120;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+    }
+
+    .decision-modal {
+        width: min(420px, 100%);
+        background: #fff;
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
+    }
+
+    .decision-modal h2 {
+        margin: 0;
+        color: var(--ms-text);
+        font-size: 22px;
+        line-height: 1.2;
+        font-weight: 800;
+    }
+
+    .decision-actions {
+        margin-top: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .decision-btn {
+        border-radius: 12px;
+        border: 1px solid #d3d9db;
+        padding: 10px 12px;
+        font-size: 18px;
+        font-weight: 700;
+        background: #fff;
+        color: #304553;
+    }
+
+    .decision-btn.yes {
+        background: #1f7a60;
+        border-color: #1f7a60;
+        color: #fff;
     }
 
     .medicine-header h1 {
@@ -458,6 +526,7 @@ else
     private bool _isSaving;
     private string? _message;
     private MedicationLookupResult? _medication;
+    private bool? _willTakeMedication;
     private int _selectedProfileId;
     private int _frequencyPerDay = 1;
     private List<string> _scheduledTimeTexts = ["08:00"];
@@ -606,6 +675,12 @@ else
             return;
         }
 
+        if (_willTakeMedication is null)
+        {
+            _message = "Vali esmalt, kas plaanid ravimit võtma hakata.";
+            return;
+        }
+
         if (_selectedProfileId <= 0)
         {
             _message = "Vali profiil.";
@@ -630,36 +705,42 @@ else
             parsedTimes.Add(parsed);
         }
 
-        if (parsedTimes.Count != _frequencyPerDay)
+        if (_willTakeMedication == true)
         {
-            _message = "Kellaaegade arv peab vastama manustamissagedusele.";
-            return;
-        }
+            if (parsedTimes.Count != _frequencyPerDay)
+            {
+                _message = "Kellaaegade arv peab vastama manustamissagedusele.";
+                return;
+            }
 
-        if (parsedTimes.Distinct().Count() != parsedTimes.Count)
-        {
-            _message = "Kellaajad peavad olema erinevad.";
-            return;
-        }
+            if (parsedTimes.Distinct().Count() != parsedTimes.Count)
+            {
+                _message = "Kellaajad peavad olema erinevad.";
+                return;
+            }
 
-        parsedTimes = parsedTimes
-            .OrderBy(t => t)
-            .ToList();
+            parsedTimes = parsedTimes
+                .OrderBy(t => t)
+                .ToList();
+        }
 
         _isSaving = true;
         _message = null;
 
         try
         {
-            await MedicationService.AddToScheduleAsync(new AddMedicationDto
+            if (_willTakeMedication == true)
             {
-                ProfileId = _selectedProfileId,
-                MedicationId = _medication.Id,
-                FrequencyPerDay = _frequencyPerDay,
-                ScheduledTimes = parsedTimes,
-                RemindersEnabled = _remindersEnabled,
-                Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
-            });
+                await MedicationService.AddToScheduleAsync(new AddMedicationDto
+                {
+                    ProfileId = _selectedProfileId,
+                    MedicationId = _medication.Id,
+                    FrequencyPerDay = _frequencyPerDay,
+                    ScheduledTimes = parsedTimes,
+                    RemindersEnabled = _remindersEnabled,
+                    Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
+                });
+            }
 
             await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto
             {
@@ -680,6 +761,11 @@ else
         {
             _isSaving = false;
         }
+    }
+
+    private void SetWillTakeMedication(bool willTakeMedication)
+    {
+        _willTakeMedication = willTakeMedication;
     }
 
     private void GoBack()
