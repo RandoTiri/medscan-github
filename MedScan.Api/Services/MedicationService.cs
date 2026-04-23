@@ -34,20 +34,27 @@ public sealed class MedicationService : IMedicationService
 
     public async Task<UserMedicationDto> AddToScheduleAsync(AddMedicationDto dto)
     {
+        ValidateAddMedication(dto);
+
         var medication = await _medicationRepository.FindByIdAsync(dto.MedicationId);
         if (medication is null)
         {
             throw new InvalidOperationException($"Medication with id {dto.MedicationId} was not found.");
         }
 
+        var normalizedTimes = dto.ScheduledTimes
+            .Distinct()
+            .OrderBy(t => t)
+            .ToList();
+
         var userMedication = new UserMedication
         {
             ProfileId = dto.ProfileId,
             MedicationId = dto.MedicationId,
             Frequency = dto.FrequencyPerDay,
-            ScheduledTimesJson = SerializeTimes(dto.ScheduledTimes),
+            ScheduledTimesJson = SerializeTimes(normalizedTimes),
             RemindersEnabled = dto.RemindersEnabled,
-            Notes = dto.Notes,
+            Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
             IsActive = true,
             AddedAt = DateTime.UtcNow
         };
@@ -63,18 +70,25 @@ public sealed class MedicationService : IMedicationService
 
     public async Task<UserMedicationDto?> UpdateScheduleAsync(int userMedicationId, AddMedicationDto dto)
     {
+        ValidateAddMedication(dto);
+
         var userMedication = await _userMedicationRepository.GetByIdAsync(userMedicationId);
         if (userMedication is null)
         {
             return null;
         }
 
+        var normalizedTimes = dto.ScheduledTimes
+            .Distinct()
+            .OrderBy(t => t)
+            .ToList();
+
         userMedication.ProfileId = dto.ProfileId;
         userMedication.MedicationId = dto.MedicationId;
         userMedication.Frequency = dto.FrequencyPerDay;
-        userMedication.ScheduledTimesJson = SerializeTimes(dto.ScheduledTimes);
+        userMedication.ScheduledTimesJson = SerializeTimes(normalizedTimes);
         userMedication.RemindersEnabled = dto.RemindersEnabled;
-        userMedication.Notes = dto.Notes;
+        userMedication.Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim();
 
         await _userMedicationRepository.SaveChangesAsync();
 
@@ -133,6 +147,39 @@ public sealed class MedicationService : IMedicationService
     private static string SerializeTimes(List<TimeOnly> times)
     {
         return JsonSerializer.Serialize(times);
+    }
+
+    private static void ValidateAddMedication(AddMedicationDto dto)
+    {
+        if (dto.ProfileId <= 0)
+        {
+            throw new InvalidOperationException("ProfileId on vigane.");
+        }
+
+        if (dto.MedicationId <= 0)
+        {
+            throw new InvalidOperationException("MedicationId on vigane.");
+        }
+
+        if (dto.FrequencyPerDay <= 0 || dto.FrequencyPerDay > 24)
+        {
+            throw new InvalidOperationException("Manustamissagedus peab olema vahemikus 1-24.");
+        }
+
+        if (dto.ScheduledTimes is null || dto.ScheduledTimes.Count == 0)
+        {
+            throw new InvalidOperationException("Vähemalt üks kellaaeg on kohustuslik.");
+        }
+
+        if (dto.ScheduledTimes.Count != dto.FrequencyPerDay)
+        {
+            throw new InvalidOperationException("Kellaaegade arv peab vastama manustamissagedusele.");
+        }
+
+        if (dto.ScheduledTimes.Distinct().Count() != dto.ScheduledTimes.Count)
+        {
+            throw new InvalidOperationException("Kellaajad peavad olema erinevad.");
+        }
     }
 
     private static List<TimeOnly> DeserializeTimes(string? json)
