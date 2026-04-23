@@ -1,12 +1,15 @@
 using MedScan.Api.Repositories;
+using MedScan.Api.Data;
 using MedScan.Shared.DTOs.HomePharmacy;
 using MedScan.Shared.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedScan.Api.Services;
 
 public sealed class HomePharmacyService(
     IHomePharmacyRepository homePharmacyRepository,
-    IMedicationRepository medicationRepository) : IHomePharmacyService
+    IMedicationRepository medicationRepository,
+    AppDbContext dbContext) : IHomePharmacyService
 {
     public async Task<IEnumerable<HomePharmacyItemDto>> GetByProfileIdAsync(int profileId)
     {
@@ -75,6 +78,15 @@ public sealed class HomePharmacyService(
         if (existing is null)
         {
             return false;
+        }
+
+        var scheduleItems = await dbContext.UserMedications
+            .Where(x => x.ProfileId == existing.ProfileId && x.MedicationId == existing.MedicationId)
+            .ToListAsync();
+
+        if (scheduleItems.Count > 0)
+        {
+            dbContext.UserMedications.RemoveRange(scheduleItems);
         }
 
         homePharmacyRepository.Remove(existing);
