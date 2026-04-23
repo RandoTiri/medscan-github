@@ -105,6 +105,9 @@ public sealed class MedicationService : IMedicationService
 
     private static UserMedicationDto MapToDto(UserMedication userMedication)
     {
+        var scheduledTimes = DeserializeTimes(userMedication.ScheduledTimesJson);
+        var todayDoseStatuses = BuildTodayDoseStatuses(userMedication, scheduledTimes);
+
         var latestStatus = userMedication.DoseLogs
             .OrderByDescending(log => log.ScheduledTime)
             .ThenByDescending(log => log.Id)
@@ -122,12 +125,55 @@ public sealed class MedicationService : IMedicationService
                 ? $"{mg} mg"
                 : null,
             FrequencyPerDay = userMedication.Frequency,
-            ScheduledTimes = DeserializeTimes(userMedication.ScheduledTimesJson),
+            ScheduledTimes = scheduledTimes,
+            TodayDoses = todayDoseStatuses,
             RemindersEnabled = userMedication.RemindersEnabled,
             Notes = userMedication.Notes,
             IsActive = userMedication.IsActive,
             LatestDoseStatus = latestStatus
         };
+    }
+
+    private static List<ScheduledDoseStatusDto> BuildTodayDoseStatuses(UserMedication userMedication, List<TimeOnly> scheduledTimes)
+    {
+        var nowLocal = DateTime.Now;
+        var todayLocal = nowLocal.Date;
+
+        var logsByScheduledUtc = userMedication.DoseLogs
+            .GroupBy(log => log.ScheduledTime)
+            .ToDictionary(
+                group => group.Key,
+                group => group.OrderByDescending(log => log.Id).First().DoseStatus);
+
+        var result = new List<ScheduledDoseStatusDto>(scheduledTimes.Count);
+
+        foreach (var scheduledTime in scheduledTimes.OrderBy(time => time))
+        {
+            var localScheduledDateTime = DateTime.SpecifyKind(todayLocal.Add(scheduledTime.ToTimeSpan()), DateTimeKind.Local);
+            var scheduledUtc = localScheduledDateTime.ToUniversalTime();
+
+            if (logsByScheduledUtc.TryGetValue(scheduledUtc, out var statusFromLog))
+            {
+                result.Add(new ScheduledDoseStatusDto
+                {
+                    ScheduledTime = scheduledTime,
+                    Status = statusFromLog
+                });
+                continue;
+            }
+
+            var computedStatus = localScheduledDateTime <= nowLocal
+                ? DoseStatusEnum.Missed
+                : DoseStatusEnum.Pending;
+
+            result.Add(new ScheduledDoseStatusDto
+            {
+                ScheduledTime = scheduledTime,
+                Status = computedStatus
+            });
+        }
+
+        return result;
     }
 
     private static string SerializeTimes(List<TimeOnly> times)

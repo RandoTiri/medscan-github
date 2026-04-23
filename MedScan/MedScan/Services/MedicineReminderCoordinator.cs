@@ -31,4 +31,37 @@ public sealed class MedicineReminderCoordinator {
 
         return _scheduler.RescheduleAllAsync(reminders);
     }
+
+    public async Task SkipTodayDoseAsync(UserMedicationDto medication, TimeOnly scheduledTime) {
+        if (!medication.RemindersEnabled) {
+            return;
+        }
+
+        await _scheduler.CancelSingleAsync(medication.Id, scheduledTime);
+
+        var reminder = MedicineReminderMapper.ToReminderModel(medication);
+        var tomorrow = DateTime.Today.AddDays(1).Add(scheduledTime.ToTimeSpan());
+        await _scheduler.ScheduleSingleAsync(reminder, scheduledTime, tomorrow);
+    }
+
+    public async Task EnsureDoseFromNowAsync(UserMedicationDto medication, TimeOnly scheduledTime) {
+        if (!medication.RemindersEnabled) {
+            return;
+        }
+
+        await _scheduler.CancelSingleAsync(medication.Id, scheduledTime);
+
+        var reminder = MedicineReminderMapper.ToReminderModel(medication);
+        var notifyTime = GetNextOccurrence(scheduledTime);
+        await _scheduler.ScheduleSingleAsync(reminder, scheduledTime, notifyTime);
+    }
+
+    private static DateTime GetNextOccurrence(TimeOnly time) {
+        var now = DateTime.Now;
+        var scheduled = DateTime.Today.Add(time.ToTimeSpan());
+
+        return scheduled > now
+            ? scheduled
+            : scheduled.AddDays(1);
+    }
 }

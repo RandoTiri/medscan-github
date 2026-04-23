@@ -1,54 +1,67 @@
 ﻿@page "/"
+@using MedScan.Shared.DTOs.Medication
+@using MedScan.Shared.Models
+@using MedScan.Shared.Models.Enums
 @using MedScan.Shared.Services
-@inject IFormFactor FormFactor
 @inject IAuthService AuthService
+@inject IProfileService ProfileService
+@inject IMedicationService MedicationService
 @inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Avaleht</PageTitle>
 
-@if (AuthService.IsLoggedIn)
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else
 {
     <div class="mobile-container">
-        <!-- Header Section -->
         <header class="header-section">
             <div class="header-top">
-                <div class="header-title"></div>
+                <div class="header-date">@DateTime.Now.ToString("dddd, d. MMMM", new System.Globalization.CultureInfo("et-EE"))</div>
                 <div class="header-icons">
-                    <span class="notification-icon">??<span class="badge">2</span></span>
+                    <span class="notification-icon" title="Meeldetuletused">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                    </span>
                     <span class="user-initials">@GetInitials()</span>
                 </div>
             </div>
 
             <h1 class="greeting">Tere, @(AuthService.CurrentUser?.FullName ?? "Kasutaja")!</h1>
 
-            <!-- Summary Stats -->
             <div class="stats-card">
                 <div class="stat-item">
-                    <span class="stat-number">2</span>
+                    <span class="stat-number">@_doneCount</span>
                     <span class="stat-label">Tehtud</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-number" style="color: #f5a623;">2</span>
+                    <span class="stat-number stat-number-warning">@_pendingCount</span>
                     <span class="stat-label">Ootel</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
-                    <span class="stat-number">4</span>
+                    <span class="stat-number">@_totalCount</span>
                     <span class="stat-label">Kokku</span>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="main-content">
-            <!-- Scan Button -->
             <div class="scan-card" @onclick="StartScannerAsync">
                 <div class="scan-icon-wrapper">
-                    <span class="scan-icon" style="display:flex;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4h3"></path><path d="M4 17v3h3"></path><path d="M20 7V4h-3"></path><path d="M20 17v3h-3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                    </span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 7V4h3"></path>
+                        <path d="M4 17v3h3"></path>
+                        <path d="M20 7V4h-3"></path>
+                        <path d="M20 17v3h-3"></path>
+                        <line x1="8" y1="12" x2="16" y2="12"></line>
+                    </svg>
                 </div>
                 <div class="scan-text">
                     <h3>Skaneeri ravim</h3>
@@ -57,198 +70,282 @@
                 <div class="scan-arrow">›</div>
             </div>
 
-            <!-- Today's Plan -->
             <div class="section-header">
                 <h2>Minu tänane raviskeem</h2>
-                <a href="#">Kõik</a>
+                <a href="javascript:void(0)" @onclick="OpenMyMedicines">Kõik</a>
             </div>
 
-            <div class="med-card tehtud">
-                <div class="med-icon">??</div>
-                <div class="med-info">
-                    <h3>Metformiin 500mg</h3>
-                    <p>08:00, 20:00 • 2x päevas</p>
-                </div>
-                <div class="med-status tehtud-status">? Tehtud</div>
-            </div>
+            @if (_myMedicationCards.Count == 0)
+            {
+                <div class="empty-card">Täna pole veel ravimeid lisatud.</div>
+            }
+            else
+            {
+                @foreach (var card in _myMedicationCards)
+                {
+                    <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
+                        <div class="med-icon">
+                            @if (card.Status == DoseStatusEnum.Done)
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                            }
+                            else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+                            }
+                            else
+                            {
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                            }
+                        </div>
+                        <div class="med-info">
+                            <h3>@card.Name</h3>
+                            <p>@card.ScheduleText</p>
+                        </div>
+                        <div class="med-status @card.StatusBadgeCss">@card.StatusLabel</div>
+                    </button>
+                }
+            }
 
-            <div class="med-card ootel">
-                <div class="med-icon">??</div>
-                <div class="med-info">
-                    <h3>Bisoprolool 5mg</h3>
-                    <p>08:00 • 1x päevas</p>
-                </div>
-                <div class="med-status ootel-status">?? Ootel</div>
-            </div>
-
-            <!-- Family -->
             <div class="section-header">
                 <h2>Perekond</h2>
             </div>
-            <div class="family-card">
-                <div class="family-avatar">MT</div>
-                <div class="family-info">
-                    <h3>Marta</h3>
-                    <p>Nurofen 200mg – 14:00 ootel</p>
-                </div>
-                <div class="family-action">??</div>
-            </div>
-        </main>
-    </div>
 
-    <style>
-        .mobile-container {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--ms-bg);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-
-            width: 100vw;
-            position: relative;
-            left: 50%;
-            margin-left: -50vw;
-            margin-top: -1.1rem;
-
-            padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px);
-            padding-left: max(0px, env(safe-area-inset-left));
-            padding-right: max(0px, env(safe-area-inset-right));
-            box-sizing: border-box;
-        }
-        .header-section {
-            background-color: #258d6b;
-            color: white;
-            padding: 20px;
-            padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-        }
-        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .header-icons { display: flex; gap: 15px; align-items: center; margin-left: auto; }
-        .notification-icon { position: relative; font-size: 24px; }
-        .badge { position: absolute; top: -2px; right: -5px; background: #f5a623; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: bold; }
-        .user-initials { background: transparent; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
-        .greeting { font-size: 28px; font-weight: bold; margin: 10px 0 20px 0; }
-
-        .stats-card {
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 15px;
-            display: flex;
-            justify-content: space-around;
-            padding: 15px;
-            text-align: center;
-        }
-        .stat-item { display: flex; flex-direction: column; }
-        .stat-number { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
-        .stat-label { font-size: 12px; opacity: 0.9; }
-        .stat-divider { width: 1px; background-color: rgba(255,255,255,0.3); }
-
-        .main-content { padding: 20px; margin-top: -10px; }
-
-        .scan-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; cursor: pointer; }
-        .scan-icon-wrapper { background: #e8f5f1; color: #258d6b; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-right: 15px; }
-        .scan-text { flex-grow: 1; }
-        .scan-text h3 { margin: 0; font-size: 18px; color: var(--ms-text); }
-        .scan-text p { margin: 5px 0 0 0; font-size: 14px; color: var(--ms-text-muted); }
-        .scan-arrow { font-size: 24px; color: var(--ms-text-muted); font-weight: bold; }
-
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .section-header h2 { margin: 0; font-size: 18px; color: var(--ms-text); font-weight: bold; }
-        .section-header a { color: #258d6b; text-decoration: none; font-size: 14px; font-weight: 500; }
-
-        .med-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
-        .med-card.tehtud .med-icon { background: #e8f5f1; color: #258d6b; }
-        .med-card.ootel .med-icon { background: #fff5e6; color: #f5a623; }
-        .med-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-right: 15px; flex-shrink: 0; }
-        .med-info { flex-grow: 1; }
-        .med-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
-        .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
-
-        .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-        .tehtud-status { background: #e8f5f1; color: #258d6b; }
-        .ootel-status { background: #fff5e6; color: #f5a623; }
-
-        .family-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
-        .family-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee1fa; color: #8a4baf; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; position:relative; }
-        .family-avatar::after { content:''; position:absolute; bottom:0; right:0; width:10px; height:10px; background:#f5a623; border-radius:50%; border:2px solid var(--ms-surface); }
-        .family-info { flex-grow: 1; }
-        .family-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
-        .family-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
-        .family-action { background: #fff5e6; color: #f5a623; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    </style>
-}
-else
-{
-    <div class="redirect-loading-container">
-        <div class="spinner-wrap" aria-label="Laadimine">
-            <div class="spinner-ring"></div>
-            <div class="spinner-icon">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
-                    <path d="m8.5 8.5 7 7"></path>
-                </svg>
-            </div>
-        </div>
-    </div>
-
-    <style>
-        .redirect-loading-container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            color: var(--ms-text-muted);
-        }
-
-        .spinner-wrap {
-            width: 88px;
-            height: 88px;
-            position: relative;
-            display: grid;
-            place-items: center;
-        }
-
-        .spinner-ring {
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            border: 6px solid #cfe8df;
-            border-top-color: #258d6b;
-            animation: home-login-spin 0.9s linear infinite;
-            box-sizing: border-box;
-        }
-
-        .spinner-icon {
-            position: absolute;
-            color: #258d6b;
-            display: grid;
-            place-items: center;
-        }
-
-        @@keyframes home-login-spin {
-            to {
-                transform: rotate(360deg);
+            @if (_familyMedicationCards.Count == 0)
+            {
+                <div class="empty-card">Hooldatavate ravimeid täna ei leitud.</div>
             }
+            else
+            {
+                @foreach (var card in _familyMedicationCards)
+                {
+                    <div class="family-card">
+                        <div class="family-avatar">@card.Initials</div>
+                        <div class="family-info">
+                            <h3>@card.ProfileName</h3>
+                            <p>@card.Name – @card.NextTimeText @card.StatusLabel.ToLowerInvariant()</p>
+                        </div>
+                        <div class="family-action @card.StatusBadgeCss">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                        </div>
+                    </div>
+                }
+            }
+        </main>
+
+        @if (_selectedDoseCard is not null)
+        {
+            <div class="dose-modal-backdrop" @onclick="CloseDoseModal"></div>
+            <section class="dose-modal" role="dialog" aria-modal="true" aria-label="Ravimi staatus">
+                <h3>@_selectedDoseCard.Name</h3>
+                <p class="dose-modal-time">Annuse aeg: @_selectedDoseCard.ScheduledTime.ToString("HH:mm")</p>
+
+                @if (!string.IsNullOrWhiteSpace(_modalErrorMessage))
+                {
+                    <div class="error-box">@_modalErrorMessage</div>
+                }
+
+                <div class="dose-modal-actions">
+                    <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Tehtud</button>
+                    <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Tegemata</button>
+                </div>
+
+                <button type="button" class="dose-modal-close" @onclick="CloseDoseModal">Sulge</button>
+            </section>
         }
-    </style>
+    </div>
 }
+
+<style>
+    .mobile-container {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--ms-bg);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px);
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+        box-sizing: border-box;
+    }
+
+    .header-section {
+        background-color: var(--ms-primary-card-bg);
+        color: white;
+        padding: 20px;
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+    }
+
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .header-date { font-size: 13px; opacity: 0.85; }
+    .header-icons { display: flex; gap: 15px; align-items: center; margin-left: auto; }
+    .notification-icon { display: flex; align-items: center; justify-content: center; opacity: 0.95; }
+    .user-initials { background: transparent; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
+    .greeting { font-size: 28px; font-weight: bold; margin: 10px 0 20px 0; }
+
+    .stats-card {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        display: flex;
+        justify-content: space-around;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .stat-item { display: flex; flex-direction: column; }
+    .stat-number { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+    .stat-number-warning { color: #f5c04d; }
+    .stat-label { font-size: 12px; opacity: 0.9; }
+    .stat-divider { width: 1px; background-color: rgba(255,255,255,0.3); }
+
+    .main-content { padding: 20px; margin-top: -10px; }
+
+    .scan-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; cursor: pointer; }
+    .scan-icon-wrapper { background: var(--ms-surface-soft); color: var(--ms-accent); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+    .scan-text { flex-grow: 1; }
+    .scan-text h3 { margin: 0; font-size: 18px; color: var(--ms-text); }
+    .scan-text p { margin: 5px 0 0 0; font-size: 14px; color: var(--ms-text-muted); }
+    .scan-arrow { font-size: 24px; color: var(--ms-text-muted); font-weight: bold; }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .section-header h2 { margin: 0; font-size: 18px; color: var(--ms-text); font-weight: bold; }
+    .section-header a { color: var(--ms-accent); text-decoration: none; font-size: 14px; font-weight: 500; }
+
+    .med-card { width: 100%; border: none; text-align: left; cursor: pointer; background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+    .med-card.status-done .med-icon { background: #e8f5f1; color: var(--ms-accent); }
+    .med-card.status-pending .med-icon { background: #fff5e6; color: #c8812b; }
+    .med-card.status-missed .med-icon { background: #fde9eb; color: var(--ms-danger-text); }
+
+    .med-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; }
+    .med-info { flex-grow: 1; }
+    .med-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
+    .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
+
+    .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+    .badge-done { background: #e8f5f1; color: var(--ms-accent); }
+    .badge-pending { background: #fff5e6; color: #c8812b; }
+    .badge-missed { background: var(--ms-danger-bg); color: var(--ms-danger-text); }
+
+    .family-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+    .family-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee1fa; color: #8a4baf; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; position:relative; }
+    .family-info { flex-grow: 1; }
+    .family-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
+    .family-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
+    .family-action { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+    .empty-card {
+        background: var(--ms-surface);
+        border-radius: 14px;
+        border: 1px solid var(--ms-divider);
+        padding: 12px;
+        color: var(--ms-text-muted);
+        margin-bottom: 15px;
+    }
+
+    .dose-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 18, 14, 0.45);
+        z-index: 990;
+    }
+
+    .dose-modal {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        bottom: calc(max(18px, env(safe-area-inset-bottom)) + 78px);
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
+        border-radius: 18px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+        padding: 16px;
+        z-index: 991;
+    }
+
+    .dose-modal h3 {
+        margin: 0;
+        color: var(--ms-text);
+        font-size: 18px;
+    }
+
+    .dose-modal-time {
+        margin: 6px 0 14px 0;
+        color: var(--ms-text-muted);
+        font-size: 14px;
+    }
+
+    .dose-modal-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .status-btn {
+        flex: 1;
+        border: 1px solid var(--ms-divider);
+        border-radius: 10px;
+        background: var(--ms-surface-soft);
+        color: var(--ms-text);
+        font-size: 13px;
+        font-weight: 700;
+        padding: 9px 8px;
+        cursor: pointer;
+    }
+
+    .status-btn.active {
+        background: var(--ms-accent);
+        border-color: var(--ms-accent);
+        color: #fff;
+    }
+
+    .status-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .dose-modal-close {
+        margin-top: 10px;
+        width: 100%;
+        border: none;
+        border-radius: 10px;
+        background: var(--ms-surface-soft);
+        color: var(--ms-text);
+        font-weight: 700;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .error-box {
+        background: #feecee;
+        border: 1px solid #fac9cf;
+        border-radius: 10px;
+        padding: 10px;
+        color: #b42332;
+        margin-bottom: 10px;
+    }
+</style>
 
 @code {
-    private async Task StartScannerAsync()
-    {
-        var scanResult = await ScannerFlowService.ScanAsync();
+    private bool _isReady;
 
-        if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
-        {
-            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
-        }
-        else if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.ManualSearch)
-        {
-            Navigation.NavigateTo("/scanner/search");
-        }
-    }
+    private int _doneCount;
+    private int _pendingCount;
+    private int _totalCount;
+    private bool _isUpdatingDose;
+    private string? _modalErrorMessage;
+    private HomeMedicationCard? _selectedDoseCard;
+
+    private readonly List<HomeMedicationCard> _myMedicationCards = [];
+    private readonly List<FamilyMedicationCard> _familyMedicationCards = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -257,18 +354,320 @@ else
         if (!AuthService.IsLoggedIn)
         {
             Navigation.NavigateTo("/login");
+            return;
         }
+
+        await LoadHomeDataAsync();
+        _isReady = true;
+    }
+
+    private async Task LoadHomeDataAsync()
+    {
+        var profiles = await ProfileService.GetMyProfilesAsync();
+        var mainProfile = ResolveMainProfile(profiles);
+
+        var allMedications = new List<(ProfileSummary Profile, UserMedicationDto Medication)>();
+
+        foreach (var profile in profiles)
+        {
+            var schedule = await MedicationService.GetScheduleAsync(profile.Id);
+            allMedications.AddRange(schedule.Select(m => (profile, m)));
+        }
+
+        var allTodayDoses = allMedications
+            .Where(tuple => tuple.Medication.IsActive)
+            .SelectMany(tuple => tuple.Medication.TodayDoses);
+
+        _totalCount = allTodayDoses.Count();
+        _doneCount = allTodayDoses.Count(dose => dose.Status == DoseStatusEnum.Done);
+        _pendingCount = _totalCount - _doneCount;
+
+        _myMedicationCards.Clear();
+        _myMedicationCards.AddRange(allMedications
+            .Where(tuple => mainProfile is not null && tuple.Profile.Id == mainProfile.Id)
+            .Where(tuple => tuple.Medication.IsActive)
+            .SelectMany(tuple => BuildHomeMedicationCards(tuple.Medication))
+            .OrderBy(card => card.NextTimeSortKey)
+            .ThenBy(card => card.Name));
+
+        _familyMedicationCards.Clear();
+        _familyMedicationCards.AddRange(allMedications
+            .Where(tuple => tuple.Profile.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase))
+            .Where(tuple => tuple.Medication.IsActive)
+            .Select(tuple => BuildFamilyMedicationCard(tuple.Profile, tuple.Medication))
+            .OrderBy(card => card.NextTimeSortKey)
+            .ThenBy(card => card.ProfileName));
+    }
+
+    private static ProfileSummary? ResolveMainProfile(IReadOnlyList<ProfileSummary> profiles)
+    {
+        return profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase))
+               ?? profiles.FirstOrDefault();
+    }
+
+    private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication)
+    {
+        var todayDoses = medication.TodayDoses
+            .OrderBy(d => d.ScheduledTime)
+            .ToList();
+
+        if (todayDoses.Count > 0)
+        {
+            foreach (var dose in todayDoses)
+            {
+                yield return new HomeMedicationCard(
+                    UserMedicationId: medication.Id,
+                    Name: BuildMedicationDisplayName(medication),
+                    ScheduledTime: dose.ScheduledTime,
+                    ScheduleText: dose.ScheduledTime.ToString("HH:mm"),
+                    Status: dose.Status,
+                    StatusLabel: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "Tehtud",
+                        DoseStatusEnum.Missed => "Tegemata",
+                        DoseStatusEnum.Skipped => "Tegemata",
+                        _ => "Ootel"
+                    },
+                    StatusCss: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "status-done",
+                        DoseStatusEnum.Missed => "status-missed",
+                        DoseStatusEnum.Skipped => "status-missed",
+                        _ => "status-pending"
+                    },
+                    StatusBadgeCss: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "badge-done",
+                        DoseStatusEnum.Missed => "badge-missed",
+                        DoseStatusEnum.Skipped => "badge-missed",
+                        _ => "badge-pending"
+                    },
+                    NextTimeSortKey: dose.ScheduledTime.ToTimeSpan()
+                );
+            }
+
+            yield break;
+        }
+
+        foreach (var fallbackTime in medication.ScheduledTimes.OrderBy(t => t))
+        {
+            yield return new HomeMedicationCard(
+                UserMedicationId: medication.Id,
+                Name: BuildMedicationDisplayName(medication),
+                ScheduledTime: fallbackTime,
+                ScheduleText: fallbackTime.ToString("HH:mm"),
+                Status: DoseStatusEnum.Pending,
+                StatusLabel: "Ootel",
+                StatusCss: "status-pending",
+                StatusBadgeCss: "badge-pending",
+                NextTimeSortKey: fallbackTime.ToTimeSpan()
+            );
+        }
+    }
+
+    private static FamilyMedicationCard BuildFamilyMedicationCard(ProfileSummary profile, UserMedicationDto medication)
+    {
+        var status = ResolveMedicationStatus(medication.TodayDoses);
+        var nextTime = ResolveNextTime(medication.TodayDoses, medication.ScheduledTimes);
+
+        return new FamilyMedicationCard(
+            ProfileName: profile.Name,
+            Initials: GetInitials(profile.Name),
+            Name: BuildMedicationDisplayName(medication),
+            NextTimeText: nextTime.HasValue ? nextTime.Value.ToString("HH:mm") : "--:--",
+            StatusLabel: status switch
+            {
+                DoseStatusEnum.Done => "Tehtud",
+                DoseStatusEnum.Missed => "Tegemata",
+                DoseStatusEnum.Skipped => "Tegemata",
+                _ => "Ootel"
+            },
+            StatusBadgeCss: status switch
+            {
+                DoseStatusEnum.Done => "badge-done",
+                DoseStatusEnum.Missed => "badge-missed",
+                DoseStatusEnum.Skipped => "badge-missed",
+                _ => "badge-pending"
+            },
+            NextTimeSortKey: nextTime?.ToTimeSpan() ?? TimeSpan.MaxValue
+        );
+    }
+
+    private static string BuildMedicationDisplayName(UserMedicationDto medication)
+    {
+        if (string.IsNullOrWhiteSpace(medication.Strength) || medication.MedicationName.Contains(medication.Strength, StringComparison.OrdinalIgnoreCase))
+        {
+            return medication.MedicationName;
+        }
+
+        return $"{medication.MedicationName} {medication.Strength}";
+    }
+
+    private static DoseStatusEnum ResolveMedicationStatus(IEnumerable<ScheduledDoseStatusDto> doses)
+    {
+        var list = doses.ToList();
+        if (list.Count == 0)
+        {
+            return DoseStatusEnum.Pending;
+        }
+
+        if (list.Any(d => d.Status is DoseStatusEnum.Missed or DoseStatusEnum.Skipped))
+        {
+            return DoseStatusEnum.Missed;
+        }
+
+        if (list.All(d => d.Status == DoseStatusEnum.Done))
+        {
+            return DoseStatusEnum.Done;
+        }
+
+        return DoseStatusEnum.Pending;
+    }
+
+    private static TimeOnly? ResolveNextTime(IEnumerable<ScheduledDoseStatusDto> doses, IEnumerable<TimeOnly> fallbackTimes)
+    {
+        var now = TimeOnly.FromDateTime(DateTime.Now);
+
+        var nextPending = doses
+            .Where(d => d.Status == DoseStatusEnum.Pending)
+            .Select(d => d.ScheduledTime)
+            .OrderBy(t => t)
+            .FirstOrDefault();
+
+        if (nextPending != default || doses.Any(d => d.Status == DoseStatusEnum.Pending && d.ScheduledTime == default))
+        {
+            return nextPending;
+        }
+
+        var nextTimeToday = fallbackTimes
+            .Where(t => t >= now)
+            .OrderBy(t => t)
+            .FirstOrDefault();
+
+        if (nextTimeToday != default || fallbackTimes.Any(t => t == default && t >= now))
+        {
+            return nextTimeToday;
+        }
+
+        return fallbackTimes.OrderBy(t => t).FirstOrDefault();
+    }
+
+    private static string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "--";
+        }
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1)
+        {
+            return parts[0][..1].ToUpperInvariant();
+        }
+
+        return (parts[0][..1] + parts[^1][..1]).ToUpperInvariant();
     }
 
     private string GetInitials()
     {
-        var name = AuthService.CurrentUser?.FullName;
-        if (string.IsNullOrWhiteSpace(name)) return "M S";
-
-        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
-
-        return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
+        return GetInitials(AuthService.CurrentUser?.FullName);
     }
-}
 
+    private async Task StartScannerAsync()
+    {
+        var scanResult = await ScannerFlowService.ScanAsync();
+
+        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
+        {
+            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+        }
+        else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
+        {
+            Navigation.NavigateTo("/scanner/search");
+        }
+    }
+
+    private void OpenMyMedicines()
+    {
+        Navigation.NavigateTo("/home-pharmacy");
+    }
+
+    private void OpenDoseModal(HomeMedicationCard card)
+    {
+        _selectedDoseCard = card;
+        _modalErrorMessage = null;
+    }
+
+    private void CloseDoseModal()
+    {
+        _selectedDoseCard = null;
+        _modalErrorMessage = null;
+    }
+
+    private async Task UpdateDoseStatusFromModalAsync(DoseStatusEnum newStatus)
+    {
+        if (_selectedDoseCard is null || _isUpdatingDose)
+        {
+            return;
+        }
+
+        _isUpdatingDose = true;
+        _modalErrorMessage = null;
+
+        try
+        {
+            var result = await MedicationService.UpdateStatusAsync(_selectedDoseCard.UserMedicationId, new UpdateMedicationStatusDto
+            {
+                ScheduledTime = _selectedDoseCard.ScheduledTime,
+                Status = newStatus
+            });
+
+            if (result is null)
+            {
+                _modalErrorMessage = "Staatuse uuendamine ebaonnestus.";
+                return;
+            }
+
+            await LoadHomeDataAsync();
+            CloseDoseModal();
+        }
+        catch
+        {
+            _modalErrorMessage = "Staatuse uuendamine ebaonnestus.";
+        }
+        finally
+        {
+            _isUpdatingDose = false;
+        }
+    }
+
+    private string GetModalButtonCss(DoseStatusEnum targetStatus)
+    {
+        if (_selectedDoseCard is null)
+        {
+            return string.Empty;
+        }
+
+        return _selectedDoseCard.Status == targetStatus ? "active" : string.Empty;
+    }
+
+    private sealed record HomeMedicationCard(
+        int UserMedicationId,
+        string Name,
+        TimeOnly ScheduledTime,
+        string ScheduleText,
+        DoseStatusEnum Status,
+        string StatusLabel,
+        string StatusCss,
+        string StatusBadgeCss,
+        TimeSpan NextTimeSortKey);
+
+    private sealed record FamilyMedicationCard(
+        string ProfileName,
+        string Initials,
+        string Name,
+        string NextTimeText,
+        string StatusLabel,
+        string StatusBadgeCss,
+        TimeSpan NextTimeSortKey);
+}

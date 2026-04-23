@@ -8,9 +8,11 @@ public partial class App : Application
     public App(
         IAuthService authService,
         IMedicationService medicationService,
-        MedicineReminderCoordinator reminderCoordinator)
+        MedicineReminderCoordinator reminderCoordinator,
+        NotificationDoseActionBridge notificationDoseActionBridge)
     {
         InitializeComponent();
+        _ = notificationDoseActionBridge;
         _ = InitializeRemindersAsync(authService, medicationService, reminderCoordinator);
     }
 
