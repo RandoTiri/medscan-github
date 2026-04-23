@@ -12,6 +12,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<IFormFactor,FormFactor>();
 builder.Services.AddScoped<IThemeService, ThemeService>();
 builder.Services.AddScoped<IExternalNavigationService, WebExternalNavigationService>();
+builder.Services.AddSingleton<IMedicationStatusEvents, MedicationStatusEvents>();
 
 var app = builder.Build();
 

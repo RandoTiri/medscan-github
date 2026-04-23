@@ -9,10 +9,12 @@ namespace MedScan.Services;
 
 public sealed class ApiMedicationService(
     HttpClient httpClient,
-    MedicineReminderCoordinator reminderCoordinator) : IMedicationService
+    MedicineReminderCoordinator reminderCoordinator,
+    IMedicationStatusEvents medicationStatusEvents) : IMedicationService
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly MedicineReminderCoordinator _reminderCoordinator = reminderCoordinator;
+    private readonly IMedicationStatusEvents _medicationStatusEvents = medicationStatusEvents;
 
     public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId)
     {
@@ -75,6 +77,11 @@ public sealed class ApiMedicationService(
 
         if (updatedMedication is not null && dto.ScheduledTime.HasValue)
         {
+            _medicationStatusEvents.Publish(new MedicationStatusChangedEvent(
+                userMedicationId,
+                dto.ScheduledTime.Value,
+                dto.Status));
+
             await TryAdjustReminderAfterStatusChangeAsync(updatedMedication, dto.ScheduledTime.Value, dto.Status);
         }
 

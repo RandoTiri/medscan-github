@@ -1,4 +1,5 @@
 ﻿@page "/"
+@implements IDisposable
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
@@ -6,6 +7,7 @@
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
+@inject IMedicationStatusEvents MedicationStatusEvents
 @inject IScannerFlowService ScannerFlowService
 @inject NavigationManager Navigation
 
@@ -148,6 +150,22 @@ else
                     <div class="error-box">@_modalErrorMessage</div>
                 }
 
+                @if (_showEarlyDoneConfirmation && _earlyDoneMinutesRemaining > 0)
+                {
+                    <div class="confirm-box">
+                        Kas oled kindel, et võtad ravimi praegu? Õige ajani on @FormatRemainingTime(_earlyDoneMinutesRemaining) veel aega.
+                        <div class="confirm-box-actions">
+                            <button type="button" class="confirm-yes" disabled="@_isUpdatingDose" @onclick="ConfirmEarlyDoneAsync">Jah</button>
+                            <button type="button" class="confirm-no" disabled="@_isUpdatingDose" @onclick="CancelEarlyDoneConfirmation">Ei</button>
+                        </div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(_modalInfoMessage))
+                {
+                    <div class="success-box">@_modalInfoMessage</div>
+                }
+
                 <div class="dose-modal-actions">
                     <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Tehtud</button>
                     <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Tegemata</button>
@@ -252,6 +270,53 @@ else
         margin-bottom: 15px;
     }
 
+    .success-box {
+        background: #e2f5ea;
+        border: 1px solid #86d4aa;
+        border-radius: 10px;
+        padding: 10px;
+        color: #0f7d4f;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .confirm-box {
+        background: #fff5e6;
+        border: 1px solid #ffd9a6;
+        border-radius: 10px;
+        padding: 10px;
+        color: #8a5a00;
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+
+    .confirm-box-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .confirm-yes,
+    .confirm-no {
+        flex: 1;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .confirm-yes {
+        background: #1d735c;
+        color: #fff;
+    }
+
+    .confirm-no {
+        background: #f0f2f5;
+        color: #1b2733;
+    }
+
     .dose-modal-backdrop {
         position: fixed;
         inset: 0;
@@ -342,13 +407,17 @@ else
     private int _totalCount;
     private bool _isUpdatingDose;
     private string? _modalErrorMessage;
+    private string? _modalInfoMessage;
     private HomeMedicationCard? _selectedDoseCard;
+    private bool _showEarlyDoneConfirmation;
+    private int _earlyDoneMinutesRemaining;
 
     private readonly List<HomeMedicationCard> _myMedicationCards = [];
     private readonly List<FamilyMedicationCard> _familyMedicationCards = [];
 
     protected override async Task OnInitializedAsync()
     {
+        MedicationStatusEvents.Changed += OnMedicationStatusChanged;
         await AuthService.InitializeAsync();
 
         if (!AuthService.IsLoggedIn)
@@ -596,12 +665,18 @@ else
     {
         _selectedDoseCard = card;
         _modalErrorMessage = null;
+        _modalInfoMessage = null;
+        _showEarlyDoneConfirmation = false;
+        _earlyDoneMinutesRemaining = 0;
     }
 
     private void CloseDoseModal()
     {
         _selectedDoseCard = null;
         _modalErrorMessage = null;
+        _modalInfoMessage = null;
+        _showEarlyDoneConfirmation = false;
+        _earlyDoneMinutesRemaining = 0;
     }
 
     private async Task UpdateDoseStatusFromModalAsync(DoseStatusEnum newStatus)
@@ -613,9 +688,20 @@ else
 
         _isUpdatingDose = true;
         _modalErrorMessage = null;
-
+        _modalInfoMessage = null;
         try
         {
+            if (newStatus == DoseStatusEnum.Done)
+            {
+                var minutesUntilDose = GetRemainingMinutesUntilDose(_selectedDoseCard.ScheduledTime);
+                if (minutesUntilDose > 0 && !_showEarlyDoneConfirmation)
+                {
+                    _showEarlyDoneConfirmation = true;
+                    _earlyDoneMinutesRemaining = minutesUntilDose;
+                    return;
+                }
+            }
+
             var result = await MedicationService.UpdateStatusAsync(_selectedDoseCard.UserMedicationId, new UpdateMedicationStatusDto
             {
                 ScheduledTime = _selectedDoseCard.ScheduledTime,
@@ -628,7 +714,8 @@ else
                 return;
             }
 
-            await LoadHomeDataAsync();
+            _showEarlyDoneConfirmation = false;
+            _earlyDoneMinutesRemaining = 0;
             CloseDoseModal();
         }
         catch
@@ -649,6 +736,71 @@ else
         }
 
         return _selectedDoseCard.Status == targetStatus ? "active" : string.Empty;
+    }
+
+    private void OnMedicationStatusChanged(MedicationStatusChangedEvent payload)
+    {
+        _ = HandleMedicationStatusChangedAsync(payload);
+    }
+
+    private async Task HandleMedicationStatusChangedAsync(MedicationStatusChangedEvent payload)
+    {
+        await InvokeAsync(async () =>
+        {
+            await LoadHomeDataAsync();
+            StateHasChanged();
+        });
+    }
+
+    private async Task ConfirmEarlyDoneAsync()
+    {
+        if (_selectedDoseCard is null)
+        {
+            return;
+        }
+
+        await UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done);
+    }
+
+    private void CancelEarlyDoneConfirmation()
+    {
+        _showEarlyDoneConfirmation = false;
+        _earlyDoneMinutesRemaining = 0;
+    }
+
+    private static int GetRemainingMinutesUntilDose(TimeOnly scheduledTime)
+    {
+        var now = DateTime.Now;
+        var scheduledAt = now.Date + scheduledTime.ToTimeSpan();
+        var remaining = scheduledAt - now;
+        if (remaining <= TimeSpan.Zero)
+        {
+            return 0;
+        }
+
+        return (int)Math.Ceiling(remaining.TotalMinutes);
+    }
+
+    private static string FormatRemainingTime(int minutes)
+    {
+        if (minutes <= 60)
+        {
+            return $"{minutes} min";
+        }
+
+        var hours = minutes / 60;
+        var remainderMinutes = minutes % 60;
+        if (remainderMinutes == 0)
+        {
+            return $"{hours}h";
+        }
+
+        return $"{hours}h ja {remainderMinutes} min";
+    }
+
+    public void Dispose()
+    {
+        MedicationStatusEvents.Changed -= OnMedicationStatusChanged;
     }
 
     private sealed record HomeMedicationCard(
