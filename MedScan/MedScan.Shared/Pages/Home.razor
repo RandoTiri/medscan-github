@@ -166,10 +166,13 @@ else
                     <div class="success-box">@_modalInfoMessage</div>
                 }
 
-                <div class="dose-modal-actions">
-                    <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Tehtud</button>
-                    <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Tegemata</button>
-                </div>
+                @if (!_showEarlyDoneConfirmation)
+                {
+                    <div class="dose-modal-actions">
+                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Tehtud</button>
+                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Tegemata</button>
+                    </div>
+                }
 
                 <button type="button" class="dose-modal-close" @onclick="CloseDoseModal">Sulge</button>
             </section>
