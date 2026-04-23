@@ -1,0 +1,98 @@
+@page "/home-pharmacy/saved-medication"
+@inject NavigationManager Navigation
+
+<PageTitle>Ravim salvestatud</PageTitle>
+
+<div class="saved-screen">
+    <div class="saved-card">
+        <div class="checkmark">✓</div>
+        <h1>Salvestatud</h1>
+        <p>Ravim @MedicationName on salvestatud kasutaja @ProfileName alla.</p>
+    </div>
+</div>
+
+<style>
+    .saved-screen {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        background: #f3f4f4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        box-sizing: border-box;
+    }
+
+    .saved-card {
+        background: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 10px 24px rgba(30, 55, 45, 0.08);
+        max-width: 420px;
+        width: 100%;
+    }
+
+    .checkmark {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #1f7a60;
+        color: #fff;
+        font-size: 34px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+    }
+
+    .saved-card h1 {
+        margin: 0 0 10px;
+        color: var(--ms-text);
+        font-size: 26px;
+        font-weight: 800;
+    }
+
+    .saved-card p {
+        margin: 0;
+        color: #425767;
+        font-size: 17px;
+    }
+</style>
+
+@code {
+    [SupplyParameterFromQuery(Name = "medicationName")]
+    public string? MedicationNameQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "profileName")]
+    public string? ProfileNameQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "profileId")]
+    public int? ProfileId { get; set; }
+
+    private string MedicationName => string.IsNullOrWhiteSpace(MedicationNameQuery) ? "-" : MedicationNameQuery!;
+    private string ProfileName => string.IsNullOrWhiteSpace(ProfileNameQuery) ? "-" : ProfileNameQuery!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await Task.Delay(2000);
+
+        if (ProfileId is int profileId && profileId > 0)
+        {
+            Navigation.NavigateTo($"/home-pharmacy?profileId={profileId}", replace: true);
+            return;
+        }
+
+        Navigation.NavigateTo("/home-pharmacy", replace: true);
+    }
+}
