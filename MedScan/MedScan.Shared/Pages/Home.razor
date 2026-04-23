@@ -122,24 +122,24 @@ else
             {
                 @foreach (var card in _familyMedicationCards)
                 {
-                    <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
-                        <div class="med-icon">
+                    <button type="button" class="family-dose-card" @onclick="() => OpenDoseModal(card)">
+                        <div class="family-status-icon @card.StatusCss">
                             @if (card.Status == DoseStatusEnum.Done)
                             {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
                             }
                             else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
                             {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
                             }
                             else
                             {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
                             }
                         </div>
-                        <div class="med-info">
-                            <h3>@card.ProfileName · @card.Name</h3>
-                            <p>@card.ScheduleText</p>
+                        <div class="family-dose-info">
+                            <h3>@card.ProfileName</h3>
+                            <p>@card.Name - @card.ScheduleText @card.StatusLabel.ToLowerInvariant()</p>
                         </div>
                         <div class="med-status @card.StatusBadgeCss">@card.StatusLabel</div>
                     </button>
@@ -266,12 +266,70 @@ else
     .badge-pending { background: #fff5e6; color: #c8812b; }
     .badge-missed { background: var(--ms-danger-bg); color: var(--ms-danger-text); }
 
-    .family-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
-    .family-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee1fa; color: #8a4baf; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; position:relative; }
-    .family-info { flex-grow: 1; }
-    .family-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
-    .family-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
-    .family-action { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .family-dose-card {
+        width: 100%;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+        background: var(--ms-surface);
+        border-radius: 18px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+        margin-bottom: 14px;
+    }
+
+    .family-status-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: var(--ms-surface-soft);
+        color: var(--ms-text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .family-status-icon.status-done {
+        background: #e8f5f1;
+        color: var(--ms-accent);
+    }
+
+    .family-status-icon.status-pending {
+        background: #fff5e6;
+        color: #c8812b;
+    }
+
+    .family-status-icon.status-missed {
+        background: #fde9eb;
+        color: var(--ms-danger-text);
+    }
+
+    .family-dose-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .family-dose-info h3 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1;
+        color: var(--ms-text);
+        font-weight: 800;
+    }
+
+    .family-dose-info p {
+        margin: 8px 0 0 0;
+        font-size: 13px;
+        line-height: 1.2;
+        color: var(--ms-text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
     .empty-card {
         background: var(--ms-surface);
