@@ -516,6 +516,7 @@ else
 @code {
     [Parameter] public string Barcode { get; set; } = string.Empty;
     [SupplyParameterFromQuery(Name = "profileId")] public int? ProfileId { get; set; }
+    [SupplyParameterFromQuery(Name = "exp")] public string? ExpirationQuery { get; set; }
 
     private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
 
@@ -533,6 +534,7 @@ else
     private bool _remindersEnabled = true;
     private string _selectedForm = nameof(MedicationFormEnum.Tablett);
     private string? _notes;
+    private DateOnly? _expiresOn;
 
     protected override async Task OnInitializedAsync()
     {
@@ -574,6 +576,7 @@ else
 
         try
         {
+            _expiresOn = ParseExpirationQuery(ExpirationQuery);
             _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
             if (_medication is null)
             {
@@ -737,6 +740,7 @@ else
                     MedicationId = _medication.Id,
                     FrequencyPerDay = _frequencyPerDay,
                     ScheduledTimes = parsedTimes,
+                    ExpiresOn = _expiresOn,
                     RemindersEnabled = _remindersEnabled,
                     Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
                 });
@@ -746,6 +750,7 @@ else
             {
                 ProfileId = _selectedProfileId,
                 MedicationId = _medication.Id,
+                ExpiresOn = _expiresOn,
                 Quantity = 1,
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
             });
@@ -771,6 +776,16 @@ else
     private void GoBack()
     {
         Navigation.NavigateTo($"/home-pharmacy/save-medication/{Uri.EscapeDataString(Barcode)}?profileId={_selectedProfileId}");
+    }
+
+    private static DateOnly? ParseExpirationQuery(string? query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return null;
+        }
+
+        return DateOnly.TryParse(query, out var parsed) ? parsed : null;
     }
 
 }

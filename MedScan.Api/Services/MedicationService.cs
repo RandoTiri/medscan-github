@@ -53,6 +53,7 @@ public sealed class MedicationService : IMedicationService
             MedicationId = dto.MedicationId,
             Frequency = dto.FrequencyPerDay,
             ScheduledTimesJson = SerializeTimes(normalizedTimes),
+            ExpiresOn = dto.ExpiresOn,
             RemindersEnabled = dto.RemindersEnabled,
             Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
             IsActive = true,
@@ -87,6 +88,7 @@ public sealed class MedicationService : IMedicationService
         userMedication.MedicationId = dto.MedicationId;
         userMedication.Frequency = dto.FrequencyPerDay;
         userMedication.ScheduledTimesJson = SerializeTimes(normalizedTimes);
+        userMedication.ExpiresOn = dto.ExpiresOn;
         userMedication.RemindersEnabled = dto.RemindersEnabled;
         userMedication.Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim();
 
@@ -141,6 +143,7 @@ public sealed class MedicationService : IMedicationService
             FrequencyPerDay = userMedication.Frequency,
             ScheduledTimes = scheduledTimes,
             TodayDoses = todayDoseStatuses,
+            ExpiresOn = userMedication.ExpiresOn,
             RemindersEnabled = userMedication.RemindersEnabled,
             Notes = userMedication.Notes,
             IsActive = userMedication.IsActive,

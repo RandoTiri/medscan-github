@@ -355,6 +355,7 @@ else
 @code {
     [Parameter] public string Barcode { get; set; } = string.Empty;
     [SupplyParameterFromQuery(Name = "profileId")] public int? ProfileId { get; set; }
+    [SupplyParameterFromQuery(Name = "exp")] public string? ExpirationQuery { get; set; }
 
     private bool _isReady;
     private bool _isLoading;
@@ -362,7 +363,8 @@ else
     
     private MedicationLookupResult? _medication;
     private string? _message;
-    private string ShelfLifeDisplay => DateTime.Now.AddYears(2).ToString("dd/MM/yyyy");
+    private DateOnly? _expirationDate;
+    private string ShelfLifeDisplay => (_expirationDate ?? DateOnly.FromDateTime(DateTime.Now.AddYears(2))).ToString("dd.MM.yyyy");
 
     protected override async Task OnInitializedAsync()
     {
@@ -389,6 +391,7 @@ else
             _isLoading = true;
             try
             {
+                _expirationDate = ParseExpirationQuery(ExpirationQuery);
                 _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
                 if (_medication == null)
                 {
@@ -425,15 +428,37 @@ else
 
         if (_targetProfileId > 0)
         {
-            Navigation.NavigateTo($"/home-pharmacy/add-medication/{Uri.EscapeDataString(_medication.Barcode)}?profileId={_targetProfileId}");
+            var route = $"/home-pharmacy/add-medication/{Uri.EscapeDataString(_medication.Barcode)}?profileId={_targetProfileId}";
+            if (_expirationDate is DateOnly expirationDate)
+            {
+                route += $"&exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
+            }
+
+            Navigation.NavigateTo(route);
             return;
         }
 
-        Navigation.NavigateTo($"/home-pharmacy/add-medication/{Uri.EscapeDataString(_medication.Barcode)}");
+        var fallbackRoute = $"/home-pharmacy/add-medication/{Uri.EscapeDataString(_medication.Barcode)}";
+        if (_expirationDate is DateOnly fallbackExpirationDate)
+        {
+            fallbackRoute += $"?exp={Uri.EscapeDataString(fallbackExpirationDate.ToString("yyyy-MM-dd"))}";
+        }
+
+        Navigation.NavigateTo(fallbackRoute);
     }
 
     private void BackToSearch()
     {
         Navigation.NavigateTo($"/home-pharmacy/search?ProfileId={ProfileId}");
+    }
+
+    private static DateOnly? ParseExpirationQuery(string? query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return null;
+        }
+
+        return DateOnly.TryParse(query, out var parsed) ? parsed : null;
     }
 }

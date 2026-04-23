@@ -275,6 +275,9 @@ namespace MedScan.Api.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("FrequencyPerDay");
 
+                    b.Property<DateOnly?>("ExpiresOn")
+                        .HasColumnType("date");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
