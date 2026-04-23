@@ -705,10 +705,16 @@ else
                 }
             }
 
+            var effectiveStatus = newStatus;
+            if (newStatus == DoseStatusEnum.Missed && GetRemainingMinutesUntilDose(_selectedDoseCard.ScheduledTime) > 0)
+            {
+                effectiveStatus = DoseStatusEnum.Pending;
+            }
+
             var result = await MedicationService.UpdateStatusAsync(_selectedDoseCard.UserMedicationId, new UpdateMedicationStatusDto
             {
                 ScheduledTime = _selectedDoseCard.ScheduledTime,
-                Status = newStatus
+                Status = effectiveStatus
             });
 
             if (result is null)
