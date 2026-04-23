@@ -14,6 +14,7 @@ public sealed class UserMedicationDto
 
     public int FrequencyPerDay { get; set; }
     public List<TimeOnly> ScheduledTimes { get; set; } = [];
+    public List<ScheduledDoseStatusDto> TodayDoses { get; set; } = [];
     public bool RemindersEnabled { get; set; }
     public string? Notes { get; set; }
     public bool IsActive { get; set; }

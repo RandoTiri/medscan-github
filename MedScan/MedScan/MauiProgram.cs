@@ -23,6 +23,7 @@ namespace MedScan
 
             builder.Services.AddSingleton<IFormFactor, FormFactor>();
             builder.Services.AddSingleton<ITokenStore, MauiTokenStore>();
+            builder.Services.AddSingleton<IMedicationStatusEvents, MedicationStatusEvents>();
 
             builder.Services.AddSingleton(_ => new HttpClient {
                 BaseAddress = new Uri(ApiBaseAddressProvider.GetApiBaseAddress())
@@ -39,6 +40,7 @@ namespace MedScan
 
             builder.Services.AddScoped<IMedicineReminderScheduler,MauiMedicineReminderScheduler>();
             builder.Services.AddScoped<MedicineReminderCoordinator>();
+            builder.Services.AddSingleton<NotificationDoseActionBridge>();
             builder.Services.AddScoped<IMedicationService,ApiMedicationService>();
             builder.Services.AddScoped<IProfileService, ApiProfileService>();
             builder.Services.AddScoped<IHomePharmacyService, ApiHomePharmacyService>();
