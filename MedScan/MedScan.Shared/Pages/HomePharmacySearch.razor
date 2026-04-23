@@ -348,6 +348,12 @@ else
             {
                 route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
             }
+            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
+            {
+                route += route.Contains('?')
+                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
+                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
+            }
 
             Navigation.NavigateTo(route, replace: true);
             return;

@@ -517,6 +517,7 @@ else
     [Parameter] public string Barcode { get; set; } = string.Empty;
     [SupplyParameterFromQuery(Name = "profileId")] public int? ProfileId { get; set; }
     [SupplyParameterFromQuery(Name = "exp")] public string? ExpirationQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "lot")] public string? BatchQuery { get; set; }
 
     private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
 
@@ -535,6 +536,7 @@ else
     private string _selectedForm = nameof(MedicationFormEnum.Tablett);
     private string? _notes;
     private DateOnly? _expiresOn;
+    private string? _batchNumber;
 
     protected override async Task OnInitializedAsync()
     {
@@ -577,6 +579,7 @@ else
         try
         {
             _expiresOn = ParseExpirationQuery(ExpirationQuery);
+            _batchNumber = ParseBatchQuery(BatchQuery);
             _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
             if (_medication is null)
             {
@@ -750,6 +753,7 @@ else
             {
                 ProfileId = _selectedProfileId,
                 MedicationId = _medication.Id,
+                BatchNumber = _batchNumber,
                 ExpiresOn = _expiresOn,
                 Quantity = 1,
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
@@ -786,6 +790,11 @@ else
         }
 
         return DateOnly.TryParse(query, out var parsed) ? parsed : null;
+    }
+
+    private static string? ParseBatchQuery(string? query)
+    {
+        return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
     }
 
 }

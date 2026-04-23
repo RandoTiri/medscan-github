@@ -126,20 +126,28 @@ else
 
                             <p class="quantity-line">Kogus: @item.Quantity</p>
 
-                            @if (item.PackageNumber is not null || item.ExpiresOn is not null)
+                            @if (item.PackageNumber is not null || !string.IsNullOrWhiteSpace(item.BatchNumber) || item.ExpiresOn is not null)
                             {
                                 <p class="meta-line">
                                     @if (item.PackageNumber is not null)
                                     {
                                         <span>Karp #@item.PackageNumber</span>
                                     }
-                                    @if (item.PackageNumber is not null && item.ExpiresOn is not null)
+                                    @if (item.PackageNumber is not null && !string.IsNullOrWhiteSpace(item.BatchNumber))
+                                    {
+                                        <span> · </span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(item.BatchNumber))
+                                    {
+                                        <span>LOT: @item.BatchNumber</span>
+                                    }
+                                    @if ((item.PackageNumber is not null || !string.IsNullOrWhiteSpace(item.BatchNumber)) && item.ExpiresOn is not null)
                                     {
                                         <span> · </span>
                                     }
                                     @if (item.ExpiresOn is not null)
                                     {
-                                        <span>Aegub: @item.ExpiresOn.Value.ToString("dd.MM.yyyy")</span>
+                                        <span>@BuildExpirationLabel(item.ExpiresOn.Value)</span>
                                     }
                                 </p>
                             }
@@ -515,6 +523,19 @@ else
         return _itemsByProfile.TryGetValue(profileId, out var items) ? items.Count : 0;
     }
 
+    private static string BuildExpirationLabel(DateOnly expiresOn)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var daysLeft = expiresOn.DayNumber - today.DayNumber;
+
+        if (daysLeft >= 0 && daysLeft < 30)
+        {
+            return $"Aegub: {expiresOn:dd.MM.yyyy} (aegub {daysLeft} päeva pärast)";
+        }
+
+        return $"Aegub: {expiresOn:dd.MM.yyyy}";
+    }
+
     private async Task OpenAddPageAsync()
     {
         var scanResult = await ScannerFlowService.ScanAsync();
@@ -525,6 +546,12 @@ else
             if (scanResult.ExpirationDate is DateOnly expirationDate)
             {
                 route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
+            }
+            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
+            {
+                route += route.Contains('?')
+                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
+                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
             }
 
             Navigation.NavigateTo(route);

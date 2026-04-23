@@ -64,6 +64,14 @@ else
                     </div>
                 }
 
+                @if (!string.IsNullOrWhiteSpace(_batchNumber))
+                {
+                    <div class="form-group mb-3">
+                        <label>Partii / LOT (DataMatrix)</label>
+                        <input class="form-control" type="text" value="@_batchNumber" readonly />
+                    </div>
+                }
+
                 <button class="btn btn-success w-100 mb-3"
                         @onclick="AddToScheduleAsync"
                         disabled="@_isSavingMedication">
@@ -91,6 +99,7 @@ else
 @code {
     [Parameter] public string Barcode { get; set; } = string.Empty;
     [SupplyParameterFromQuery(Name = "exp")] public string? ExpirationQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "lot")] public string? BatchQuery { get; set; }
 
     private bool _isReady;
     private bool _isLoading;
@@ -102,6 +111,7 @@ else
     private string? _addMessage;
     private MedicationLookupResult? _medication;
     private DateOnly? _expirationDate;
+    private string? _batchNumber;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -119,6 +129,7 @@ else
         try
         {
             _expirationDate = ParseExpirationQuery(ExpirationQuery);
+            _batchNumber = ParseBatchQuery(BatchQuery);
             _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
             if (_medication == null)
             {
@@ -140,6 +151,12 @@ else
             if (scanResult.ExpirationDate is DateOnly expirationDate)
             {
                 route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
+            }
+            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
+            {
+                route += route.Contains('?')
+                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
+                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
             }
 
             Navigation.NavigateTo(route);
@@ -218,6 +235,11 @@ else
         }
 
         return DateOnly.TryParse(query, out var parsed) ? parsed : null;
+    }
+
+    private static string? ParseBatchQuery(string? query)
+    {
+        return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
     }
 }
 

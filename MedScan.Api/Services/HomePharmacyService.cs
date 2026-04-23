@@ -36,6 +36,7 @@ public sealed class HomePharmacyService(
             ProfileId = dto.ProfileId,
             MedicationId = dto.MedicationId,
             PackageNumber = dto.PackageNumber,
+            BatchNumber = string.IsNullOrWhiteSpace(dto.BatchNumber) ? null : dto.BatchNumber.Trim(),
             ExpiresOn = dto.ExpiresOn,
             Quantity = Math.Max(1, dto.Quantity),
             Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
@@ -61,6 +62,7 @@ public sealed class HomePharmacyService(
 
         existing.Quantity = Math.Max(1, dto.Quantity);
         existing.PackageNumber = dto.PackageNumber;
+        existing.BatchNumber = string.IsNullOrWhiteSpace(dto.BatchNumber) ? null : dto.BatchNumber.Trim();
         existing.ExpiresOn = dto.ExpiresOn;
         existing.Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim();
 
@@ -107,6 +109,7 @@ public sealed class HomePharmacyService(
             ActiveIngredient = item.Medication?.ActiveIngredient,
             Strength = item.Medication?.StrengthMg is int mg ? $"{mg} mg" : null,
             PackageNumber = item.PackageNumber,
+            BatchNumber = item.BatchNumber,
             ExpiresOn = item.ExpiresOn,
             Quantity = item.Quantity,
             Notes = item.Notes,

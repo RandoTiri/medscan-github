@@ -49,6 +49,7 @@ else
                 <div class="info-grid">
                     <p><span>Profiil</span><strong>@_item.ProfileName</strong></p>
                     <p><span>Karp nr</span><strong>@(_item.PackageNumber?.ToString() ?? "-")</strong></p>
+                    <p><span>Partii / LOT</span><strong>@(_item.BatchNumber ?? "-")</strong></p>
                     <p><span>Aegub</span><strong>@(_item.ExpiresOn?.ToString("dd.MM.yyyy") ?? "-")</strong></p>
                     <p><span>Kogus</span><strong>@_item.Quantity</strong></p>
                     <p><span>Näitus</span><strong>@(_item.Indication ?? "-")</strong></p>
@@ -74,6 +75,9 @@ else
 
                 <label class="field-label">Karbi number (valikuline)</label>
                 <input class="field-input" type="number" min="1" @bind="_packageNumber" />
+
+                <label class="field-label">Partii / LOT (valikuline)</label>
+                <input class="field-input" @bind="_batchNumber" />
 
                 <label class="field-label">Aegumiskuupaev (valikuline)</label>
                 <InputDate class="field-input" @bind-Value="_expiresOnDate" />
@@ -318,6 +322,7 @@ else
     private HomePharmacyItemDto? _item;
     private int _quantity = 1;
     private int? _packageNumber;
+    private string? _batchNumber;
     private DateTime? _expiresOnDate;
     private string? _notes;
 
@@ -350,6 +355,7 @@ else
 
             _quantity = Math.Max(1, _item.Quantity);
             _packageNumber = _item.PackageNumber;
+            _batchNumber = _item.BatchNumber;
             _expiresOnDate = _item.ExpiresOn?.ToDateTime(TimeOnly.MinValue);
             _notes = _item.Notes;
         }
@@ -376,6 +382,7 @@ else
             {
                 Quantity = Math.Max(1, _quantity),
                 PackageNumber = _packageNumber,
+                BatchNumber = string.IsNullOrWhiteSpace(_batchNumber) ? null : _batchNumber.Trim(),
                 ExpiresOn = ToDateOnlyOrNull(_expiresOnDate),
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
             });

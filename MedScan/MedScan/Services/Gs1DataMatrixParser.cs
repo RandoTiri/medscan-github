@@ -7,10 +7,17 @@ internal static class Gs1DataMatrixParser
 {
     private const char GroupSeparator = '\u001D';
 
-    public static bool TryExtract(string rawValue, out string? lookupBarcode, out DateOnly? expirationDate)
+    public static bool TryExtract(
+        string rawValue,
+        out string? lookupBarcode,
+        out DateOnly? expirationDate,
+        out string? batchNumber,
+        out string? serialNumber)
     {
         lookupBarcode = null;
         expirationDate = null;
+        batchNumber = null;
+        serialNumber = null;
 
         if (string.IsNullOrWhiteSpace(rawValue))
         {
@@ -23,21 +30,25 @@ internal static class Gs1DataMatrixParser
             value = value[3..];
         }
 
-        if (TryParseParenthesized(value, out var gtin, out var expiry) ||
-            TryParseAiStream(value, out gtin, out expiry))
+        if (TryParseParenthesized(value, out var gtin, out var expiry, out var lot, out var serial) ||
+            TryParseAiStream(value, out gtin, out expiry, out lot, out serial))
         {
             lookupBarcode = NormalizeLookupBarcode(gtin);
             expirationDate = expiry;
+            batchNumber = lot;
+            serialNumber = serial;
             return !string.IsNullOrWhiteSpace(lookupBarcode);
         }
 
         return false;
     }
 
-    private static bool TryParseParenthesized(string value, out string? gtin, out DateOnly? expiry)
+    private static bool TryParseParenthesized(string value, out string? gtin, out DateOnly? expiry, out string? lot, out string? serial)
     {
         gtin = null;
         expiry = null;
+        lot = null;
+        serial = null;
 
         var matches = Regex.Matches(value, @"\((\d{2})\)([^\(]*)");
         if (matches.Count == 0)
@@ -57,15 +68,25 @@ internal static class Gs1DataMatrixParser
             {
                 expiry = ParseExpiry(data[..6]);
             }
+            else if (ai == "10")
+            {
+                lot = string.IsNullOrWhiteSpace(data) ? null : data;
+            }
+            else if (ai == "21")
+            {
+                serial = string.IsNullOrWhiteSpace(data) ? null : data;
+            }
         }
 
         return gtin is not null;
     }
 
-    private static bool TryParseAiStream(string value, out string? gtin, out DateOnly? expiry)
+    private static bool TryParseAiStream(string value, out string? gtin, out DateOnly? expiry, out string? lot, out string? serial)
     {
         gtin = null;
         expiry = null;
+        lot = null;
+        serial = null;
 
         var index = 0;
         while (index + 2 <= value.Length)
@@ -114,11 +135,11 @@ internal static class Gs1DataMatrixParser
                     break;
 
                 case "10":
+                    lot = ReadVariableLengthSegment(value, ref index);
+                    break;
+
                 case "21":
-                    while (index < value.Length && value[index] != GroupSeparator)
-                    {
-                        index++;
-                    }
+                    serial = ReadVariableLengthSegment(value, ref index);
                     break;
 
                 default:
@@ -128,6 +149,18 @@ internal static class Gs1DataMatrixParser
         }
 
         return gtin is not null;
+    }
+
+    private static string? ReadVariableLengthSegment(string value, ref int index)
+    {
+        var start = index;
+        while (index < value.Length && value[index] != GroupSeparator)
+        {
+            index++;
+        }
+
+        var data = value[start..index];
+        return string.IsNullOrWhiteSpace(data) ? null : data;
     }
 
     private static string NormalizeLookupBarcode(string? gtin)

@@ -58,6 +58,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
             entity.HasIndex(x => x.MedicationId);
             entity.HasIndex(x => x.ExpiresOn);
             entity.Property(x => x.Quantity).HasDefaultValue(1);
+            entity.Property(x => x.BatchNumber).HasMaxLength(100);
             entity.Property(x => x.ExpiresOn).HasColumnType("date");
             entity.Property(x => x.AddedAt).HasColumnType("timestamp with time zone");
             entity.HasOne(x => x.Profile)

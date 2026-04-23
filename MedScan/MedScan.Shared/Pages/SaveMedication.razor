@@ -356,6 +356,7 @@ else
     [Parameter] public string Barcode { get; set; } = string.Empty;
     [SupplyParameterFromQuery(Name = "profileId")] public int? ProfileId { get; set; }
     [SupplyParameterFromQuery(Name = "exp")] public string? ExpirationQuery { get; set; }
+    [SupplyParameterFromQuery(Name = "lot")] public string? BatchQuery { get; set; }
 
     private bool _isReady;
     private bool _isLoading;
@@ -364,6 +365,7 @@ else
     private MedicationLookupResult? _medication;
     private string? _message;
     private DateOnly? _expirationDate;
+    private string? _batchNumber;
     private string ShelfLifeDisplay => (_expirationDate ?? DateOnly.FromDateTime(DateTime.Now.AddYears(2))).ToString("dd.MM.yyyy");
 
     protected override async Task OnInitializedAsync()
@@ -392,6 +394,7 @@ else
             try
             {
                 _expirationDate = ParseExpirationQuery(ExpirationQuery);
+                _batchNumber = ParseBatchQuery(BatchQuery);
                 _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
                 if (_medication == null)
                 {
@@ -433,6 +436,10 @@ else
             {
                 route += $"&exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
             }
+            if (!string.IsNullOrWhiteSpace(_batchNumber))
+            {
+                route += $"&lot={Uri.EscapeDataString(_batchNumber)}";
+            }
 
             Navigation.NavigateTo(route);
             return;
@@ -442,6 +449,12 @@ else
         if (_expirationDate is DateOnly fallbackExpirationDate)
         {
             fallbackRoute += $"?exp={Uri.EscapeDataString(fallbackExpirationDate.ToString("yyyy-MM-dd"))}";
+        }
+        if (!string.IsNullOrWhiteSpace(_batchNumber))
+        {
+            fallbackRoute += fallbackRoute.Contains('?')
+                ? $"&lot={Uri.EscapeDataString(_batchNumber)}"
+                : $"?lot={Uri.EscapeDataString(_batchNumber)}";
         }
 
         Navigation.NavigateTo(fallbackRoute);
@@ -460,5 +473,10 @@ else
         }
 
         return DateOnly.TryParse(query, out var parsed) ? parsed : null;
+    }
+
+    private static string? ParseBatchQuery(string? query)
+    {
+        return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
     }
 }

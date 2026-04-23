@@ -167,12 +167,19 @@ public partial class BarcodeScannerPage : ContentPage
 
         var lookupBarcode = barcodeValue;
         DateOnly? expirationDate = null;
+        string? batchNumber = null;
         if (firstDetected.Format == BarcodeFormat.DataMatrix &&
-            Gs1DataMatrixParser.TryExtract(barcodeValue, out var parsedBarcode, out var parsedExpirationDate) &&
+            Gs1DataMatrixParser.TryExtract(
+                barcodeValue,
+                out var parsedBarcode,
+                out var parsedExpirationDate,
+                out var parsedBatchNumber,
+                out _) &&
             !string.IsNullOrWhiteSpace(parsedBarcode))
         {
             lookupBarcode = parsedBarcode;
             expirationDate = parsedExpirationDate;
+            batchNumber = parsedBatchNumber;
         }
 
         CameraView.IsDetecting = false;
@@ -212,7 +219,8 @@ public partial class BarcodeScannerPage : ContentPage
         {
             Status = BarcodeScanStatus.Success,
             Barcode = lookupBarcode,
-            ExpirationDate = expirationDate
+            ExpirationDate = expirationDate,
+            BatchNumber = batchNumber
         });
 
         await CloseAsync();
