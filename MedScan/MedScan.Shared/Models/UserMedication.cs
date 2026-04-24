@@ -7,6 +7,7 @@ public class UserMedication {
     public Medication Medication { get; set; } = null!;
     public int Frequency { get; set; }
     public string ScheduledTimesJson { get; set; } = "[]";
+    public DateOnly? ExpiresOn { get; set; }
     public bool RemindersEnabled { get; set; } = true;
     public string? Notes { get; set; }
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;

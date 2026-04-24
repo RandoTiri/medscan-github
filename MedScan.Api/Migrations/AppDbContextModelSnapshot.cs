@@ -132,6 +132,10 @@ namespace MedScan.Api.Migrations
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("BatchNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateOnly?>("ExpiresOn")
                         .HasColumnType("date");
 
@@ -274,6 +278,9 @@ namespace MedScan.Api.Migrations
                     b.Property<int>("Frequency")
                         .HasColumnType("integer")
                         .HasColumnName("FrequencyPerDay");
+
+                    b.Property<DateOnly?>("ExpiresOn")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");

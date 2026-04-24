@@ -55,6 +55,11 @@ else
                 <div class="error-box">@_errorMessage</div>
             }
 
+            @if (!string.IsNullOrWhiteSpace(_medicationCheckMessage))
+            {
+                <div class="@(_medicationCheckIsSuccess ? "success-box" : "error-box")">@_medicationCheckMessage</div>
+            }
+
             <section class="dose-list">
                 @if (_entries.Count == 0)
                 {
@@ -231,6 +236,44 @@ else
                         <div class="confirm-actions">
                             <button class="confirm-yes" @onclick="ConfirmDeleteAsync">Jah</button>
                             <button class="confirm-no" @onclick="CancelDelete">Ei</button>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (_isManualSearchOpen)
+            {
+                <div class="confirm-overlay" @onclick="CloseManualSearch">
+                    <div class="confirm-dialog manual-search-dialog" @onclick:stopPropagation="true">
+                        <p>Otsi ravim käsitsi</p>
+
+                        @if (!string.IsNullOrWhiteSpace(_manualSearchMessage))
+                        {
+                            <div class="error-box">@_manualSearchMessage</div>
+                        }
+
+                        <div class="manual-search-bar">
+                            <input class="form-control" @bind="_manualSearchQuery" placeholder="Sisesta ravimi nimi" />
+                            <button class="save-btn" @onclick="SearchMedicationAsync" disabled="@_isManualSearchBusy">
+                                @(_isManualSearchBusy ? "Otsin..." : "Otsi")
+                            </button>
+                        </div>
+
+                        @if (_manualSearchResults.Count > 0)
+                        {
+                            <div class="manual-search-results">
+                                @foreach (var item in _manualSearchResults)
+                                {
+                                    <button class="manual-search-result" @onclick="() => SelectManualSearchResultAsync(item)">
+                                        <strong>@item.Name</strong>
+                                        <span>@item.ActiveIngredient</span>
+                                    </button>
+                                }
+                            </div>
+                        }
+
+                        <div class="confirm-actions">
+                            <button class="confirm-no" @onclick="CloseManualSearch">Sulge</button>
                         </div>
                     </div>
                 </div>
@@ -604,6 +647,48 @@ else
         color: var(--ms-text-muted);
     }
 
+    .success-box {
+        background: #e7f4ed;
+        border: 1px solid #b7e3ca;
+        border-radius: 12px;
+        padding: 12px;
+        color: #1f7a60;
+        margin-bottom: 12px;
+    }
+
+    .manual-search-dialog {
+        max-width: 420px;
+    }
+
+    .manual-search-bar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .manual-search-results {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .manual-search-result {
+        border: 1px solid var(--ms-divider);
+        border-radius: 10px;
+        background: var(--ms-surface-soft);
+        color: var(--ms-text);
+        text-align: left;
+        padding: 10px 12px;
+        display: grid;
+        gap: 4px;
+    }
+
+    .manual-search-result span {
+        color: var(--ms-text-muted);
+        font-size: 13px;
+    }
+
 </style>
 
 @code {
@@ -614,8 +699,11 @@ else
     private bool _isPatientProfile;
     private bool _showDeleteConfirm;
     private string? _errorMessage;
+    private string? _medicationCheckMessage;
+    private bool _medicationCheckIsSuccess;
     private Patient? _patient;
     private readonly List<DoseEntry> _entries = [];
+    private readonly List<UserMedicationDto> _profileMedications = [];
     private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
     private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
     private readonly List<int> _years = Enumerable.Range(1900, 201).ToList();
@@ -623,6 +711,11 @@ else
     private string _birthMonth = string.Empty;
     private string _birthYear = string.Empty;
     private CreatePatientProfileRequest _editModel = new();
+    private bool _isManualSearchOpen;
+    private bool _isManualSearchBusy;
+    private string _manualSearchQuery = string.Empty;
+    private string? _manualSearchMessage;
+    private IReadOnlyList<MedicationLookupResult> _manualSearchResults = [];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -668,7 +761,13 @@ else
                 BirthDate = _patient.BirthDate
             };
 
-            var medications = await MedicationService.GetScheduleAsync(ProfileId);
+            var medications = (await MedicationService.GetScheduleAsync(ProfileId))
+                .Where(medication => medication.IsActive)
+                .ToList();
+
+            _profileMedications.Clear();
+            _profileMedications.AddRange(medications);
+
             _entries.Clear();
             _entries.AddRange(BuildEntries(medications));
         }
@@ -865,20 +964,122 @@ else
 
     private async Task StartScannerAsync()
     {
+        _errorMessage = null;
+        _medicationCheckMessage = null;
+
         var scanResult = await ScannerFlowService.ScanAsync();
         if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
         {
-            Navigation.NavigateTo($"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}");
+            await VerifyMedicationByBarcodeAsync(scanResult.Barcode);
         }
         else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
         {
-            Navigation.NavigateTo("/scanner/search");
+            OpenManualSearch();
+        }
+        else if (scanResult.Status == BarcodeScanStatus.PermissionDenied)
+        {
+            _errorMessage = "Skänneri kasutamiseks on vaja kaameraluba.";
         }
     }
 
     private void OpenTodayOverview()
     {
         Navigation.NavigateTo($"/home-pharmacy?profileId={ProfileId}");
+    }
+
+    private async Task VerifyMedicationByBarcodeAsync(string barcode)
+    {
+        try
+        {
+            var medication = await ScannerFlowService.FindByBarcodeAsync(barcode);
+            if (medication is null)
+            {
+                SetMedicationCheckResult(false, "Tuvastatud ravimit ei leitud andmebaasist.");
+                return;
+            }
+
+            ApplyMedicationCheckResult(medication);
+        }
+        catch
+        {
+            SetMedicationCheckResult(false, "Ravimi kontroll ebaõnnestus.");
+        }
+    }
+
+    private void ApplyMedicationCheckResult(MedicationLookupResult medication)
+    {
+        var isInSchedule = _profileMedications.Any(item => item.MedicationId == medication.Id);
+        if (isInSchedule)
+        {
+            SetMedicationCheckResult(true, $"{medication.Name} on kasutaja raviskeemis.");
+            return;
+        }
+
+        SetMedicationCheckResult(false, $"{medication.Name} ei kuulu kasutaja raviskeemi.");
+    }
+
+    private void SetMedicationCheckResult(bool isSuccess, string message)
+    {
+        _medicationCheckIsSuccess = isSuccess;
+        _medicationCheckMessage = message;
+    }
+
+    private void OpenManualSearch()
+    {
+        _isManualSearchOpen = true;
+        _manualSearchQuery = string.Empty;
+        _manualSearchMessage = null;
+        _manualSearchResults = [];
+    }
+
+    private void CloseManualSearch()
+    {
+        _isManualSearchOpen = false;
+        _manualSearchMessage = null;
+        _manualSearchResults = [];
+    }
+
+    private async Task SearchMedicationAsync()
+    {
+        if (_isManualSearchBusy)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_manualSearchQuery))
+        {
+            _manualSearchMessage = "Sisesta ravimi nimi.";
+            _manualSearchResults = [];
+            return;
+        }
+
+        _isManualSearchBusy = true;
+        _manualSearchMessage = null;
+        _manualSearchResults = [];
+
+        try
+        {
+            _manualSearchResults = await ScannerFlowService.SearchByNameAsync(_manualSearchQuery, 20);
+            if (_manualSearchResults.Count == 0)
+            {
+                _manualSearchMessage = "Vastavaid ravimeid ei leitud.";
+            }
+        }
+        catch
+        {
+            _manualSearchMessage = "Otsing ebaõnnestus.";
+        }
+        finally
+        {
+            _isManualSearchBusy = false;
+        }
+    }
+
+    private Task SelectManualSearchResultAsync(MedicationLookupResult medication)
+    {
+        ApplyMedicationCheckResult(medication);
+        CloseManualSearch();
+        return Task.CompletedTask;
     }
 
     private sealed record DoseEntry(TimeOnly Time, string DisplayName, UserMedicationDto Source);

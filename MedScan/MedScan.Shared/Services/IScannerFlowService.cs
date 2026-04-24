@@ -14,5 +14,6 @@ public interface IScannerFlowService
         IReadOnlyList<TimeOnly> scheduledTimes,
         bool remindersEnabled,
         string? notes,
+        DateOnly? expiresOn = null,
         CancellationToken cancellationToken = default);
 }

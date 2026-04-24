@@ -11,6 +11,7 @@ public sealed class HomePharmacyItemDto
     public string? ActiveIngredient { get; set; }
     public string? Strength { get; set; }
     public int? PackageNumber { get; set; }
+    public string? BatchNumber { get; set; }
     public DateOnly? ExpiresOn { get; set; }
     public int Quantity { get; set; }
     public string? Notes { get; set; }
