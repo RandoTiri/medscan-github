@@ -2,6 +2,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Diagnostics;
 using MedScan.Shared.Models;
 
 namespace MedScan.Shared.Services;
@@ -375,7 +376,6 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
 
         return raw;
     }
-
     private static void LogException(string operation, string baseAddress, Exception ex)
     {
         Debug.WriteLine($"{operation} ERROR | BaseAddress={baseAddress} | {ex}");
@@ -385,7 +385,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
     {
         if (ex is HttpRequestException)
         {
-            return "Serveriga ei saadud ühendust. Kontrolli internetti ja serveri aadressi.";
+            return "Serveriga ei saadud ühendust. Kontrolli, et API töötab. USB Android testis tee ka adb reverse tcp:5183 tcp:5183.";
         }
 
         if (ex is TaskCanceledException)
@@ -396,3 +396,5 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         return $"{operation} ebaõnnestus. Proovi uuesti.";
     }
 }
+
+

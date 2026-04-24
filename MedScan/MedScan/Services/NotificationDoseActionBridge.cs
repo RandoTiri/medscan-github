@@ -10,10 +10,14 @@ namespace MedScan.MAUI.Services;
 public sealed class NotificationDoseActionBridge : IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IInAppDoseAlertService _inAppDoseAlertService;
 
-    public NotificationDoseActionBridge(IServiceProvider serviceProvider)
+    public NotificationDoseActionBridge(
+        IServiceProvider serviceProvider,
+        IInAppDoseAlertService inAppDoseAlertService)
     {
         _serviceProvider = serviceProvider;
+        _inAppDoseAlertService = inAppDoseAlertService;
         LocalNotificationCenter.Current.NotificationActionTapped += OnNotificationActionTapped;
     }
 
@@ -55,6 +59,12 @@ public sealed class NotificationDoseActionBridge : IDisposable
                 ScheduledTime = scheduledTime,
                 Status = newStatus
             });
+
+            _inAppDoseAlertService.DismissByDose(userMedicationId, scheduledTime);
+
+            // Remove handled notification from system notification center immediately.
+            LocalNotificationCenter.Current.Clear([request.NotificationId]);
+            LocalNotificationCenter.Current.Cancel([request.NotificationId]);
         }
         catch
         {
@@ -73,10 +83,9 @@ public sealed class NotificationDoseActionBridge : IDisposable
         status = actionId switch
         {
             MauiMedicineReminderScheduler.DoneActionId => DoseStatusEnum.Done,
-            MauiMedicineReminderScheduler.MissedActionId => DoseStatusEnum.Missed,
             _ => default
         };
 
-        return actionId is MauiMedicineReminderScheduler.DoneActionId or MauiMedicineReminderScheduler.MissedActionId;
+        return actionId == MauiMedicineReminderScheduler.DoneActionId;
     }
 }

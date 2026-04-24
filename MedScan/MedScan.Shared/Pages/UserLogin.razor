@@ -329,9 +329,9 @@
 
             ErrorMessage = result.ErrorMessage;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            ErrorMessage = $"Tehniline viga: {ex.Message}";
+            ErrorMessage = "Sisselogimine ebaõnnestus. Proovi uuesti.";
         }
         finally
         {
@@ -349,4 +349,5 @@
         Navigation.NavigateTo("/send-verification-code");
     }
 }
+
 

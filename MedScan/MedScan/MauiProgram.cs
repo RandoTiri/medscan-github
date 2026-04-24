@@ -3,6 +3,7 @@ using MedScan.Shared.Services;
 using Microsoft.Extensions.Logging;
 using MedScan.MAUI.Services;
 using Plugin.LocalNotification;
+using Plugin.LocalNotification.Core.Models.AndroidOption;
 using ZXing.Net.Maui.Controls;
 
 
@@ -16,7 +17,22 @@ namespace MedScan
             builder
                 .UseMauiApp<App>()
                 .UseBarcodeReader()
-                .UseLocalNotification()
+                .UseLocalNotification(config =>
+                {
+                    config.AddAndroid(android =>
+                    {
+                        android.AddChannel(new AndroidNotificationChannelRequest
+                        {
+                            Id = MauiMedicineReminderScheduler.MedicationChannelId,
+                            Name = "Ravimi meeldetuletused",
+                            Description = "Meeldetuletused ravimi võtmise kellaaegadel.",
+                            Importance = AndroidImportance.High,
+                            ShowBadge = true,
+                            EnableSound = true,
+                            EnableVibration = true
+                        });
+                    });
+                })
                 .ConfigureFonts(fonts => {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 });
@@ -35,6 +51,9 @@ namespace MedScan
             builder.Services.AddSingleton<IBarcodeScannerService, MauiBarcodeScannerService>();
             builder.Services.AddSingleton<IMedicationCatalogClient, MedicationCatalogClient>();
             builder.Services.AddSingleton<IScannerFlowService, ScannerFlowService>();
+            builder.Services.AddSingleton<IInAppDoseAlertService, InAppDoseAlertService>();
+            builder.Services.AddSingleton<INotificationInboxService, LocalNotificationInboxService>();
+            builder.Services.AddSingleton<DoseDueWatcherService>();
             builder.Services.AddScoped<IThemeService, ThemeService>();
             builder.Services.AddScoped<IExternalNavigationService, MauiExternalNavigationService>();
 

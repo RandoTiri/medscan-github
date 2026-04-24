@@ -1,6 +1,8 @@
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject MedScan.Shared.Services.IThemeService ThemeService
+@inject MedScan.Shared.Services.IInAppDoseAlertService InAppDoseAlertService
+@inject MedScan.Shared.Services.IMedicationService MedicationService
 
 <div class="page">
     <main>
@@ -9,9 +11,107 @@
         </article>
     </main>
     <NavMenu />
+
+    @if (InAppDoseAlertService.Current is not null)
+    {
+        <div class="alert-backdrop"></div>
+        <section class="dose-alert-modal" role="dialog" aria-modal="true" aria-label="Ravimi meeldetuletus">
+            <h2>@InAppDoseAlertService.Current.ScheduledTime.ToString("HH:mm")</h2>
+            <p class="dose-alert-med">@InAppDoseAlertService.Current.MedicationName</p>
+            <p class="dose-alert-profile">@InAppDoseAlertService.Current.ProfileName</p>
+            @if (!string.IsNullOrWhiteSpace(InAppDoseAlertService.Current.Note))
+            {
+                <p class="dose-alert-note">@InAppDoseAlertService.Current.Note</p>
+            }
+            <div class="dose-alert-actions">
+                <button type="button" class="dose-alert-dismiss" disabled="@_isUpdatingFromPopup" @onclick="DismissAlert">Sulge</button>
+                <button type="button" class="dose-alert-done" disabled="@_isUpdatingFromPopup" @onclick="MarkDoneFromAlertAsync">Tehtud</button>
+            </div>
+        </section>
+    }
 </div>
 
+<style>
+    .alert-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1098;
+    }
+
+    .dose-alert-modal {
+        position: fixed;
+        left: 18px;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 24px 56px rgba(0, 0, 0, 0.22);
+        padding: 18px;
+        z-index: 1099;
+        text-align: center;
+    }
+
+    .dose-alert-modal h2 {
+        margin: 0;
+        font-size: 36px;
+        line-height: 1;
+        color: #1b2b3a;
+        font-weight: 900;
+    }
+
+    .dose-alert-med {
+        margin: 10px 0 0;
+        color: #1b2b3a;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .dose-alert-profile {
+        margin: 6px 0 0;
+        color: #4f6472;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .dose-alert-note {
+        margin: 10px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+        font-style: italic;
+    }
+
+    .dose-alert-actions {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .dose-alert-dismiss,
+    .dose-alert-done {
+        flex: 1;
+        border: none;
+        border-radius: 12px;
+        padding: 12px 10px;
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .dose-alert-dismiss {
+        background: #eef1f4;
+        color: #293847;
+    }
+
+    .dose-alert-done {
+        background: #1f7a60;
+        color: #fff;
+    }
+</style>
+
 @code {
+    private bool _isUpdatingFromPopup;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -20,6 +120,7 @@
         }
 
         ThemeService.OnChanged += HandleThemeChanged;
+        InAppDoseAlertService.Changed += HandleAlertChanged;
         await ThemeService.InitializeAsync();
     }
 
@@ -28,8 +129,46 @@
         InvokeAsync(StateHasChanged);
     }
 
+    private void HandleAlertChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void DismissAlert()
+    {
+        InAppDoseAlertService.DismissCurrent();
+    }
+
+    private async Task MarkDoneFromAlertAsync()
+    {
+        if (_isUpdatingFromPopup || InAppDoseAlertService.Current is null)
+        {
+            return;
+        }
+
+        _isUpdatingFromPopup = true;
+        try
+        {
+            await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId, new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto
+            {
+                ScheduledTime = InAppDoseAlertService.Current.ScheduledTime,
+                Status = MedScan.Shared.Models.Enums.DoseStatusEnum.Done
+            });
+        }
+        catch
+        {
+            // Popup action is best effort.
+        }
+        finally
+        {
+            _isUpdatingFromPopup = false;
+            InAppDoseAlertService.DismissCurrent();
+        }
+    }
+
     public void Dispose()
     {
         ThemeService.OnChanged -= HandleThemeChanged;
+        InAppDoseAlertService.Changed -= HandleAlertChanged;
     }
 }

@@ -10,6 +10,7 @@
 @inject IHomePharmacyService HomePharmacyService
 @inject IMedicationStatusEvents MedicationStatusEvents
 @inject IScannerFlowService ScannerFlowService
+@inject INotificationInboxService NotificationInboxService
 @inject NavigationManager Navigation
 
 <PageTitle>Avaleht</PageTitle>
@@ -25,12 +26,16 @@ else
             <div class="header-top">
                 <div class="header-date">@DateTime.Now.ToString("dddd, d. MMMM", new System.Globalization.CultureInfo("et-EE"))</div>
                 <div class="header-icons">
-                    <span class="notification-icon" title="Meeldetuletused">
+                    <button type="button" class="notification-icon" title="Teavitused" @onclick="OpenNotificationCenterAsync">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
-                    </span>
+                        @if (_hasUnrespondedNotifications)
+                        {
+                            <span class="notification-dot"></span>
+                        }
+                    </button>
                     <span class="user-initials">@GetInitials()</span>
                 </div>
             </div>
@@ -87,25 +92,42 @@ else
                 @foreach (var card in _myMedicationCards)
                 {
                     <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
-                        <div class="med-icon">
-                            @if (card.Status == DoseStatusEnum.Done)
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-                            }
-                            else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
-                            }
-                            else
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
-                            }
+                        <div class="status-box @card.StatusCss">
+                            <div class="med-icon">
+                                @if (card.Status == DoseStatusEnum.Done)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                                }
+                                else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+                                }
+                                else
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                                }
+                            </div>
+                            <div class="status-label">@card.StatusLabel</div>
                         </div>
                         <div class="med-info">
                             <h3>@card.Name</h3>
-                            <p>@card.ScheduleText</p>
+                            @if (!string.IsNullOrWhiteSpace(card.Note))
+                            {
+                                <p class="med-note">💬 @card.Note</p>
+                            }
+                            <div class="time-chip-row">
+                                @foreach (var slot in card.TimeSlots)
+                                {
+                                    <span class="time-chip">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 7v5l3 2"></path>
+                                        </svg>
+                                        @slot.ToString("HH:mm")
+                                    </span>
+                                }
+                            </div>
                         </div>
-                        <div class="med-status @card.StatusBadgeCss">@card.StatusLabel</div>
                     </button>
                 }
             }
@@ -122,26 +144,44 @@ else
             {
                 @foreach (var card in _familyMedicationCards)
                 {
-                    <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
-                        <div class="med-icon">
-                            @if (card.Status == DoseStatusEnum.Done)
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-                            }
-                            else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
-                            }
-                            else
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
-                            }
+                    <button type="button" class="family-dose-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
+                        <div class="status-box @card.StatusCss">
+                            <div class="med-icon">
+                                @if (card.Status == DoseStatusEnum.Done)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                                }
+                                else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+                                }
+                                else
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                                }
+                            </div>
+                            <div class="status-label">@card.StatusLabel</div>
                         </div>
-                        <div class="med-info">
-                            <h3>@card.ProfileName · @card.Name</h3>
-                            <p>@card.ScheduleText</p>
+                        <div class="family-dose-info">
+                            <h3>@card.ProfileName</h3>
+                            <p class="family-med-name">@card.Name</p>
+                            @if (!string.IsNullOrWhiteSpace(card.Note))
+                            {
+                                <p class="family-note">💬 @card.Note</p>
+                            }
+                            <div class="time-chip-row">
+                                @foreach (var slot in card.TimeSlots)
+                                {
+                                    <span class="time-chip">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 7v5l3 2"></path>
+                                        </svg>
+                                        @slot.ToString("HH:mm")
+                                    </span>
+                                }
+                            </div>
                         </div>
-                        <div class="med-status @card.StatusBadgeCss">@card.StatusLabel</div>
                     </button>
                 }
             }
@@ -186,6 +226,43 @@ else
                 <button type="button" class="dose-modal-close" @onclick="CloseDoseModal">Sulge</button>
             </section>
         }
+
+        @if (_isNotificationCenterOpen)
+        {
+            <div class="dose-modal-backdrop" @onclick="CloseNotificationCenter"></div>
+            <section class="notification-center-modal" role="dialog" aria-modal="true" aria-label="Teavitused">
+                <div class="notification-center-header">
+                    <h3>Teavitused</h3>
+                    <button type="button" class="notification-center-close" @onclick="CloseNotificationCenter">Sulge</button>
+                </div>
+
+                @if (_notificationItems.Count == 0)
+                {
+                    <p class="notification-empty">Varasemaid teavitusi pole.</p>
+                }
+                else
+                {
+                    <div class="notification-list">
+                        @foreach (var item in _notificationItems)
+                        {
+                            <article class="notification-item @(item.IsResponded ? "responded" : "pending")">
+                                <div class="notification-item-top">
+                                    <strong>@(string.IsNullOrWhiteSpace(item.Title) ? "MedScan" : item.Title)</strong>
+                                    <span>@item.OccurredAt.ToString("dd.MM")</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(item.Description))
+                                {
+                                    <p>@item.Description</p>
+                                }
+                                <div class="notification-time-row">
+                                    <span class="notification-time-chip @GetNotificationTimeChipCss(item)">@item.OccurredAt.ToString("HH:mm")</span>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        }
     </div>
 }
 
@@ -219,7 +296,27 @@ else
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .header-date { font-size: 13px; opacity: 0.85; }
     .header-icons { display: flex; gap: 15px; align-items: center; margin-left: auto; }
-    .notification-icon { display: flex; align-items: center; justify-content: center; opacity: 0.95; }
+    .notification-icon {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.95;
+        border: none;
+        background: transparent;
+        color: inherit;
+        padding: 0;
+    }
+    .notification-dot {
+        position: absolute;
+        top: -2px;
+        right: -4px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #f1b434;
+        border: 2px solid #1f7a60;
+    }
     .user-initials { background: transparent; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
     .greeting { font-size: 28px; font-weight: bold; margin: 10px 0 20px 0; }
 
@@ -252,26 +349,117 @@ else
     .section-header a { color: var(--ms-accent); text-decoration: none; font-size: 14px; font-weight: 500; }
 
     .med-card { width: 100%; border: none; text-align: left; cursor: pointer; background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
-    .med-card.status-done .med-icon { background: #e8f5f1; color: var(--ms-accent); }
-    .med-card.status-pending .med-icon { background: #fff5e6; color: #c8812b; }
-    .med-card.status-missed .med-icon { background: #fde9eb; color: var(--ms-danger-text); }
-
-    .med-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; }
+    .med-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 0; flex-shrink: 0; }
     .med-info { flex-grow: 1; }
     .med-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
-    .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
+    .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text); }
+
+    .status-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin-right: 12px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        min-width: 72px;
+        padding: 8px 8px 7px;
+    }
+
+    .status-box.status-done {
+        background: #e8f5f1;
+        color: var(--ms-accent);
+    }
+
+    .status-box.status-pending {
+        background: #fff5e6;
+        color: #c8812b;
+    }
+
+    .status-box.status-missed {
+        background: #fde9eb;
+        color: var(--ms-danger-text);
+    }
+
+    .status-label {
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .med-note,
+    .family-note {
+        margin: 6px 0 0 0;
+        color: #8f84a1;
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    .family-med-name {
+        margin: 6px 0 0 0;
+        color: var(--ms-text);
+        font-size: 13px;
+    }
+
+    .time-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .time-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 12px;
+        background: #dceae8;
+        color: #245f54;
+        padding: 6px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1;
+    }
 
     .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
     .badge-done { background: #e8f5f1; color: var(--ms-accent); }
     .badge-pending { background: #fff5e6; color: #c8812b; }
     .badge-missed { background: var(--ms-danger-bg); color: var(--ms-danger-text); }
 
-    .family-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
-    .family-avatar { width: 45px; height: 45px; border-radius: 50%; background: #eee1fa; color: #8a4baf; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; position:relative; }
-    .family-info { flex-grow: 1; }
-    .family-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
-    .family-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
-    .family-action { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .family-dose-card {
+        width: 100%;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+        background: var(--ms-surface);
+        border-radius: 18px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+        margin-bottom: 14px;
+    }
+
+    .family-dose-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .family-dose-info h3 {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1;
+        color: var(--ms-text);
+        font-weight: 800;
+    }
+
+    .family-dose-info p {
+        margin: 8px 0 0 0;
+        font-size: 13px;
+        line-height: 1.2;
+        color: var(--ms-text);
+    }
 
     .empty-card {
         background: var(--ms-surface);
@@ -409,6 +597,113 @@ else
         color: #b42332;
         margin-bottom: 10px;
     }
+
+    .notification-center-modal {
+        position: fixed;
+        left: 16px;
+        right: 16px;
+        top: calc(max(18px, env(safe-area-inset-top)) + 8px);
+        bottom: calc(max(18px, env(safe-area-inset-bottom)) + 78px);
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
+        border-radius: 18px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+        padding: 14px;
+        z-index: 992;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notification-center-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .notification-center-header h3 {
+        margin: 0;
+        color: var(--ms-text);
+        font-size: 18px;
+    }
+
+    .notification-center-close {
+        border: none;
+        border-radius: 10px;
+        background: var(--ms-surface-soft);
+        color: var(--ms-text);
+        font-weight: 700;
+        padding: 8px 10px;
+    }
+
+    .notification-empty {
+        margin: 0;
+        color: var(--ms-text-muted);
+        font-size: 14px;
+    }
+
+    .notification-list {
+        overflow: auto;
+        display: grid;
+        gap: 10px;
+        padding-right: 2px;
+    }
+
+    .notification-item {
+        border: 1px solid var(--ms-divider);
+        border-radius: 12px;
+        padding: 10px;
+        background: var(--ms-surface-soft);
+    }
+
+    .notification-item.pending {
+        border-color: #f5cf7f;
+        background: #fff9eb;
+    }
+
+    .notification-item-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: baseline;
+    }
+
+    .notification-item-top strong {
+        color: var(--ms-text);
+        font-size: 14px;
+    }
+
+    .notification-item-top span {
+        color: var(--ms-text-muted);
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .notification-item p {
+        margin: 6px 0 0;
+        color: var(--ms-text);
+        font-size: 13px;
+    }
+
+    .notification-time-row {
+        margin-top: 8px;
+    }
+
+    .notification-time-chip {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 4px 8px;
+        background: #fde2e5;
+        color: #b42332;
+    }
+
+    .notification-time-chip.done {
+        background: #def2e8;
+        color: #116149;
+    }
 </style>
 
 @code {
@@ -423,6 +718,9 @@ else
     private SelectedDoseCard? _selectedDoseCard;
     private bool _showEarlyDoneConfirmation;
     private int _earlyDoneMinutesRemaining;
+    private bool _isNotificationCenterOpen;
+    private bool _hasUnrespondedNotifications;
+    private List<NotificationInboxItem> _notificationItems = [];
 
     private readonly List<HomeMedicationCard> _myMedicationCards = [];
     private readonly List<FamilyMedicationCard> _familyMedicationCards = [];
@@ -430,6 +728,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         MedicationStatusEvents.Changed += OnMedicationStatusChanged;
+        NotificationInboxService.Changed += OnNotificationInboxChanged;
         await AuthService.InitializeAsync();
 
         if (!AuthService.IsLoggedIn)
@@ -438,6 +737,8 @@ else
             return;
         }
 
+        await NotificationInboxService.InitializeAsync();
+        await RefreshNotificationBadgeAsync();
         await LoadHomeDataAsync();
         _isReady = true;
     }
@@ -497,6 +798,7 @@ else
 
     private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication)
     {
+        var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
             .OrderBy(d => d.ScheduledTime)
             .ToList();
@@ -508,8 +810,9 @@ else
                 yield return new HomeMedicationCard(
                     UserMedicationId: medication.Id,
                     Name: BuildMedicationDisplayName(medication),
+                    Note: note,
                     ScheduledTime: dose.ScheduledTime,
-                    ScheduleText: dose.ScheduledTime.ToString("HH:mm"),
+                    TimeSlots: [dose.ScheduledTime],
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
@@ -544,8 +847,9 @@ else
             yield return new HomeMedicationCard(
                 UserMedicationId: medication.Id,
                 Name: BuildMedicationDisplayName(medication),
+                Note: note,
                 ScheduledTime: fallbackTime,
-                ScheduleText: fallbackTime.ToString("HH:mm"),
+                TimeSlots: [fallbackTime],
                 Status: DoseStatusEnum.Pending,
                 StatusLabel: "Ootel",
                 StatusCss: "status-pending",
@@ -557,6 +861,7 @@ else
 
     private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication)
     {
+        var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
             .OrderBy(dose => dose.ScheduledTime)
             .ToList();
@@ -569,8 +874,9 @@ else
                     UserMedicationId: medication.Id,
                     ProfileName: profile.Name,
                     Name: BuildMedicationDisplayName(medication),
+                    Note: note,
                     ScheduledTime: dose.ScheduledTime,
-                    ScheduleText: dose.ScheduledTime.ToString("HH:mm"),
+                    TimeSlots: [dose.ScheduledTime],
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
@@ -606,8 +912,9 @@ else
                 UserMedicationId: medication.Id,
                 ProfileName: profile.Name,
                 Name: BuildMedicationDisplayName(medication),
+                Note: note,
                 ScheduledTime: fallbackTime,
-                ScheduleText: fallbackTime.ToString("HH:mm"),
+                TimeSlots: [fallbackTime],
                 Status: DoseStatusEnum.Pending,
                 StatusLabel: "Ootel",
                 StatusCss: "status-pending",
@@ -625,6 +932,11 @@ else
         }
 
         return $"{medication.MedicationName} {medication.Strength}";
+    }
+
+    private static string? NormalizeNote(string? note)
+    {
+        return string.IsNullOrWhiteSpace(note) ? null : note.Trim();
     }
 
     private static string GetInitials(string? name)
@@ -677,6 +989,35 @@ else
     private void OpenMyMedicines()
     {
         Navigation.NavigateTo("/home-pharmacy");
+    }
+
+    private async Task OpenNotificationCenterAsync()
+    {
+        _isNotificationCenterOpen = true;
+        await LoadNotificationItemsAsync();
+        await RefreshNotificationBadgeAsync();
+    }
+
+    private void CloseNotificationCenter()
+    {
+        _isNotificationCenterOpen = false;
+    }
+
+    private async Task LoadNotificationItemsAsync()
+    {
+        _notificationItems = (await NotificationInboxService.GetHistoryAsync()).ToList();
+    }
+
+    private async Task RefreshNotificationBadgeAsync()
+    {
+        _hasUnrespondedNotifications = await NotificationInboxService.HasUnrespondedAsync();
+    }
+
+    private static string GetNotificationTimeChipCss(NotificationInboxItem item)
+    {
+        return item.IsResponded && string.Equals(item.ResponseLabel, "Tehtud", StringComparison.OrdinalIgnoreCase)
+            ? "done"
+            : string.Empty;
     }
 
     private void OpenDoseModal(HomeMedicationCard card)
@@ -781,6 +1122,27 @@ else
         await InvokeAsync(async () =>
         {
             await LoadHomeDataAsync();
+            await RefreshNotificationBadgeAsync();
+            StateHasChanged();
+        });
+    }
+
+    private void OnNotificationInboxChanged()
+    {
+        _ = HandleNotificationInboxChangedAsync();
+    }
+
+    private async Task HandleNotificationInboxChangedAsync()
+    {
+        await InvokeAsync(async () =>
+        {
+            await RefreshNotificationBadgeAsync();
+
+            if (_isNotificationCenterOpen)
+            {
+                await LoadNotificationItemsAsync();
+            }
+
             StateHasChanged();
         });
     }
@@ -834,13 +1196,15 @@ else
     public void Dispose()
     {
         MedicationStatusEvents.Changed -= OnMedicationStatusChanged;
+        NotificationInboxService.Changed -= OnNotificationInboxChanged;
     }
 
     private sealed record HomeMedicationCard(
         int UserMedicationId,
         string Name,
+        string? Note,
         TimeOnly ScheduledTime,
-        string ScheduleText,
+        IReadOnlyList<TimeOnly> TimeSlots,
         DoseStatusEnum Status,
         string StatusLabel,
         string StatusCss,
@@ -851,8 +1215,9 @@ else
         int UserMedicationId,
         string ProfileName,
         string Name,
+        string? Note,
         TimeOnly ScheduledTime,
-        string ScheduleText,
+        IReadOnlyList<TimeOnly> TimeSlots,
         DoseStatusEnum Status,
         string StatusLabel,
         string StatusCss,
