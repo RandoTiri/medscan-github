@@ -9,7 +9,7 @@ namespace MedScan.MAUI.Services;
 public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
 {
     public const int DoneActionId = 1001;
-    public const int MissedActionId = 1002;
+    public const string MedicationChannelId = "medscan.medication.reminders";
 
     public async Task<bool> RequestPermissionAsync()
     {
@@ -93,7 +93,20 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
             Title = "MedScan - aeg votta ravim",
             Description = BuildDescription(medicine),
             CategoryType = NotificationCategoryType.Status,
-            ReturningData = ReminderPayloadCodec.Encode(medicine.UserMedicationId, time),
+            ReturningData = ReminderPayloadCodec.Encode(
+                medicine.UserMedicationId,
+                time,
+                medicine.MedicationName,
+                medicine.ProfileName,
+                note: null),
+            Android = new AndroidOptions
+            {
+                ChannelId = MedicationChannelId,
+                Priority = AndroidPriority.High,
+                VisibilityType = AndroidVisibilityType.Public,
+                AutoCancel = false,
+                LaunchAppWhenTapped = true
+            },
             Schedule = new NotificationRequestSchedule
             {
                 NotifyTime = notifyTime,
@@ -115,14 +128,6 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
                     new NotificationAction(DoneActionId)
                     {
                         Title = "Tehtud",
-                        Android = new AndroidAction
-                        {
-                            LaunchAppWhenTapped = false
-                        }
-                    },
-                    new NotificationAction(MissedActionId)
-                    {
-                        Title = "Tegemata",
                         Android = new AndroidAction
                         {
                             LaunchAppWhenTapped = false
