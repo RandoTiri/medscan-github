@@ -69,7 +69,7 @@ else
                 {
                     @foreach (var entry in _entries)
                     {
-                        var status = GetStatusView(entry.Source.LatestDoseStatus);
+                        var status = GetStatusView(entry.Status);
 
                         <article class="dose-card">
                             <div class="dose-title-row">
@@ -801,7 +801,23 @@ else
     {
         return medications
             .Where(m => m.IsActive)
-            .SelectMany(m => m.ScheduledTimes.Select(time => new DoseEntry(time, BuildDisplayName(m), m)))
+            .SelectMany(m =>
+            {
+                if (m.TodayDoses.Count > 0)
+                {
+                    return m.TodayDoses.Select(dose => new DoseEntry(
+                        dose.ScheduledTime,
+                        BuildDisplayName(m),
+                        m,
+                        dose.Status));
+                }
+
+                return m.ScheduledTimes.Select(time => new DoseEntry(
+                    time,
+                    BuildDisplayName(m),
+                    m,
+                    DoseStatusEnum.Pending));
+            })
             .OrderBy(entry => entry.Time)
             .ThenBy(entry => entry.DisplayName)
             .ToList();
@@ -824,8 +840,8 @@ else
     {
         return status switch
         {
-            DoseStatusEnum.Done => new StatusView("✓ Tehtud", "status-done", "Tehtud – kinnitatud"),
-            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("! Vahele", "status-missed", ""),
+            DoseStatusEnum.Done => new StatusView("✓ Tehtud", "status-done", ""),
+            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("! Tegemata", "status-missed", ""),
             _ => new StatusView("◔ Ootel", "status-pending", "")
         };
     }
@@ -1082,6 +1098,6 @@ else
         return Task.CompletedTask;
     }
 
-    private sealed record DoseEntry(TimeOnly Time, string DisplayName, UserMedicationDto Source);
+    private sealed record DoseEntry(TimeOnly Time, string DisplayName, UserMedicationDto Source, DoseStatusEnum Status);
     private sealed record StatusView(string Label, string CssClass, string Detail);
 }
