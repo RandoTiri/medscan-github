@@ -87,25 +87,42 @@ else
                 @foreach (var card in _myMedicationCards)
                 {
                     <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
-                        <div class="med-icon">
-                            @if (card.Status == DoseStatusEnum.Done)
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-                            }
-                            else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
-                            }
-                            else
-                            {
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
-                            }
+                        <div class="status-box @card.StatusCss">
+                            <div class="med-icon">
+                                @if (card.Status == DoseStatusEnum.Done)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                                }
+                                else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+                                }
+                                else
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                                }
+                            </div>
+                            <div class="status-label">@card.StatusLabel</div>
                         </div>
                         <div class="med-info">
                             <h3>@card.Name</h3>
-                            <p>@card.ScheduleText</p>
+                            @if (!string.IsNullOrWhiteSpace(card.Note))
+                            {
+                                <p class="med-note">💬 @card.Note</p>
+                            }
+                            <div class="time-chip-row">
+                                @foreach (var slot in card.TimeSlots)
+                                {
+                                    <span class="time-chip">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 7v5l3 2"></path>
+                                        </svg>
+                                        @slot.ToString("HH:mm")
+                                    </span>
+                                }
+                            </div>
                         </div>
-                        <div class="med-status @card.StatusBadgeCss">@card.StatusLabel</div>
                     </button>
                 }
             }
@@ -122,26 +139,44 @@ else
             {
                 @foreach (var card in _familyMedicationCards)
                 {
-                    <button type="button" class="family-dose-card" @onclick="() => OpenDoseModal(card)">
-                        <div class="family-status-icon @card.StatusCss">
-                            @if (card.Status == DoseStatusEnum.Done)
-                            {
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-                            }
-                            else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
-                            {
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
-                            }
-                            else
-                            {
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
-                            }
+                    <button type="button" class="family-dose-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
+                        <div class="status-box @card.StatusCss">
+                            <div class="med-icon">
+                                @if (card.Status == DoseStatusEnum.Done)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+                                }
+                                else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
+                                }
+                                else
+                                {
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+                                }
+                            </div>
+                            <div class="status-label">@card.StatusLabel</div>
                         </div>
                         <div class="family-dose-info">
                             <h3>@card.ProfileName</h3>
-                            <p>@card.Name - @card.ScheduleText @card.StatusLabel.ToLowerInvariant()</p>
+                            <p class="family-med-name">@card.Name</p>
+                            @if (!string.IsNullOrWhiteSpace(card.Note))
+                            {
+                                <p class="family-note">💬 @card.Note</p>
+                            }
+                            <div class="time-chip-row">
+                                @foreach (var slot in card.TimeSlots)
+                                {
+                                    <span class="time-chip">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 7v5l3 2"></path>
+                                        </svg>
+                                        @slot.ToString("HH:mm")
+                                    </span>
+                                }
+                            </div>
                         </div>
-                        <div class="med-status @card.StatusBadgeCss">@card.StatusLabel</div>
                     </button>
                 }
             }
@@ -252,14 +287,77 @@ else
     .section-header a { color: var(--ms-accent); text-decoration: none; font-size: 14px; font-weight: 500; }
 
     .med-card { width: 100%; border: none; text-align: left; cursor: pointer; background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
-    .med-card.status-done .med-icon { background: #e8f5f1; color: var(--ms-accent); }
-    .med-card.status-pending .med-icon { background: #fff5e6; color: #c8812b; }
-    .med-card.status-missed .med-icon { background: #fde9eb; color: var(--ms-danger-text); }
-
-    .med-icon { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; }
+    .med-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 0; flex-shrink: 0; }
     .med-info { flex-grow: 1; }
     .med-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
-    .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text-muted); }
+    .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text); }
+
+    .status-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        margin-right: 12px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        min-width: 72px;
+        padding: 8px 8px 7px;
+    }
+
+    .status-box.status-done {
+        background: #e8f5f1;
+        color: var(--ms-accent);
+    }
+
+    .status-box.status-pending {
+        background: #fff5e6;
+        color: #c8812b;
+    }
+
+    .status-box.status-missed {
+        background: #fde9eb;
+        color: var(--ms-danger-text);
+    }
+
+    .status-label {
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .med-note,
+    .family-note {
+        margin: 6px 0 0 0;
+        color: #8f84a1;
+        font-size: 13px;
+        font-style: italic;
+    }
+
+    .family-med-name {
+        margin: 6px 0 0 0;
+        color: var(--ms-text);
+        font-size: 13px;
+    }
+
+    .time-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .time-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 12px;
+        background: #dceae8;
+        color: #245f54;
+        padding: 6px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1;
+    }
 
     .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
     .badge-done { background: #e8f5f1; color: var(--ms-accent); }
@@ -281,33 +379,6 @@ else
         margin-bottom: 14px;
     }
 
-    .family-status-icon {
-        width: 45px;
-        height: 45px;
-        border-radius: 12px;
-        background: var(--ms-surface-soft);
-        color: var(--ms-text-muted);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .family-status-icon.status-done {
-        background: #e8f5f1;
-        color: var(--ms-accent);
-    }
-
-    .family-status-icon.status-pending {
-        background: #fff5e6;
-        color: #c8812b;
-    }
-
-    .family-status-icon.status-missed {
-        background: #fde9eb;
-        color: var(--ms-danger-text);
-    }
-
     .family-dose-info {
         flex: 1;
         min-width: 0;
@@ -325,10 +396,7 @@ else
         margin: 8px 0 0 0;
         font-size: 13px;
         line-height: 1.2;
-        color: var(--ms-text-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        color: var(--ms-text);
     }
 
     .empty-card {
@@ -555,6 +623,7 @@ else
 
     private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication)
     {
+        var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
             .OrderBy(d => d.ScheduledTime)
             .ToList();
@@ -566,8 +635,9 @@ else
                 yield return new HomeMedicationCard(
                     UserMedicationId: medication.Id,
                     Name: BuildMedicationDisplayName(medication),
+                    Note: note,
                     ScheduledTime: dose.ScheduledTime,
-                    ScheduleText: dose.ScheduledTime.ToString("HH:mm"),
+                    TimeSlots: [dose.ScheduledTime],
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
@@ -602,8 +672,9 @@ else
             yield return new HomeMedicationCard(
                 UserMedicationId: medication.Id,
                 Name: BuildMedicationDisplayName(medication),
+                Note: note,
                 ScheduledTime: fallbackTime,
-                ScheduleText: fallbackTime.ToString("HH:mm"),
+                TimeSlots: [fallbackTime],
                 Status: DoseStatusEnum.Pending,
                 StatusLabel: "Ootel",
                 StatusCss: "status-pending",
@@ -615,6 +686,7 @@ else
 
     private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication)
     {
+        var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
             .OrderBy(dose => dose.ScheduledTime)
             .ToList();
@@ -627,8 +699,9 @@ else
                     UserMedicationId: medication.Id,
                     ProfileName: profile.Name,
                     Name: BuildMedicationDisplayName(medication),
+                    Note: note,
                     ScheduledTime: dose.ScheduledTime,
-                    ScheduleText: dose.ScheduledTime.ToString("HH:mm"),
+                    TimeSlots: [dose.ScheduledTime],
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
@@ -664,8 +737,9 @@ else
                 UserMedicationId: medication.Id,
                 ProfileName: profile.Name,
                 Name: BuildMedicationDisplayName(medication),
+                Note: note,
                 ScheduledTime: fallbackTime,
-                ScheduleText: fallbackTime.ToString("HH:mm"),
+                TimeSlots: [fallbackTime],
                 Status: DoseStatusEnum.Pending,
                 StatusLabel: "Ootel",
                 StatusCss: "status-pending",
@@ -683,6 +757,11 @@ else
         }
 
         return $"{medication.MedicationName} {medication.Strength}";
+    }
+
+    private static string? NormalizeNote(string? note)
+    {
+        return string.IsNullOrWhiteSpace(note) ? null : note.Trim();
     }
 
     private static string GetInitials(string? name)
@@ -885,8 +964,9 @@ else
     private sealed record HomeMedicationCard(
         int UserMedicationId,
         string Name,
+        string? Note,
         TimeOnly ScheduledTime,
-        string ScheduleText,
+        IReadOnlyList<TimeOnly> TimeSlots,
         DoseStatusEnum Status,
         string StatusLabel,
         string StatusCss,
@@ -897,8 +977,9 @@ else
         int UserMedicationId,
         string ProfileName,
         string Name,
+        string? Note,
         TimeOnly ScheduledTime,
-        string ScheduleText,
+        IReadOnlyList<TimeOnly> TimeSlots,
         DoseStatusEnum Status,
         string StatusLabel,
         string StatusCss,
