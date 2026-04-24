@@ -343,10 +343,16 @@ else
 
         if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
         {
-            var route = $"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}";
+            var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}";
+            if (_targetProfileId > 0)
+            {
+                route += $"?profileId={_targetProfileId}";
+            }
             if (scanResult.ExpirationDate is DateOnly expirationDate)
             {
-                route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
+                route += route.Contains('?')
+                    ? $"&exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}"
+                    : $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
             }
             if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
             {

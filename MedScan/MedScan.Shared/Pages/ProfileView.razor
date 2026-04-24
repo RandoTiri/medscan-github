@@ -868,23 +868,21 @@ else
         var scanResult = await ScannerFlowService.ScanAsync();
         if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
         {
-            var route = $"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}";
+            var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}?profileId={ProfileId}";
             if (scanResult.ExpirationDate is DateOnly expirationDate)
             {
-                route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
+                route += $"&exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
             }
             if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
             {
-                route += route.Contains('?')
-                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
-                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
+                route += $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
             }
 
             Navigation.NavigateTo(route);
         }
         else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
         {
-            Navigation.NavigateTo("/scanner/search");
+            Navigation.NavigateTo($"/home-pharmacy/search?profileId={ProfileId}");
         }
     }
 

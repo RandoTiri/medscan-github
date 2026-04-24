@@ -654,7 +654,7 @@ else
 
         if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
         {
-            var route = $"/scanner/result/{Uri.EscapeDataString(scanResult.Barcode)}";
+            var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}";
             if (scanResult.ExpirationDate is DateOnly expirationDate)
             {
                 route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
@@ -670,7 +670,7 @@ else
         }
         else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
         {
-            Navigation.NavigateTo("/scanner/search");
+            Navigation.NavigateTo("/home-pharmacy/search");
         }
     }
 
