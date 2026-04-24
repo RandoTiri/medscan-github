@@ -36,7 +36,9 @@ else
                             <span class="notification-dot"></span>
                         }
                     </button>
-                    <span class="user-initials">@GetInitials()</span>
+                    <button type="button" class="user-initials" title="Minu profiil" @onclick="OpenMyMainProfileSettings">
+                        @GetInitials()
+                    </button>
                 </div>
             </div>
 
@@ -317,7 +319,22 @@ else
         background: #f1b434;
         border: 2px solid #1f7a60;
     }
-    .user-initials { background: transparent; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; }
+    .user-initials {
+        background: transparent;
+        border: 2px solid white;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+        color: white;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+    }
     .greeting { font-size: 28px; font-weight: bold; margin: 10px 0 20px 0; }
 
     .stats-card {
@@ -1004,6 +1021,18 @@ else
     private void OpenMyMedicines()
     {
         Navigation.NavigateTo("/home-pharmacy");
+    }
+
+    private void OpenMyMainProfileSettings()
+    {
+        var defaultProfileId = AuthService.CurrentUser?.DefaultProfileId;
+        if (defaultProfileId.HasValue)
+        {
+            Navigation.NavigateTo($"/settings/main-profile/{defaultProfileId.Value}");
+            return;
+        }
+
+        Navigation.NavigateTo("/settings");
     }
 
     private async Task OpenNotificationCenterAsync()
