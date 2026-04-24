@@ -118,7 +118,7 @@ else
                             <div class="time-chip-row">
                                 @foreach (var slot in card.TimeSlots)
                                 {
-                                    <span class="time-chip">
+                                    <span class="time-chip @card.StatusCss">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="9"></circle>
                                             <path d="M12 7v5l3 2"></path>
@@ -172,7 +172,7 @@ else
                             <div class="time-chip-row">
                                 @foreach (var slot in card.TimeSlots)
                                 {
-                                    <span class="time-chip">
+                                    <span class="time-chip @card.StatusCss">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="9"></circle>
                                             <path d="M12 7v5l3 2"></path>
@@ -419,6 +419,21 @@ else
         font-size: 13px;
         font-weight: 700;
         line-height: 1;
+    }
+
+    .time-chip.status-done {
+        background: #e8f5f1;
+        color: var(--ms-accent);
+    }
+
+    .time-chip.status-pending {
+        background: #fff5e6;
+        color: #c8812b;
+    }
+
+    .time-chip.status-missed {
+        background: #fde9eb;
+        color: var(--ms-danger-text);
     }
 
     .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
