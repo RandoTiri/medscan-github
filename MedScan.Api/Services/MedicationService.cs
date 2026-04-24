@@ -20,10 +20,10 @@ public sealed class MedicationService : IMedicationService
         _medicationRepository = medicationRepository;
     }
 
-    public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId)
+    public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId, DateOnly? forDate = null)
     {
         var items = await _userMedicationRepository.GetByProfileIdAsync(profileId);
-        return items.Select(MapToDto);
+        return items.Select(item => MapToDto(item, forDate));
     }
 
     public async Task<UserMedicationDto?> GetByIdAsync(int userMedicationId)
@@ -119,10 +119,10 @@ public sealed class MedicationService : IMedicationService
         throw new NotSupportedException("Status updates are handled by MedicationsController.");
     }
 
-    private static UserMedicationDto MapToDto(UserMedication userMedication)
+    private static UserMedicationDto MapToDto(UserMedication userMedication, DateOnly? forDate = null)
     {
         var scheduledTimes = DeserializeTimes(userMedication.ScheduledTimesJson);
-        var todayDoseStatuses = BuildTodayDoseStatuses(userMedication, scheduledTimes);
+        var doseStatuses = BuildDoseStatuses(userMedication, scheduledTimes, forDate);
 
         var latestStatus = userMedication.DoseLogs
             .OrderByDescending(log => log.ScheduledTime)
@@ -142,7 +142,7 @@ public sealed class MedicationService : IMedicationService
                 : null,
             FrequencyPerDay = userMedication.Frequency,
             ScheduledTimes = scheduledTimes,
-            TodayDoses = todayDoseStatuses,
+            TodayDoses = doseStatuses,
             ExpiresOn = userMedication.ExpiresOn,
             RemindersEnabled = userMedication.RemindersEnabled,
             Notes = userMedication.Notes,
@@ -151,12 +151,20 @@ public sealed class MedicationService : IMedicationService
         };
     }
 
-    private static List<ScheduledDoseStatusDto> BuildTodayDoseStatuses(UserMedication userMedication, List<TimeOnly> scheduledTimes)
+    private static List<ScheduledDoseStatusDto> BuildDoseStatuses(UserMedication userMedication, List<TimeOnly> scheduledTimes, DateOnly? forDate = null)
     {
         var nowLocal = DateTime.Now;
-        var todayLocal = nowLocal.Date;
+        var selectedDate = forDate ?? DateOnly.FromDateTime(nowLocal);
+        var selectedLocalDate = selectedDate.ToDateTime(TimeOnly.MinValue);
+        var addedLocalDate = userMedication.AddedAt.ToLocalTime().Date;
+
+        if (addedLocalDate > selectedLocalDate)
+        {
+            return [];
+        }
 
         var logsByScheduledUtc = userMedication.DoseLogs
+            .Where(log => DateOnly.FromDateTime(log.ScheduledTime.ToLocalTime()) == selectedDate)
             .GroupBy(log => log.ScheduledTime)
             .ToDictionary(
                 group => group.Key,
@@ -166,7 +174,7 @@ public sealed class MedicationService : IMedicationService
 
         foreach (var scheduledTime in scheduledTimes.OrderBy(time => time))
         {
-            var localScheduledDateTime = DateTime.SpecifyKind(todayLocal.Add(scheduledTime.ToTimeSpan()), DateTimeKind.Local);
+            var localScheduledDateTime = DateTime.SpecifyKind(selectedLocalDate.Add(scheduledTime.ToTimeSpan()), DateTimeKind.Local);
             var scheduledUtc = localScheduledDateTime.ToUniversalTime();
 
             if (logsByScheduledUtc.TryGetValue(scheduledUtc, out var statusFromLog))
@@ -179,9 +187,11 @@ public sealed class MedicationService : IMedicationService
                 continue;
             }
 
-            var computedStatus = localScheduledDateTime <= nowLocal
+            var computedStatus = selectedDate < DateOnly.FromDateTime(nowLocal)
                 ? DoseStatusEnum.Missed
-                : DoseStatusEnum.Pending;
+                : localScheduledDateTime <= nowLocal
+                    ? DoseStatusEnum.Missed
+                    : DoseStatusEnum.Pending;
 
             result.Add(new ScheduledDoseStatusDto
             {

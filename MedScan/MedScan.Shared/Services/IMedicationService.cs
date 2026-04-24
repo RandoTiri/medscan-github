@@ -3,7 +3,7 @@
 namespace MedScan.Shared.Services;
 
 public interface IMedicationService {
-    Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId);
+    Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId, DateOnly? forDate = null);
     Task<UserMedicationDto?> GetByIdAsync(int userMedicationId);
     Task<UserMedicationDto> AddToScheduleAsync(AddMedicationDto dto);
     Task<UserMedicationDto?> UpdateScheduleAsync(int userMedicationId,AddMedicationDto dto);

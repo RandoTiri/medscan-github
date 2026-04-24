@@ -18,7 +18,7 @@ public sealed class MedicationsController(
     AppDbContext dbContext) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserMedicationDto>>> GetSchedule([FromQuery] int profileId)
+    public async Task<ActionResult<IEnumerable<UserMedicationDto>>> GetSchedule([FromQuery] int profileId, [FromQuery] DateOnly? forDate)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -35,7 +35,7 @@ public sealed class MedicationsController(
             return Forbid();
         }
 
-        var result = await medicationService.GetScheduleAsync(profileId);
+        var result = await medicationService.GetScheduleAsync(profileId, forDate);
         return Ok(result);
     }
 

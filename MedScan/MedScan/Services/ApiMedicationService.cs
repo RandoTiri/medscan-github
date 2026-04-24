@@ -16,10 +16,16 @@ public sealed class ApiMedicationService(
     private readonly MedicineReminderCoordinator _reminderCoordinator = reminderCoordinator;
     private readonly IMedicationStatusEvents _medicationStatusEvents = medicationStatusEvents;
 
-    public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId)
+    public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId, DateOnly? forDate = null)
     {
+        var route = $"api/medications?profileId={profileId}";
+        if (forDate is DateOnly selectedDate)
+        {
+            route += $"&forDate={selectedDate:yyyy-MM-dd}";
+        }
+
         var medications = await _httpClient.GetFromJsonAsync<List<UserMedicationDto>>(
-            $"api/medications?profileId={profileId}");
+            route);
 
         return medications ?? [];
     }

@@ -1,0 +1,365 @@
+@page "/profile/view/{ProfileId:int}/history"
+@using MedScan.Shared.DTOs.Medication
+@using MedScan.Shared.Models.Enums
+@using MedScan.Shared.Services
+@inject IAuthService AuthService
+@inject IMedicationService MedicationService
+@inject NavigationManager Navigation
+
+<PageTitle>Manustamise logi</PageTitle>
+
+@if (!_isReady)
+{
+    <p><em>Laen...</em></p>
+}
+else
+{
+    <div class="history-page">
+        <div class="history-content">
+            <div class="history-header">
+                <button class="back-link" @onclick="GoBack">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Tagasi
+                </button>
+                <h1>Manustamise logi</h1>
+                <span class="header-spacer"></span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(_errorMessage))
+            {
+                <div class="error-box">@_errorMessage</div>
+            }
+
+            <section class="filter-card">
+                <label>Kuupäev</label>
+                <div class="birthdate-picker">
+                    <div class="birth-field">
+                        <label>Päev</label>
+                        <select class="birth-select" @bind="_selectedDay" @bind:after="OnDateChangedAsync">
+                            @foreach (var day in _days)
+                            {
+                                <option value="@day">@day</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="birth-field">
+                        <label>Kuu</label>
+                        <select class="birth-select" @bind="_selectedMonth" @bind:after="OnDateChangedAsync">
+                            @foreach (var month in _months)
+                            {
+                                <option value="@month">@month</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="birth-field">
+                        <label>Aasta</label>
+                        <select class="birth-select" @bind="_selectedYear" @bind:after="OnDateChangedAsync">
+                            @foreach (var year in _years)
+                            {
+                                <option value="@year">@year</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            @if (_historyItems.Count == 0)
+            {
+                <div class="empty-box">Selle kuupäeva kohta manustamise kirjeid ei leitud.</div>
+            }
+            else
+            {
+                <section class="history-list">
+                    @foreach (var item in _historyItems)
+                    {
+                        <article class="history-card">
+                            <div class="history-title-row">
+                                <div>
+                                    <h2>@item.DisplayName</h2>
+                                    <p>@item.ScheduleText</p>
+                                </div>
+                                <span class="status-pill @item.StatusCss">@item.StatusLabel</span>
+                            </div>
+                        </article>
+                    }
+                </section>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .history-page {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        min-height: 100vh;
+        background: var(--ms-bg);
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 18px);
+        padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 84px);
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+        box-sizing: border-box;
+    }
+
+    .history-content {
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .history-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .history-header h1 {
+        margin: 0;
+        text-align: center;
+        color: var(--ms-text);
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .header-spacer {
+        width: 56px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        background: transparent;
+        color: var(--ms-accent);
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 10px 0;
+    }
+
+    .back-link svg {
+        margin-right: 8px;
+    }
+
+    .filter-card,
+    .history-card,
+    .empty-box,
+    .error-box {
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
+        border-radius: 14px;
+        padding: 14px;
+    }
+
+    .filter-card {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .filter-card label {
+        color: var(--ms-text-muted);
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .birthdate-picker {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+
+    .birth-field {
+        display: grid;
+        gap: 6px;
+    }
+
+    .birth-field label {
+        color: var(--ms-text-muted);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .birth-select {
+        width: 100%;
+        height: 46px;
+        border: 2px solid #7a7a7a;
+        border-radius: 10px;
+        padding: 0 12px;
+        padding-right: 36px;
+        font-size: 14px;
+        font-weight: 700;
+        background: var(--ms-surface);
+        color: #111827;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 18px 18px;
+    }
+
+    .history-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .history-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .history-title-row h2 {
+        margin: 0 0 4px 0;
+        color: var(--ms-text);
+        font-size: 16px;
+        font-weight: 800;
+    }
+
+    .history-title-row p {
+        margin: 0;
+        color: var(--ms-text-muted);
+        font-size: 14px;
+    }
+
+    .status-pill {
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 4px 10px;
+        flex-shrink: 0;
+    }
+
+    .status-done {
+        background: #e2f1ea;
+        color: #20835d;
+    }
+
+    .status-pending {
+        background: #f9efe0;
+        color: #d48714;
+    }
+
+    .status-missed {
+        background: #f8dfe1;
+        color: #b7454f;
+    }
+
+    .empty-box {
+        color: var(--ms-text-muted);
+    }
+
+    .error-box {
+        background: #feecee;
+        border-color: #fac9cf;
+        color: #b42332;
+        margin-bottom: 12px;
+    }
+</style>
+
+@code {
+    [Parameter] public int ProfileId { get; set; }
+
+    private bool _isReady;
+    private string? _errorMessage;
+    private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
+    private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
+    private readonly List<int> _years = Enumerable.Range(1900, 201).Reverse().ToList();
+    private int _selectedDay = DateTime.Today.Day;
+    private int _selectedMonth = DateTime.Today.Month;
+    private int _selectedYear = DateTime.Today.Year;
+    private readonly List<HistoryItem> _historyItems = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await AuthService.InitializeAsync();
+        if (!AuthService.IsLoggedIn)
+        {
+            Navigation.NavigateTo("/login");
+            return;
+        }
+
+        _isReady = true;
+        await LoadHistoryAsync();
+    }
+
+    private async Task LoadHistoryAsync()
+    {
+        _errorMessage = null;
+        _historyItems.Clear();
+
+        try
+        {
+            var selectedDate = new DateOnly(_selectedYear, _selectedMonth, _selectedDay);
+            var medications = await MedicationService.GetScheduleAsync(ProfileId, selectedDate);
+
+            _historyItems.AddRange(medications
+                .Where(medication => medication.IsActive)
+                .SelectMany(medication => medication.TodayDoses.Select(dose => new HistoryItem(
+                    DisplayName: BuildDisplayName(medication),
+                    ScheduleText: $"{selectedDate:dd.MM.yyyy} · {dose.ScheduledTime:HH\\:mm}",
+                    StatusLabel: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "Võetud",
+                        _ => "Võtmata"
+                    },
+                    StatusCss: dose.Status switch
+                    {
+                        DoseStatusEnum.Done => "status-done",
+                        _ => "status-missed"
+                    },
+                    SortKey: dose.ScheduledTime.ToTimeSpan())))
+                .OrderBy(item => item.SortKey)
+                .ThenBy(item => item.DisplayName));
+        }
+        catch
+        {
+            _errorMessage = "Manustamise logi laadimine ebaõnnestus.";
+        }
+    }
+
+    private static string BuildDisplayName(UserMedicationDto medication)
+    {
+        if (string.IsNullOrWhiteSpace(medication.Strength) || medication.MedicationName.Contains(medication.Strength, StringComparison.OrdinalIgnoreCase))
+        {
+            return medication.MedicationName;
+        }
+
+        return $"{medication.MedicationName} {medication.Strength}";
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo($"/profile/view/{ProfileId}");
+    }
+
+    private Task OnDateChangedAsync()
+    {
+        var maxDay = DateTime.DaysInMonth(_selectedYear, _selectedMonth);
+        if (_selectedDay > maxDay)
+        {
+            _selectedDay = maxDay;
+        }
+
+        return LoadHistoryAsync();
+    }
+
+    private sealed record HistoryItem(
+        string DisplayName,
+        string ScheduleText,
+        string StatusLabel,
+        string StatusCss,
+        TimeSpan SortKey);
+}
