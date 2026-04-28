@@ -213,14 +213,17 @@ namespace MedScan.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PackSize")
+                        .HasColumnType("text");
+
                     b.Property<string>("PdfUrl")
                         .HasColumnType("text");
 
                     b.Property<int>("PrescriptionType")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("StrengthMg")
-                        .HasColumnType("integer");
+                    b.Property<string>("StrengthMg")
+                        .HasColumnType("text");
 
                     b.Property<string>("Warnings")
                         .HasColumnType("text");

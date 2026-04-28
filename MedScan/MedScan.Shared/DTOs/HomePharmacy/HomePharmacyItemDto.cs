@@ -10,6 +10,7 @@ public sealed class HomePharmacyItemDto
     public string? Barcode { get; set; }
     public string? ActiveIngredient { get; set; }
     public string? Strength { get; set; }
+    public string? PackSize { get; set; }
     public int? PackageNumber { get; set; }
     public string? BatchNumber { get; set; }
     public DateOnly? ExpiresOn { get; set; }

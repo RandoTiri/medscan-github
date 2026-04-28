@@ -107,6 +107,8 @@ public sealed class HomePharmacyService(
             MedicationName = item.Medication?.Name ?? string.Empty,
             Barcode = item.Medication?.Barcode,
             ActiveIngredient = item.Medication?.ActiveIngredient,
+            Strength = item.Medication?.StrengthMg,
+            PackSize = item.Medication?.PackSize,
             Strength = item.Medication?.StrengthMg is int mg ? $"{mg} mg" : null,
             MedicationForm = item.Medication?.MedicationForm,
             PackageNumber = item.PackageNumber,

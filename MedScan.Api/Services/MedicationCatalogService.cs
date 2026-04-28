@@ -41,7 +41,8 @@ public sealed class MedicationCatalogService(IMedicationRepository medicationRep
             Barcode = medication.Barcode,
             Name = medication.Name,
             ActiveIngredient = medication.ActiveIngredient,
-            Strength = medication.StrengthMg is int mg ? $"{mg} mg" : null,
+            Strength = medication.StrengthMg,
+            PackSize = medication.PackSize,
             MedicationForm = medication.MedicationForm,
             ShortDescription = medication.Indication,
             Warnings = medication.Warnings

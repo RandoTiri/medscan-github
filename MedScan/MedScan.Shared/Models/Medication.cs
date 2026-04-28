@@ -6,7 +6,8 @@ public class Medication {
     public string Barcode { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string ActiveIngredient { get; set; } = string.Empty;
-    public int? StrengthMg { get; set; }
+    public string? StrengthMg { get; set; }
+    public string? PackSize { get; set; }
     public string? Indication { get; set; }
     public string? Warnings { get; set; }
     public string? PdfUrl { get; set; }

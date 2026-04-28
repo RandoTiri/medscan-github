@@ -170,9 +170,7 @@ internal static class Gs1DataMatrixParser
             return string.Empty;
         }
 
-        return gtin.Length == 14 && gtin.StartsWith('0')
-            ? gtin[1..]
-            : gtin;
+        return new string(gtin.Where(char.IsDigit).ToArray());
     }
 
     private static DateOnly? ParseExpiry(string yymmdd)
