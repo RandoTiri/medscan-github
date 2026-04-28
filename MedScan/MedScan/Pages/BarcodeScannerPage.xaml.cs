@@ -82,10 +82,18 @@ public partial class BarcodeScannerPage : ContentPage
         try
         {
             await Task.Delay(TimeSpan.FromSeconds(20), _timeoutSource.Token);
-            bool retry = await MainThread.InvokeOnMainThreadAsync(async () =>
-                await DisplayAlertAsync("Viga", "Kaamera ei tuvastanud ravimit.","Skaneeri uuesti", "KÃ¤sitsi otsimine"));
+            if (Volatile.Read(ref _isCompleted) == 1 || !IsModalOpen())
+            {
+                return;
+            }
 
-            if (retry)
+            var retry = await TryDisplayAlertAsync("Viga", "Kaamera ei tuvastanud ravimit.", "Skaneeri uuesti", "Käsitsi otsimine");
+            if (!retry.HasValue)
+            {
+                return;
+            }
+
+            if (retry.Value)
             {
                 _ = StartTimeoutAsync();
             }
@@ -99,6 +107,9 @@ public partial class BarcodeScannerPage : ContentPage
             }
         }
         catch (TaskCanceledException)
+        {
+        }
+        catch (ObjectDisposedException)
         {
         }
     }
@@ -192,26 +203,53 @@ public partial class BarcodeScannerPage : ContentPage
         var scannerFlowService = services?.GetService<MedScan.Shared.Services.IScannerFlowService>();
         if (scannerFlowService != null)
         {
-            var medication = await scannerFlowService.FindByBarcodeAsync(lookupBarcode);
-            if (medication == null)
+            MedicationLookupResult? medication;
+            try
             {
-                bool retry = await MainThread.InvokeOnMainThreadAsync(async () => 
-                    await DisplayAlertAsync("Tundmatu triipkood", "Tuvastatud triipkoodi andmeid ei leitud andmebaasist.", "Skaneeri uuesti", "KÃ¤sitsi otsimine"));
-
-                if (retry)
+                medication = await scannerFlowService.FindByBarcodeAsync(lookupBarcode);
+            }
+            catch
+            {
+                var retryFromError = await TryDisplayAlertAsync("Viga", "Skannimisel tekkis tõrge.", "Skaneeri uuesti", "Käsitsi otsimine");
+                if (retryFromError.GetValueOrDefault())
                 {
                     CameraView.IsDetecting = true;
                     return;
                 }
-                else
+
+                Complete(new BarcodeScanResult
                 {
-                    Complete(new BarcodeScanResult
-                    {
-                        Status = BarcodeScanStatus.ManualSearch
-                    });
-                    await CloseAsync();
+                    Status = BarcodeScanStatus.ManualSearch
+                });
+                await CloseAsync();
+                return;
+            }
+
+            if (medication == null)
+            {
+                var retry = await TryDisplayAlertAsync(
+                    "Tundmatu triipkood",
+                    "Tuvastatud triipkoodi andmeid ei leitud andmebaasist.",
+                    "Skaneeri uuesti",
+                    "Käsitsi otsimine");
+
+                if (!retry.HasValue)
+                {
                     return;
                 }
+
+                if (retry.Value)
+                {
+                    CameraView.IsDetecting = true;
+                    return;
+                }
+
+                Complete(new BarcodeScanResult
+                {
+                    Status = BarcodeScanStatus.ManualSearch
+                });
+                await CloseAsync();
+                return;
             }
         }
 
@@ -239,6 +277,11 @@ public partial class BarcodeScannerPage : ContentPage
 
     private async Task CloseAsync()
     {
+        if (!IsModalOpen())
+        {
+            return;
+        }
+
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
             if (Navigation.ModalStack.Contains(this))
@@ -246,5 +289,28 @@ public partial class BarcodeScannerPage : ContentPage
                 await Navigation.PopModalAsync();
             }
         });
+    }
+
+    private bool IsModalOpen()
+    {
+        return Application.Current?.Windows.FirstOrDefault()?.Page?.Navigation?.ModalStack.Contains(this) == true;
+    }
+
+    private async Task<bool?> TryDisplayAlertAsync(string title, string message, string accept, string cancel)
+    {
+        if (Volatile.Read(ref _isCompleted) == 1 || !IsModalOpen())
+        {
+            return null;
+        }
+
+        try
+        {
+            return await MainThread.InvokeOnMainThreadAsync(async () =>
+                await DisplayAlertAsync(title, message, accept, cancel));
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

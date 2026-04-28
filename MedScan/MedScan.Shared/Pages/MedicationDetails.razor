@@ -49,7 +49,7 @@ else
             <div class="header-card">
                 <div class="pill-icon">R</div>
                 <div class="header-info">
-                    <h2>@_item.MedicationName@(!string.IsNullOrWhiteSpace(_item.Strength) ? $" {_item.Strength}" : string.Empty)</h2>
+                    <h2>@_item.MedicationName</h2>
                     <p>@(_item.ActiveIngredient ?? "-")</p>
                 </div>
             </div>
@@ -69,6 +69,10 @@ else
                 <div class="info-row">
                     <span class="label">Tugevus</span>
                     <span class="val">@(_item.Strength ?? "-")</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Pakendi kogus</span>
+                    <span class="val">@(_item.PackSize ?? "-")</span>
                 </div>
                 <div class="info-row">
                     <span class="label">Näidustus</span>

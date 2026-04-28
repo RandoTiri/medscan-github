@@ -137,9 +137,7 @@ public sealed class MedicationService : IMedicationService
             ProfileName = userMedication.Profile?.Name ?? string.Empty,
             MedicationId = userMedication.MedicationId,
             MedicationName = userMedication.Medication?.Name ?? string.Empty,
-            Strength = userMedication.Medication?.StrengthMg is int mg
-                ? $"{mg} mg"
-                : null,
+            Strength = userMedication.Medication?.StrengthMg,
             FrequencyPerDay = userMedication.Frequency,
             ScheduledTimes = scheduledTimes,
             TodayDoses = doseStatuses,

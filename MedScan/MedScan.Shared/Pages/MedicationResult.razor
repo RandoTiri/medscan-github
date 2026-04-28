@@ -48,7 +48,7 @@ else
                     </svg>
                 </div>
                 <div class="header-info">
-                    <h2>@_medication.Name@(!string.IsNullOrWhiteSpace(_medication.Strength) ? " " + _medication.Strength : "")</h2>
+                    <h2>@_medication.Name</h2>
                     <p>@_medication.ActiveIngredient</p>
                 </div>
             </div>
@@ -70,6 +70,13 @@ else
                     <div class="info-row">
                         <span class="label">Tugevus</span>
                         <span class="val">@_medication.Strength</span>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(_medication.PackSize))
+                {
+                    <div class="info-row">
+                        <span class="label">Pakendi kogus</span>
+                        <span class="val">@_medication.PackSize</span>
                     </div>
                 }
                 @if (!string.IsNullOrWhiteSpace(_medication.ShortDescription))
