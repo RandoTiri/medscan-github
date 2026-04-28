@@ -1132,9 +1132,17 @@ else
                 return;
             }
 
+            if (!string.IsNullOrWhiteSpace(result.StockWarning))
+            {
+                _modalInfoMessage = result.StockWarning;
+            }
+
             _showEarlyDoneConfirmation = false;
             _earlyDoneMinutesRemaining = 0;
-            CloseDoseModal();
+            if (string.IsNullOrWhiteSpace(result.StockWarning))
+            {
+                CloseDoseModal();
+            }
         }
         catch
         {

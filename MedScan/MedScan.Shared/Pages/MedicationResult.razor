@@ -79,13 +79,10 @@ else
                         <span class="val">@_medication.Strength</span>
                     </div>
                 }
-                @if (!string.IsNullOrWhiteSpace(_medication.PackSize))
-                {
-                    <div class="info-row">
-                        <span class="label">Pakendi kogus</span>
-                        <span class="val">@_medication.PackSize</span>
-                    </div>
-                }
+                <div class="info-row">
+                    <span class="label">Pakendi kogus</span>
+                    <span class="val">@FormatPackSize(_medication.PackSize)</span>
+                </div>
                 @if (!string.IsNullOrWhiteSpace(_medication.ShortDescription))
                 {
                     <div class="info-row">
@@ -492,5 +489,16 @@ else
     private static string? ParseBatchQuery(string? query)
     {
         return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
+    }
+
+    private static string FormatPackSize(string? packSize)
+    {
+        if (string.IsNullOrWhiteSpace(packSize))
+        {
+            return "-";
+        }
+
+        var digits = new string(packSize.Where(char.IsDigit).ToArray());
+        return string.IsNullOrWhiteSpace(digits) ? packSize.Trim() : digits;
     }
 }

@@ -75,7 +75,7 @@ else
                 </div>
                 <div class="info-row">
                     <span class="label">Pakendi kogus</span>
-                    <span class="val">@(_item.PackSize ?? "-")</span>
+                    <span class="val">@FormatPackSize(_item.PackSize)</span>
                 </div>
                 <div class="info-row">
                     <span class="label">Näidustus</span>
@@ -84,6 +84,18 @@ else
                 <div class="info-row">
                     <span class="label">Säilimisaeg</span>
                     <span class="val">@ShelfLifeDisplay</span>
+                </div>
+                <div class="info-row quantity-edit-row">
+                    <span class="label">Alles (tk)</span>
+                    <div class="quantity-edit-controls">
+                        <select class="quantity-select" @bind="_editableQuantity">
+                            @for (var qty = 1; qty <= 100; qty++)
+                            {
+                                <option value="@qty">@qty</option>
+                            }
+                        </select>
+                        <button class="quantity-save-btn" @onclick="SaveQuantityAsync" disabled="@(_isSaving || _item is null || _editableQuantity == _item.Quantity)">Salvesta</button>
+                    </div>
                 </div>
             </div>
 
@@ -221,6 +233,27 @@ else
     .info-row:not(:last-child) { border-bottom: 1px dashed #edf0ef; }
     .label { color: #5e7072; font-size: 14px; }
     .val { color: #132340; font-size: 15px; font-weight: 700; text-align: right; }
+    .quantity-edit-row { align-items: center; }
+    .quantity-edit-controls { display: inline-flex; gap: 8px; align-items: center; }
+    .quantity-select {
+        border: 1px solid #d3d9db;
+        border-radius: 10px;
+        background: #fff;
+        color: #132340;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 6px 10px;
+    }
+    .quantity-save-btn {
+        border: none;
+        border-radius: 10px;
+        background: #1f7a60;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 7px 10px;
+    }
+    .quantity-save-btn:disabled { opacity: 0.6; }
     .warnings-card { background: #fffbef; border: 1px solid #fde68a; border-radius: 16px; padding: 16px; }
     .warning-title { color: #b45309; }
     .warning-list { display: grid; gap: 8px; }
@@ -333,6 +366,7 @@ else
     private UserMedicationDto? _schedule;
     private bool _hasSchedule;
     private bool _isAddingSchedule;
+    private int _editableQuantity = 1;
 
     private int _frequencyPerDay = 1;
     private List<string> _scheduledTimeTexts = ["08:00"];
@@ -377,6 +411,7 @@ else
                 _errorMessage = "Ravimit ei leitud.";
                 return;
             }
+            _editableQuantity = Math.Clamp(_item.Quantity, 1, 100);
 
             var schedules = await MedicationService.GetScheduleAsync(_item.ProfileId);
             _schedule = schedules.FirstOrDefault(x => x.MedicationId == _item.MedicationId && x.IsActive);
@@ -653,6 +688,48 @@ else
         }
     }
 
+    private async Task SaveQuantityAsync()
+    {
+        if (_isSaving || _item is null || _editableQuantity == _item.Quantity)
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            var updated = await HomePharmacyService.UpdateAsync(_item.Id, new UpdateHomePharmacyItemDto
+            {
+                PackageNumber = _item.PackageNumber,
+                BatchNumber = _item.BatchNumber,
+                ExpiresOn = _item.ExpiresOn,
+                Quantity = _editableQuantity,
+                Notes = _item.Notes
+            });
+
+            if (updated is null)
+            {
+                _errorMessage = "Ravimi koguse uuendamine ebaõnnestus.";
+                return;
+            }
+
+            _item = updated;
+            _editableQuantity = Math.Clamp(updated.Quantity, 1, 100);
+            _message = "Ravimi kogus uuendatud.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
     private void BackToList()
     {
         Navigation.NavigateTo($"/home-pharmacy?profileId={_item?.ProfileId}");
@@ -671,5 +748,16 @@ else
         }
 
         Navigation.NavigateTo(_item.PdfUrl, true);
+    }
+
+    private static string FormatPackSize(string? packSize)
+    {
+        if (string.IsNullOrWhiteSpace(packSize))
+        {
+            return "-";
+        }
+
+        var digits = new string(packSize.Where(char.IsDigit).ToArray());
+        return string.IsNullOrWhiteSpace(digits) ? packSize.Trim() : digits;
     }
 }

@@ -20,4 +20,6 @@ public sealed class UserMedicationDto
     public string? Notes { get; set; }
     public bool IsActive { get; set; }
     public DoseStatusEnum? LatestDoseStatus { get; set; }
+    public int? RemainingQuantity { get; set; }
+    public string? StockWarning { get; set; }
 }

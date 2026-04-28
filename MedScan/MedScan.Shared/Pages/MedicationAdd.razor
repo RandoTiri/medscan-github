@@ -725,7 +725,7 @@ else
                 MedicationId = _medication.Id,
                 BatchNumber = _batchNumber,
                 ExpiresOn = _expiresOn,
-                Quantity = 1,
+                Quantity = ResolveInitialQuantity(_medication.PackSize),
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
             });
 
@@ -765,6 +765,19 @@ else
     private static string? ParseBatchQuery(string? query)
     {
         return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
+    }
+
+    private static int ResolveInitialQuantity(string? packSize)
+    {
+        if (string.IsNullOrWhiteSpace(packSize))
+        {
+            return 1;
+        }
+
+        var digits = new string(packSize.Where(char.IsDigit).ToArray());
+        return int.TryParse(digits, out var parsed) && parsed > 0
+            ? parsed
+            : 1;
     }
 
 }

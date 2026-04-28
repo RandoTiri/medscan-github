@@ -162,6 +162,7 @@ public sealed class MedicationsController(
 
         var userMedication = await dbContext.UserMedications
             .Include(um => um.Profile)
+            .Include(um => um.Medication)
             .Include(um => um.DoseLogs)
             .FirstOrDefaultAsync(um => um.Id == id && um.Profile.UserId == userId);
 
@@ -183,6 +184,7 @@ public sealed class MedicationsController(
             .OrderByDescending(log => log.Id)
             .FirstOrDefault();
 
+        var previousStatus = existingLog?.DoseStatus;
         if (existingLog is null)
         {
             existingLog = new DoseLog
@@ -203,6 +205,29 @@ public sealed class MedicationsController(
             existingLog.ConfirmedByUserId = userId;
         }
 
+        var stockWarning = string.Empty;
+        int? remainingQuantity = null;
+        var shouldDecreaseStock = dto.Status == DoseStatusEnum.Done && previousStatus != DoseStatusEnum.Done;
+        if (shouldDecreaseStock)
+        {
+            var stockItem = await dbContext.HomePharmacyItems
+                .Where(item => item.ProfileId == userMedication.ProfileId && item.MedicationId == userMedication.MedicationId)
+                .OrderByDescending(item => item.AddedAt)
+                .FirstOrDefaultAsync();
+
+            if (stockItem is not null && stockItem.Quantity > 0)
+            {
+                stockItem.Quantity = Math.Max(0, stockItem.Quantity - 1);
+                remainingQuantity = stockItem.Quantity;
+
+                if (stockItem.Quantity <= 3)
+                {
+                    var medName = userMedication.Medication?.Name ?? "Ravim";
+                    stockWarning = $"{medName}: alles on {stockItem.Quantity} tk. Vajadusel osta juurde, kui jätkad võtmist.";
+                }
+            }
+        }
+
         await dbContext.SaveChangesAsync();
 
         var updated = await medicationService.GetByIdAsync(id);
@@ -210,6 +235,9 @@ public sealed class MedicationsController(
         {
             return NotFound();
         }
+
+        updated.RemainingQuantity = remainingQuantity;
+        updated.StockWarning = string.IsNullOrWhiteSpace(stockWarning) ? null : stockWarning;
 
         return Ok(updated);
     }
