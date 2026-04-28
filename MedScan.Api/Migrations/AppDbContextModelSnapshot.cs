@@ -17,7 +17,7 @@ namespace MedScan.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -202,8 +202,8 @@ namespace MedScan.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("MarketingAuthNumber");
 
-                    b.Property<int>("MedicationForm")
-                        .HasColumnType("integer");
+                    b.Property<string>("MedicationForm")
+                        .HasColumnType("text");
 
                     b.Property<int>("MethodOfAdministraion")
                         .HasColumnType("integer")
@@ -262,52 +262,6 @@ namespace MedScan.Api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Profiles");
-                });
-
-            modelBuilder.Entity("MedScan.Shared.Models.UserMedication", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AddedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Frequency")
-                        .HasColumnType("integer")
-                        .HasColumnName("FrequencyPerDay");
-
-                    b.Property<DateOnly?>("ExpiresOn")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<int>("MedicationId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ProfileId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("RemindersEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("ScheduledTimesJson")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MedicationId");
-
-                    b.HasIndex("ProfileId");
-
-                    b.ToTable("UserMedications");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -442,9 +396,55 @@ namespace MedScan.Api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("UserMedication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("ExpiresOn")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("integer")
+                        .HasColumnName("FrequencyPerDay");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MedicationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProfileId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("RemindersEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ScheduledTimesJson")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicationId");
+
+                    b.HasIndex("ProfileId");
+
+                    b.ToTable("UserMedications");
+                });
+
             modelBuilder.Entity("MedScan.Shared.Models.DoseLog", b =>
                 {
-                    b.HasOne("MedScan.Shared.Models.UserMedication", "UserMedication")
+                    b.HasOne("UserMedication", "UserMedication")
                         .WithMany("DoseLogs")
                         .HasForeignKey("UserMedicationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -479,25 +479,6 @@ namespace MedScan.Api.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("MedScan.Shared.Models.UserMedication", b =>
-                {
-                    b.HasOne("MedScan.Shared.Models.Medication", "Medication")
-                        .WithMany()
-                        .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("MedScan.Shared.Models.Profile", "Profile")
-                        .WithMany("Medications")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Medication");
-
-                    b.Navigation("Profile");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -551,12 +532,31 @@ namespace MedScan.Api.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UserMedication", b =>
+                {
+                    b.HasOne("MedScan.Shared.Models.Medication", "Medication")
+                        .WithMany()
+                        .HasForeignKey("MedicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedScan.Shared.Models.Profile", "Profile")
+                        .WithMany("Medications")
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Medication");
+
+                    b.Navigation("Profile");
+                });
+
             modelBuilder.Entity("MedScan.Shared.Models.Profile", b =>
                 {
                     b.Navigation("Medications");
                 });
 
-            modelBuilder.Entity("MedScan.Shared.Models.UserMedication", b =>
+            modelBuilder.Entity("UserMedication", b =>
                 {
                     b.Navigation("DoseLogs");
                 });

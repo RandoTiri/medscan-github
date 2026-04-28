@@ -17,6 +17,7 @@ public sealed class HomePharmacyItemDto
     public string? Notes { get; set; }
     public string? Indication { get; set; }
     public string? Warnings { get; set; }
+    public string? MedicationForm { get; set; }
     public string? PdfUrl { get; set; }
     public string? Manufacturer { get; set; }
     public string? MarketingAuthNumber { get; set; }

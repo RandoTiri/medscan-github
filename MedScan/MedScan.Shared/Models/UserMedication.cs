@@ -1,4 +1,5 @@
-﻿namespace MedScan.Shared.Models; 
+﻿using MedScan.Shared.Models;
+
 public class UserMedication {
     public int Id { get; set; }
     public int ProfileId { get; set; }

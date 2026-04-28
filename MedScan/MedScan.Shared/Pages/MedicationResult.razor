@@ -65,6 +65,13 @@ else
                     <span class="label">Toimeaine</span>
                     <span class="val">@_medication.ActiveIngredient</span>
                 </div>
+                @if (!string.IsNullOrWhiteSpace(_medication.MedicationForm))
+                {
+                    <div class="info-row">
+                        <span class="label">Ravimivorm</span>
+                        <span class="val">@_medication.MedicationForm</span>
+                    </div>
+                }
                 @if (!string.IsNullOrWhiteSpace(_medication.Strength))
                 {
                     <div class="info-row">

@@ -61,7 +61,7 @@ else
         <div class="content-scroll">
             <section class="section-card medication-card">
                 <div class="field-title">Ravim</div>
-                <div class="medication-name">@_medication.Name@(!string.IsNullOrWhiteSpace(_medication.Strength) ? $" {_medication.Strength}" : string.Empty)</div>
+                <div class="medication-name">@_medication.Name</div>
             </section>
 
             <section class="section-card">
@@ -73,16 +73,6 @@ else
                         <button class="profile-chip @(active ? "active" : null)" @onclick="() => SelectProfile(profile.Id)">@profile.Name</button>
                     }
                 </div>
-            </section>
-
-            <section class="section-card">
-                <label class="section-title" for="med-form">Ravimi vorm</label>
-                <select id="med-form" class="select-field" @bind="_selectedForm">
-                    @foreach (var form in _allForms)
-                    {
-                        <option value="@form">@form</option>
-                    }
-                </select>
             </section>
 
             @if (_willTakeMedication == true)
@@ -318,16 +308,6 @@ else
         color: #fff;
     }
 
-    .select-field {
-        width: 100%;
-        border: 1px solid #d3d9db;
-        border-radius: 14px;
-        padding: 12px 14px;
-        font-size: 18px;
-        color: #1f2a3d;
-        background: #fff;
-    }
-
     .frequency-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -522,7 +502,6 @@ else
     private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
 
     private readonly List<ProfileSummary> _profiles = [];
-    private readonly List<string> _allForms = Enum.GetNames<MedicationFormEnum>().ToList();
     private bool _isReady;
     private bool _isLoading;
     private bool _isSaving;
@@ -533,7 +512,6 @@ else
     private int _frequencyPerDay = 1;
     private List<string> _scheduledTimeTexts = ["08:00"];
     private bool _remindersEnabled = true;
-    private string _selectedForm = nameof(MedicationFormEnum.Tablett);
     private string? _notes;
     private DateOnly? _expiresOn;
     private string? _batchNumber;
@@ -586,8 +564,6 @@ else
                 _message = "Ravimit ei leitud.";
                 return;
             }
-
-            _selectedForm = _medication.MedicationForm.ToString();
         }
         catch
         {
@@ -690,12 +666,6 @@ else
         if (_selectedProfileId <= 0)
         {
             _message = "Vali profiil.";
-            return;
-        }
-
-        if (!Enum.TryParse<MedicationFormEnum>(_selectedForm, out _))
-        {
-            _message = "Vali ravimi vorm.";
             return;
         }
 

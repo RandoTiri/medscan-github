@@ -1,5 +1,6 @@
 using MedScan.Api.Models;
 using MedScan.Shared.Models;
+using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,98 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
     public DbSet<UserMedication> UserMedications => Set<UserMedication>();
     public DbSet<DoseLog> DoseLogs => Set<DoseLog>();
     public DbSet<HomePharmacyItem> HomePharmacyItems => Set<HomePharmacyItem>();
+
+    public async Task SeedMedicationsAsync()
+    {
+        if (await Medications.AnyAsync())
+        {
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+
+        var medications = new List<Medication>
+        {
+            new()
+            {
+                Barcode = "4740006010012",
+                Name = "Paratsetamool",
+                ActiveIngredient = "Paratsetamool",
+                StrengthMg = 500,
+                Indication = "Valu ja palavik",
+                Warnings = "Mitte ületada ööpäevast annust.",
+                MedicationForm = "Tablett",
+                MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+                PrescriptionType = PrescriptionTypeEnum.Kasimuugiravim,
+                Manufacturer = "Test Pharma",
+                MarketingAuthNr = "TEST-001",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "4740006010029",
+                Name = "Ibuprofeen",
+                ActiveIngredient = "Ibuprofeen",
+                StrengthMg = 400,
+                Indication = "Põletik ja valu",
+                Warnings = "Võtta koos toiduga.",
+                MedicationForm = "Tablett",
+                MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+                PrescriptionType = PrescriptionTypeEnum.Kasimuugiravim,
+                Manufacturer = "Test Pharma",
+                MarketingAuthNr = "TEST-002",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "4740006010036",
+                Name = "Amoksitsilliin",
+                ActiveIngredient = "Amoksitsilliin",
+                StrengthMg = 500,
+                Indication = "Bakteriaalsed infektsioonid",
+                Warnings = "Kasutada arsti juhisel.",
+                MedicationForm = "Kapsel",
+                MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+                PrescriptionType = PrescriptionTypeEnum.Retseptiravim,
+                Manufacturer = "Test Pharma",
+                MarketingAuthNr = "TEST-003",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "4740006010043",
+                Name = "Metformiin",
+                ActiveIngredient = "Metformiin",
+                StrengthMg = 500,
+                Indication = "2. tüüpi diabeet",
+                Warnings = "Võtta vastavalt raviskeemile.",
+                MedicationForm = "Tablett",
+                MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+                PrescriptionType = PrescriptionTypeEnum.Retseptiravim,
+                Manufacturer = "Test Pharma",
+                MarketingAuthNr = "TEST-004",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "4740006010050",
+                Name = "Loratadiin",
+                ActiveIngredient = "Loratadiin",
+                StrengthMg = 10,
+                Indication = "Allergia sümptomid",
+                Warnings = "Võib põhjustada uimasust.",
+                MedicationForm = "Tablett",
+                MethodOfAdministraion = MethodOfAdministraionEnum.Suukaudne,
+                PrescriptionType = PrescriptionTypeEnum.Kasimuugiravim,
+                Manufacturer = "Test Pharma",
+                MarketingAuthNr = "TEST-005",
+                CachedAt = now
+            }
+        };
+
+        await Medications.AddRangeAsync(medications);
+        await SaveChangesAsync();
+    }
 
     protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);

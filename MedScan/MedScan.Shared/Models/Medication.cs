@@ -13,7 +13,7 @@ public class Medication {
     public DateOnly BestBefore { get; set; }
     public MethodOfAdministraionEnum MethodOfAdministraion { get; set; }
     public PrescriptionTypeEnum PrescriptionType { get; set; }
-    public MedicationFormEnum MedicationForm { get; set; }
+    public string? MedicationForm { get; set; }
     public string? Manufacturer { get; set; } = string.Empty;
     public string? MarketingAuthNr { get; set; }
     public DateTime? AuthValidUntil { get; set; }
