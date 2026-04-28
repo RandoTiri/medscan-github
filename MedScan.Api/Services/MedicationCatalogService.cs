@@ -33,21 +33,17 @@ public sealed class MedicationCatalogService(IMedicationRepository medicationRep
             .ToList();
     }
 
-    private static MedicationLookupResponse MapToLookup(Medication medication)
-    {
-        return new MedicationLookupResponse
-        {
-            Id = medication.Id,
-            Barcode = medication.Barcode,
-            Name = medication.Name,
-            ActiveIngredient = medication.ActiveIngredient,
-            Strength = medication.StrengthMg,
-            PackSize = medication.PackSize,
-            MedicationForm = medication.MedicationForm,
-            ShortDescription = medication.Indication,
-            Warnings = medication.Warnings
-        };
-    }
+    private static MedicationLookupResponse MapToLookup(Medication medication) => new MedicationLookupResponse {
+        Id = medication.Id,
+        Barcode = medication.Barcode,
+        Name = medication.Name,
+        ActiveIngredient = medication.ActiveIngredient,
+        Strength = medication.StrengthMg,
+        PackSize = medication.PackSize,
+        MedicationForm = medication.MedicationForm,
+        ShortDescription = medication.Indication,
+        Warnings = medication.Warnings
+    };
 
     private static string NormalizeBarcode(string barcode)
     {
