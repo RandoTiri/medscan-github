@@ -1,13 +1,19 @@
-﻿using MedScan.Shared.Models;
+using MedScan.Shared.Models.Enums;
 
-public class UserMedication {
+namespace MedScan.Shared.Models;
+
+public class UserMedication
+{
     public int Id { get; set; }
     public int ProfileId { get; set; }
     public Profile Profile { get; set; } = null!;
     public int MedicationId { get; set; }
     public Medication Medication { get; set; } = null!;
     public int Frequency { get; set; }
+    public MedicationScheduleUnit ScheduleUnit { get; set; } = MedicationScheduleUnit.Day;
     public string ScheduledTimesJson { get; set; } = "[]";
+    public string WeeklyDaysJson { get; set; } = "[]";
+    public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
     public DateOnly? ExpiresOn { get; set; }
     public bool RemindersEnabled { get; set; } = true;
     public string? Notes { get; set; }

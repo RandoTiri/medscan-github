@@ -1,4 +1,5 @@
 using MedScan.Shared.Models;
+using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
@@ -36,9 +37,25 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
             return;
         }
 
+        if (medicine.ScheduleUnit == MedicationScheduleUnit.Day)
+        {
+            foreach (var time in medicine.ReminderTimes)
+            {
+                await ScheduleSingleCoreAsync(medicine, time, GetNextDailyOccurrence(time), NotificationRepeat.Daily);
+            }
+
+            return;
+        }
+
         foreach (var time in medicine.ReminderTimes)
         {
-            await ScheduleSingleCoreAsync(medicine, time, GetNextOccurrence(time));
+            var notifyTime = GetNextScheduledOccurrence(medicine, time);
+            if (notifyTime is null)
+            {
+                continue;
+            }
+
+            await ScheduleSingleCoreAsync(medicine, time, notifyTime.Value, NotificationRepeat.No);
         }
     }
 
@@ -65,7 +82,11 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
             return;
         }
 
-        await ScheduleSingleCoreAsync(medicine, time, notifyTime);
+        var repeat = medicine.ScheduleUnit == MedicationScheduleUnit.Day
+            ? NotificationRepeat.Daily
+            : NotificationRepeat.No;
+
+        await ScheduleSingleCoreAsync(medicine, time, notifyTime, repeat);
     }
 
     public Task CancelSingleAsync(int userMedicationId, TimeOnly time)
@@ -83,7 +104,11 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
         }
     }
 
-    private static async Task ScheduleSingleCoreAsync(MedicineReminderModel medicine, TimeOnly time, DateTime notifyTime)
+    private static async Task ScheduleSingleCoreAsync(
+        MedicineReminderModel medicine,
+        TimeOnly time,
+        DateTime notifyTime,
+        NotificationRepeat repeatType)
     {
         RegisterActions();
 
@@ -110,7 +135,7 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
             Schedule = new NotificationRequestSchedule
             {
                 NotifyTime = notifyTime,
-                RepeatType = NotificationRepeat.Daily
+                RepeatType = repeatType
             }
         };
 
@@ -160,7 +185,30 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
         return string.Join(" - ", parts);
     }
 
-    private static DateTime GetNextOccurrence(TimeOnly time)
+    private static DateTime? GetNextScheduledOccurrence(MedicineReminderModel medicine, TimeOnly reminderTime)
+    {
+        var timeIndex = medicine.ReminderTimes
+            .Select((time, index) => new { time, index })
+            .FirstOrDefault(x => x.time == reminderTime)
+            ?.index;
+
+        if (timeIndex is null)
+        {
+            return null;
+        }
+
+        return MedicationScheduleCalculator.GetNextOccurrenceDateTime(
+            medicine.ScheduleUnit,
+            medicine.Frequency,
+            medicine.StartDate,
+            [medicine.ReminderTimes[timeIndex.Value]],
+            medicine.ScheduleUnit == MedicationScheduleUnit.Week && medicine.WeeklyDays.Count > timeIndex.Value
+                ? [medicine.WeeklyDays[timeIndex.Value]]
+                : [],
+            DateTime.Now);
+    }
+
+    private static DateTime GetNextDailyOccurrence(TimeOnly time)
     {
         var now = DateTime.Now;
         var scheduled = DateTime.Today.Add(time.ToTimeSpan());

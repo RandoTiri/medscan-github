@@ -11,7 +11,11 @@ public static class MedicineReminderMapper {
             ProfileName = dto.ProfileName,
             Dosage = dto.Strength ?? string.Empty,
             RemindersEnabled = dto.RemindersEnabled,
-            ReminderTimes = dto.ScheduledTimes
+            Frequency = dto.FrequencyPerDay,
+            ScheduleUnit = dto.ScheduleUnit,
+            StartDate = dto.StartDate,
+            ReminderTimes = dto.ScheduledTimes,
+            WeeklyDays = dto.WeeklyDays
         };
     }
 }

@@ -432,9 +432,20 @@ namespace MedScan.Api.Migrations
                     b.Property<bool>("RemindersEnabled")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("ScheduleUnit")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ScheduledTimesJson")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("WeeklyDaysJson")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasDefaultValue("[]");
 
                     b.HasKey("Id");
 

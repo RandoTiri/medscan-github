@@ -252,7 +252,10 @@ else
                     ProfileId = medication.ProfileId,
                     MedicationId = medication.MedicationId,
                     FrequencyPerDay = medication.FrequencyPerDay,
+                    ScheduleUnit = medication.ScheduleUnit,
                     ScheduledTimes = medication.ScheduledTimes.ToList(),
+                    WeeklyDays = medication.WeeklyDays.ToList(),
+                    StartDate = medication.StartDate,
                     RemindersEnabled = enabled,
                     Notes = medication.Notes
                 };

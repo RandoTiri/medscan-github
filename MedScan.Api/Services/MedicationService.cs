@@ -42,17 +42,19 @@ public sealed class MedicationService : IMedicationService
             throw new InvalidOperationException($"Medication with id {dto.MedicationId} was not found.");
         }
 
-        var normalizedTimes = dto.ScheduledTimes
-            .Distinct()
-            .OrderBy(t => t)
-            .ToList();
+        var normalizedTimes = NormalizeTimes(dto.ScheduledTimes);
+        var normalizedWeeklyDays = NormalizeWeeklyDays(dto.ScheduleUnit, dto.FrequencyPerDay, dto.WeeklyDays);
+        var startDate = dto.StartDate ?? DateOnly.FromDateTime(DateTime.Now);
 
         var userMedication = new UserMedication
         {
             ProfileId = dto.ProfileId,
             MedicationId = dto.MedicationId,
             Frequency = dto.FrequencyPerDay,
+            ScheduleUnit = dto.ScheduleUnit,
             ScheduledTimesJson = SerializeTimes(normalizedTimes),
+            WeeklyDaysJson = SerializeWeeklyDays(normalizedWeeklyDays),
+            StartDate = startDate,
             ExpiresOn = dto.ExpiresOn,
             RemindersEnabled = dto.RemindersEnabled,
             Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
@@ -73,21 +75,22 @@ public sealed class MedicationService : IMedicationService
     {
         ValidateAddMedication(dto);
 
-        var userMedication = await _userMedicationRepository.GetByIdAsync(userMedicationId);
+        var userMedication = await _userMedicationRepository.GetTrackedByIdAsync(userMedicationId);
         if (userMedication is null)
         {
             return null;
         }
 
-        var normalizedTimes = dto.ScheduledTimes
-            .Distinct()
-            .OrderBy(t => t)
-            .ToList();
+        var normalizedTimes = NormalizeTimes(dto.ScheduledTimes);
+        var normalizedWeeklyDays = NormalizeWeeklyDays(dto.ScheduleUnit, dto.FrequencyPerDay, dto.WeeklyDays);
 
         userMedication.ProfileId = dto.ProfileId;
         userMedication.MedicationId = dto.MedicationId;
         userMedication.Frequency = dto.FrequencyPerDay;
+        userMedication.ScheduleUnit = dto.ScheduleUnit;
         userMedication.ScheduledTimesJson = SerializeTimes(normalizedTimes);
+        userMedication.WeeklyDaysJson = SerializeWeeklyDays(normalizedWeeklyDays);
+        userMedication.StartDate = dto.StartDate ?? userMedication.StartDate;
         userMedication.ExpiresOn = dto.ExpiresOn;
         userMedication.RemindersEnabled = dto.RemindersEnabled;
         userMedication.Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim();
@@ -102,7 +105,7 @@ public sealed class MedicationService : IMedicationService
 
     public async Task<bool> RemoveFromScheduleAsync(int userMedicationId)
     {
-        var userMedication = await _userMedicationRepository.GetByIdAsync(userMedicationId);
+        var userMedication = await _userMedicationRepository.GetTrackedByIdAsync(userMedicationId);
         if (userMedication is null)
         {
             return false;
@@ -122,7 +125,8 @@ public sealed class MedicationService : IMedicationService
     private static UserMedicationDto MapToDto(UserMedication userMedication, DateOnly? forDate = null)
     {
         var scheduledTimes = DeserializeTimes(userMedication.ScheduledTimesJson);
-        var doseStatuses = BuildDoseStatuses(userMedication, scheduledTimes, forDate);
+        var weeklyDays = DeserializeWeeklyDays(userMedication.WeeklyDaysJson);
+        var doseStatuses = BuildDoseStatuses(userMedication, scheduledTimes, weeklyDays, forDate);
 
         var latestStatus = userMedication.DoseLogs
             .OrderByDescending(log => log.ScheduledTime)
@@ -139,7 +143,10 @@ public sealed class MedicationService : IMedicationService
             MedicationName = userMedication.Medication?.Name ?? string.Empty,
             Strength = userMedication.Medication?.StrengthMg,
             FrequencyPerDay = userMedication.Frequency,
+            ScheduleUnit = userMedication.ScheduleUnit,
             ScheduledTimes = scheduledTimes,
+            WeeklyDays = weeklyDays,
+            StartDate = userMedication.StartDate,
             TodayDoses = doseStatuses,
             ExpiresOn = userMedication.ExpiresOn,
             RemindersEnabled = userMedication.RemindersEnabled,
@@ -149,14 +156,25 @@ public sealed class MedicationService : IMedicationService
         };
     }
 
-    private static List<ScheduledDoseStatusDto> BuildDoseStatuses(UserMedication userMedication, List<TimeOnly> scheduledTimes, DateOnly? forDate = null)
+    private static List<ScheduledDoseStatusDto> BuildDoseStatuses(
+        UserMedication userMedication,
+        List<TimeOnly> scheduledTimes,
+        List<int> weeklyDays,
+        DateOnly? forDate = null)
     {
         var nowLocal = DateTime.Now;
         var selectedDate = forDate ?? DateOnly.FromDateTime(nowLocal);
         var selectedLocalDate = selectedDate.ToDateTime(TimeOnly.MinValue);
-        var addedLocalDate = userMedication.AddedAt.ToLocalTime().Date;
 
-        if (addedLocalDate > selectedLocalDate)
+        var occurrences = MedicationScheduleCalculator.GetOccurrencesForDate(
+            userMedication.ScheduleUnit,
+            userMedication.Frequency,
+            userMedication.StartDate,
+            scheduledTimes,
+            weeklyDays,
+            selectedDate);
+
+        if (occurrences.Count == 0)
         {
             return [];
         }
@@ -168,18 +186,20 @@ public sealed class MedicationService : IMedicationService
                 group => group.Key,
                 group => group.OrderByDescending(log => log.Id).First().DoseStatus);
 
-        var result = new List<ScheduledDoseStatusDto>(scheduledTimes.Count);
+        var result = new List<ScheduledDoseStatusDto>(occurrences.Count);
 
-        foreach (var scheduledTime in scheduledTimes.OrderBy(time => time))
+        foreach (var occurrence in occurrences)
         {
-            var localScheduledDateTime = DateTime.SpecifyKind(selectedLocalDate.Add(scheduledTime.ToTimeSpan()), DateTimeKind.Local);
+            var localScheduledDateTime = DateTime.SpecifyKind(
+                selectedLocalDate.Add(occurrence.Time.ToTimeSpan()),
+                DateTimeKind.Local);
             var scheduledUtc = localScheduledDateTime.ToUniversalTime();
 
             if (logsByScheduledUtc.TryGetValue(scheduledUtc, out var statusFromLog))
             {
                 result.Add(new ScheduledDoseStatusDto
                 {
-                    ScheduledTime = scheduledTime,
+                    ScheduledTime = occurrence.Time,
                     Status = statusFromLog
                 });
                 continue;
@@ -193,7 +213,7 @@ public sealed class MedicationService : IMedicationService
 
             result.Add(new ScheduledDoseStatusDto
             {
-                ScheduledTime = scheduledTime,
+                ScheduledTime = occurrence.Time,
                 Status = computedStatus
             });
         }
@@ -201,9 +221,35 @@ public sealed class MedicationService : IMedicationService
         return result;
     }
 
+    private static List<TimeOnly> NormalizeTimes(List<TimeOnly> times)
+    {
+        return times
+            .Select((time, index) => new { time, index })
+            .OrderBy(x => x.index)
+            .Select(x => x.time)
+            .ToList();
+    }
+
+    private static List<int> NormalizeWeeklyDays(MedicationScheduleUnit unit, int frequency, List<int>? weeklyDays)
+    {
+        if (unit != MedicationScheduleUnit.Week || frequency <= 1)
+        {
+            return [];
+        }
+
+        return (weeklyDays ?? [])
+            .Take(frequency)
+            .ToList();
+    }
+
     private static string SerializeTimes(List<TimeOnly> times)
     {
         return JsonSerializer.Serialize(times);
+    }
+
+    private static string SerializeWeeklyDays(List<int> weeklyDays)
+    {
+        return JsonSerializer.Serialize(weeklyDays);
     }
 
     private static void ValidateAddMedication(AddMedicationDto dto)
@@ -228,14 +274,31 @@ public sealed class MedicationService : IMedicationService
             throw new InvalidOperationException("Vähemalt üks kellaaeg on kohustuslik.");
         }
 
-        if (dto.ScheduledTimes.Count != dto.FrequencyPerDay)
+        var expectedTimeCount = dto.ScheduleUnit == MedicationScheduleUnit.Month
+            ? 1
+            : dto.FrequencyPerDay;
+
+        if (dto.ScheduledTimes.Count != expectedTimeCount)
         {
             throw new InvalidOperationException("Kellaaegade arv peab vastama manustamissagedusele.");
         }
 
-        if (dto.ScheduledTimes.Distinct().Count() != dto.ScheduledTimes.Count)
+        if (dto.ScheduleUnit == MedicationScheduleUnit.Week && dto.FrequencyPerDay > 1)
         {
-            throw new InvalidOperationException("Kellaajad peavad olema erinevad.");
+            if (dto.WeeklyDays.Count != dto.FrequencyPerDay)
+            {
+                throw new InvalidOperationException("Vali iga nädalase manustamise jaoks päev.");
+            }
+
+            if (dto.WeeklyDays.Any(day => day < 0 || day > 6))
+            {
+                throw new InvalidOperationException("Nädalapäevad on vigased.");
+            }
+
+            if (dto.WeeklyDays.Distinct().Count() != dto.WeeklyDays.Count)
+            {
+                throw new InvalidOperationException("Nädalapäevad peavad olema erinevad.");
+            }
         }
     }
 
@@ -247,5 +310,15 @@ public sealed class MedicationService : IMedicationService
         }
 
         return JsonSerializer.Deserialize<List<TimeOnly>>(json) ?? [];
+    }
+
+    private static List<int> DeserializeWeeklyDays(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return [];
+        }
+
+        return JsonSerializer.Deserialize<List<int>>(json) ?? [];
     }
 }

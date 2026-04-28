@@ -874,6 +874,11 @@ else
             yield break;
         }
 
+        if (medication.ScheduleUnit != MedicationScheduleUnit.Day)
+        {
+            yield break;
+        }
+
         foreach (var fallbackTime in medication.ScheduledTimes.OrderBy(t => t))
         {
             yield return new HomeMedicationCard(
@@ -935,6 +940,11 @@ else
                 );
             }
 
+            yield break;
+        }
+
+        if (medication.ScheduleUnit != MedicationScheduleUnit.Day)
+        {
             yield break;
         }
 

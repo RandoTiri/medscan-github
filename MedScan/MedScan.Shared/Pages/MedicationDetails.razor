@@ -1,6 +1,7 @@
 @page "/home-pharmacy/details/{Id:int}"
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.DTOs.HomePharmacy
+@using MedScan.Shared.Models.Enums
 @using MedScan.Shared.Services
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
@@ -135,32 +136,49 @@ else
                             <button class="frequency-btn @(active ? "active" : null)" @onclick="() => SetFrequency(option)">@option x</button>
                         }
                     </div>
-                    <div class="freq-caption">päevas</div>
+                    <div class="frequency-meta">
+                        <select class="period-select" value="@_scheduleUnit" @onchange="OnScheduleUnitChanged">
+                            <option value="@MedicationScheduleUnit.Day">päevas</option>
+                            <option value="@MedicationScheduleUnit.Week">nädalas</option>
+                            <option value="@MedicationScheduleUnit.Month">kuus</option>
+                        </select>
+                    </div>
 
                     <div class="section-title time-title">Kellaajad</div>
                     @for (var i = 0; i < _scheduledTimeTexts.Count; i++)
                     {
                         var index = i;
-                        <div class="time-row">
-                            <span class="clock-icon">◷</span>
-                            <div class="time-wheel-box">
-                                <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
-                                    @for (var hour = 0; hour < 24; hour++)
+                        <div class="time-row @(ShowWeeklyDaySelector ? "with-day" : "without-day")">
+                            @if (ShowWeeklyDaySelector)
+                            {
+                                <select class="day-select" value="@GetWeeklyDayValue(index)" @onchange="args => OnWeeklyDayChanged(index, args)">
+                                    @foreach (var day in _weekdayOptions)
                                     {
-                                        var hourText = hour.ToString("D2");
-                                        <option value="@hourText">@hourText</option>
+                                        <option value="@day.Value">@day.Label</option>
                                     }
                                 </select>
-                            </div>
-                            <span class="time-separator">:</span>
-                            <div class="time-wheel-box">
-                                <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
-                                    @for (var minute = 0; minute < 60; minute++)
-                                    {
-                                        var minuteText = minute.ToString("D2");
-                                        <option value="@minuteText">@minuteText</option>
-                                    }
-                                </select>
+                            }
+                            <div class="time-controls">
+                                <span class="clock-icon">◷</span>
+                                <div class="time-wheel-box">
+                                    <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
+                                        @for (var hour = 0; hour < 24; hour++)
+                                        {
+                                            var hourText = hour.ToString("D2");
+                                            <option value="@hourText">@hourText</option>
+                                        }
+                                    </select>
+                                </div>
+                                <span class="time-separator">:</span>
+                                <div class="time-wheel-box">
+                                    <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
+                                        @for (var minute = 0; minute < 60; minute++)
+                                        {
+                                            var minuteText = minute.ToString("D2");
+                                            <option value="@minuteText">@minuteText</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     }
@@ -186,7 +204,6 @@ else
                     <button class="end-schedule-btn" @onclick="EndScheduleAsync" disabled="@_isSaving">
                         Lõpeta raviskeem
                     </button>
-
                 </div>
             }
             else
@@ -235,24 +252,8 @@ else
     .val { color: #132340; font-size: 15px; font-weight: 700; text-align: right; }
     .quantity-edit-row { align-items: center; }
     .quantity-edit-controls { display: inline-flex; gap: 8px; align-items: center; }
-    .quantity-select {
-        border: 1px solid #d3d9db;
-        border-radius: 10px;
-        background: #fff;
-        color: #132340;
-        font-size: 14px;
-        font-weight: 700;
-        padding: 6px 10px;
-    }
-    .quantity-save-btn {
-        border: none;
-        border-radius: 10px;
-        background: #1f7a60;
-        color: #fff;
-        font-size: 13px;
-        font-weight: 700;
-        padding: 7px 10px;
-    }
+    .quantity-select { border: 1px solid #d3d9db; border-radius: 10px; background: #fff; color: #132340; font-size: 14px; font-weight: 700; padding: 6px 10px; }
+    .quantity-save-btn { border: none; border-radius: 10px; background: #1f7a60; color: #fff; font-size: 13px; font-weight: 700; padding: 7px 10px; }
     .quantity-save-btn:disabled { opacity: 0.6; }
     .warnings-card { background: #fffbef; border: 1px solid #fde68a; border-radius: 16px; padding: 16px; }
     .warning-title { color: #b45309; }
@@ -261,10 +262,28 @@ else
     .warning-icon { color: #d97706; }
     .section-title { margin: 8px 0; font-size: 16px; color: var(--ms-text); font-weight: 700; }
     .schedule-card .section-title { margin-top: 10px; }
-    .frequency-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .frequency-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
     .frequency-btn { border: 1px solid #d3d9db; border-radius: 14px; padding: 10px 8px; font-size: 22px; font-weight: 700; background: #fff; color: #304553; }
     .frequency-btn.active { background: #1f7a60; color: #fff; border-color: #1f7a60; }
-    .freq-caption { color: #6a7a7e; font-size: 14px; margin-top: 4px; margin-bottom: 10px; }
+    .frequency-meta { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+    .period-select, .day-select {
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid #d3d9db;
+        border-radius: 12px;
+        background: #fff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2362727a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px 8px;
+        color: #253645;
+        font-size: 15px;
+        font-weight: 600;
+        text-align: left;
+        text-align-last: left;
+        padding: 10px 36px 10px 12px;
+    }
+    .day-select { min-width: 124px; }
     .time-title { margin-top: 10px; }
     .time-row {
         border: 1px solid #d3d9db;
@@ -275,30 +294,14 @@ else
         align-items: center;
         gap: 8px;
         margin-bottom: 10px;
+        flex-wrap: wrap;
     }
+    .time-row.without-day { justify-content: flex-start; width: fit-content; max-width: 100%; }
+    .time-row.with-day { justify-content: space-between; }
+    .time-controls { display: flex; align-items: center; gap: 8px; }
     .clock-icon { color: #99a7ad; font-size: 22px; line-height: 1; margin-top: 0; }
-    .time-wheel-box {
-        border: 1px solid #d3d9db;
-        border-radius: 14px;
-        background: #f9fbfa;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px 10px;
-    }
-    .time-wheel-part {
-        width: 52px;
-        height: 36px;
-        border: none;
-        outline: none;
-        background: transparent;
-        color: #253645;
-        font-size: 22px;
-        font-weight: 700;
-        text-align: center;
-        padding: 0;
-        line-height: 1;
-    }
+    .time-wheel-box { border: 1px solid #d3d9db; border-radius: 14px; background: #f9fbfa; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
+    .time-wheel-part { width: 52px; height: 36px; border: none; outline: none; background: transparent; color: #253645; font-size: 22px; font-weight: 700; text-align: center; padding: 0; line-height: 1; }
     .time-wheel-part option { font-size: 20px; }
     .time-separator { color: #253645; font-size: 22px; font-weight: 700; line-height: 1; }
     .toggle-row { margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--ms-text); font-size: 16px; font-weight: 600; }
@@ -310,43 +313,9 @@ else
     .switch input:checked + .slider { background-color: #1f7a60; }
     .switch input:checked + .slider:before { transform: translateX(20px); }
     .save-schedule-btn,.add-schedule-btn { margin-top: 14px; border: 0; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #1f7a60; color: #fff; }
-    .end-schedule-btn {
-        margin-top: 10px;
-        border: 1px solid #f1c27a;
-        width: 100%;
-        border-radius: 14px;
-        padding: 12px;
-        font-size: 18px;
-        font-weight: 700;
-        background: #fff8eb;
-        color: #b45309;
-    }
-    .delete-med-btn {
-        margin-top: 4px;
-        border: 1px solid #f3b7be;
-        width: 100%;
-        border-radius: 14px;
-        padding: 12px;
-        font-size: 18px;
-        font-weight: 700;
-        background: #fde9eb;
-        color: #ab3f4c;
-    }
-    .action-pdf {
-        margin-top: 10px;
-        border: 2px solid #267863;
-        width: 100%;
-        border-radius: 14px;
-        padding: 12px;
-        font-size: 18px;
-        font-weight: 700;
-        background: transparent;
-        color: #267863;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
+    .end-schedule-btn { margin-top: 10px; border: 1px solid #f1c27a; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #fff8eb; color: #b45309; }
+    .delete-med-btn { margin-top: 4px; border: 1px solid #f3b7be; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #fde9eb; color: #ab3f4c; }
+    .action-pdf { margin-top: 10px; border: 2px solid #267863; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: transparent; color: #267863; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
     .error-box,.success-box { border-radius: 14px; padding: 12px; font-size: 15px; margin: 12px 16px 0; }
     .error-box { background: #fde9eb; color: #ab3f4c; }
     .success-box { background: #e7f4ed; color: #1f7a60; }
@@ -356,6 +325,16 @@ else
     [Parameter] public int Id { get; set; }
 
     private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
+    private static readonly (int Value, string Label)[] _weekdayOptions =
+    [
+        ((int)DayOfWeek.Monday, "Esmaspäev"),
+        ((int)DayOfWeek.Tuesday, "Teisipäev"),
+        ((int)DayOfWeek.Wednesday, "Kolmapäev"),
+        ((int)DayOfWeek.Thursday, "Neljapäev"),
+        ((int)DayOfWeek.Friday, "Reede"),
+        ((int)DayOfWeek.Saturday, "Laupäev"),
+        ((int)DayOfWeek.Sunday, "Pühapäev")
+    ];
 
     private bool _isReady;
     private bool _isLoading;
@@ -369,20 +348,28 @@ else
     private int _editableQuantity = 1;
 
     private int _frequencyPerDay = 1;
+    private MedicationScheduleUnit _scheduleUnit = MedicationScheduleUnit.Day;
     private List<string> _scheduledTimeTexts = ["08:00"];
+    private List<int> _weeklyDays = [];
     private bool _remindersEnabled = true;
     private string? _scheduleNotes;
 
     private int _originalFrequency = 1;
+    private MedicationScheduleUnit _originalScheduleUnit = MedicationScheduleUnit.Day;
     private List<string> _originalTimes = ["08:00"];
+    private List<int> _originalWeeklyDays = [];
     private bool _originalReminders = true;
     private string? _originalNotes;
 
     private bool _scheduleDirty =>
         _frequencyPerDay != _originalFrequency ||
+        _scheduleUnit != _originalScheduleUnit ||
         _remindersEnabled != _originalReminders ||
         !_scheduledTimeTexts.SequenceEqual(_originalTimes) ||
+        !_weeklyDays.SequenceEqual(_originalWeeklyDays) ||
         !string.Equals(_scheduleNotes?.Trim(), _originalNotes?.Trim(), StringComparison.Ordinal);
+
+    private bool ShowWeeklyDaySelector => _scheduleUnit == MedicationScheduleUnit.Week && _frequencyPerDay > 1;
 
     protected override async Task OnInitializedAsync()
     {
@@ -411,6 +398,7 @@ else
                 _errorMessage = "Ravimit ei leitud.";
                 return;
             }
+
             _editableQuantity = Math.Clamp(_item.Quantity, 1, 100);
 
             var schedules = await MedicationService.GetScheduleAsync(_item.ProfileId);
@@ -456,11 +444,15 @@ else
             _hasSchedule = false;
             _isAddingSchedule = false;
             _frequencyPerDay = 1;
+            _scheduleUnit = MedicationScheduleUnit.Day;
             _scheduledTimeTexts = ["08:00"];
+            _weeklyDays = [];
             _remindersEnabled = true;
             _scheduleNotes = null;
             _originalFrequency = _frequencyPerDay;
+            _originalScheduleUnit = _scheduleUnit;
             _originalTimes = _scheduledTimeTexts.ToList();
+            _originalWeeklyDays = _weeklyDays.ToList();
             _originalReminders = _remindersEnabled;
             _originalNotes = _scheduleNotes;
             _message = "Raviskeem lõpetatud.";
@@ -478,25 +470,22 @@ else
     private void ApplySchedule(UserMedicationDto schedule)
     {
         _frequencyPerDay = Math.Clamp(schedule.FrequencyPerDay, 1, 4);
+        _scheduleUnit = schedule.ScheduleUnit;
         _scheduledTimeTexts = schedule.ScheduledTimes.Count > 0
-            ? schedule.ScheduledTimes.OrderBy(t => t).Select(t => t.ToString("HH:mm")).ToList()
+            ? schedule.ScheduledTimes.Select(t => t.ToString("HH:mm")).ToList()
             : ["08:00"];
+        _weeklyDays = schedule.WeeklyDays.ToList();
 
-        while (_scheduledTimeTexts.Count < _frequencyPerDay)
-        {
-            _scheduledTimeTexts.Add("08:00");
-        }
-
-        if (_scheduledTimeTexts.Count > _frequencyPerDay)
-        {
-            _scheduledTimeTexts = _scheduledTimeTexts.Take(_frequencyPerDay).ToList();
-        }
+        EnsureVisibleTimeCount();
+        SyncWeeklyDays();
 
         _remindersEnabled = schedule.RemindersEnabled;
         _scheduleNotes = schedule.Notes;
 
         _originalFrequency = _frequencyPerDay;
+        _originalScheduleUnit = _scheduleUnit;
         _originalTimes = _scheduledTimeTexts.ToList();
+        _originalWeeklyDays = _weeklyDays.ToList();
         _originalReminders = _remindersEnabled;
         _originalNotes = _scheduleNotes;
     }
@@ -504,16 +493,123 @@ else
     private void SetFrequency(int frequency)
     {
         _frequencyPerDay = frequency;
+        EnsureVisibleTimeCount();
+        SyncWeeklyDays();
+    }
 
-        while (_scheduledTimeTexts.Count < _frequencyPerDay)
+    private void OnScheduleUnitChanged(ChangeEventArgs args)
+    {
+        if (!Enum.TryParse<MedicationScheduleUnit>(args.Value?.ToString(), out var parsed))
+        {
+            parsed = MedicationScheduleUnit.Day;
+        }
+
+        _scheduleUnit = parsed;
+        EnsureVisibleTimeCount();
+        SyncWeeklyDays();
+    }
+
+    private int GetVisibleTimeCount()
+    {
+        return _scheduleUnit == MedicationScheduleUnit.Month ? 1 : _frequencyPerDay;
+    }
+
+    private void EnsureVisibleTimeCount()
+    {
+        var targetTimeCount = GetVisibleTimeCount();
+
+        while (_scheduledTimeTexts.Count < targetTimeCount)
         {
             _scheduledTimeTexts.Add("08:00");
         }
 
-        while (_scheduledTimeTexts.Count > _frequencyPerDay)
+        while (_scheduledTimeTexts.Count > targetTimeCount)
         {
             _scheduledTimeTexts.RemoveAt(_scheduledTimeTexts.Count - 1);
         }
+    }
+
+    private void SyncWeeklyDays()
+    {
+        if (!ShowWeeklyDaySelector)
+        {
+            _weeklyDays = [];
+            return;
+        }
+
+        var defaults = GetDefaultWeeklyDays(_frequencyPerDay);
+        if (_weeklyDays.Count > _frequencyPerDay)
+        {
+            _weeklyDays = _weeklyDays.Take(_frequencyPerDay).ToList();
+        }
+
+        while (_weeklyDays.Count < _frequencyPerDay)
+        {
+            _weeklyDays.Add(defaults[_weeklyDays.Count]);
+        }
+
+        ReorderWeeklyPairs();
+    }
+
+    private static List<int> GetDefaultWeeklyDays(int frequency)
+    {
+        var mondayBasedDays = new[]
+        {
+            (int)DayOfWeek.Monday,
+            (int)DayOfWeek.Tuesday,
+            (int)DayOfWeek.Wednesday,
+            (int)DayOfWeek.Thursday,
+            (int)DayOfWeek.Friday,
+            (int)DayOfWeek.Saturday,
+            (int)DayOfWeek.Sunday
+        };
+
+        return mondayBasedDays.Take(frequency).ToList();
+    }
+
+    private string GetWeeklyDayValue(int index)
+    {
+        return index < _weeklyDays.Count
+            ? _weeklyDays[index].ToString()
+            : ((int)DayOfWeek.Monday).ToString();
+    }
+
+    private void OnWeeklyDayChanged(int index, ChangeEventArgs args)
+    {
+        if (!int.TryParse(args.Value?.ToString(), out var parsedDay))
+        {
+            return;
+        }
+
+        while (_weeklyDays.Count <= index)
+        {
+            _weeklyDays.Add((int)DayOfWeek.Monday);
+        }
+
+        _weeklyDays[index] = parsedDay;
+        ReorderWeeklyPairs();
+    }
+
+    private void ReorderWeeklyPairs()
+    {
+        if (!ShowWeeklyDaySelector || _weeklyDays.Count != _scheduledTimeTexts.Count)
+        {
+            return;
+        }
+
+        var orderedPairs = _weeklyDays
+            .Select((day, index) => new { Day = day, Time = _scheduledTimeTexts[index], Index = index })
+            .OrderBy(pair => GetWeekdayOrder(pair.Day))
+            .ThenBy(pair => pair.Index)
+            .ToList();
+
+        _weeklyDays = orderedPairs.Select(pair => pair.Day).ToList();
+        _scheduledTimeTexts = orderedPairs.Select(pair => pair.Time).ToList();
+    }
+
+    private static int GetWeekdayOrder(int day)
+    {
+        return day == (int)DayOfWeek.Sunday ? 6 : day - 1;
     }
 
     private void OnHourChanged(int index, ChangeEventArgs args)
@@ -566,16 +662,26 @@ else
             times.Add(parsed);
         }
 
-        if (times.Count != _frequencyPerDay)
+        var expectedTimeCount = GetVisibleTimeCount();
+        if (times.Count != expectedTimeCount)
         {
             _errorMessage = "Kellaaegade arv peab vastama manustamissagedusele.";
             return;
         }
 
-        if (times.Distinct().Count() != times.Count)
+        if (ShowWeeklyDaySelector)
         {
-            _errorMessage = "Kellaajad peavad olema erinevad.";
-            return;
+            if (_weeklyDays.Count != _frequencyPerDay)
+            {
+                _errorMessage = "Vali igale nädalasele korrale päev.";
+                return;
+            }
+
+            if (_weeklyDays.Distinct().Count() != _weeklyDays.Count)
+            {
+                _errorMessage = "Vali igale nädalasele korrale erinev päev.";
+                return;
+            }
         }
 
         _isSaving = true;
@@ -591,7 +697,10 @@ else
                     ProfileId = _item.ProfileId,
                     MedicationId = _item.MedicationId,
                     FrequencyPerDay = _frequencyPerDay,
-                    ScheduledTimes = times.OrderBy(t => t).ToList(),
+                    ScheduleUnit = _scheduleUnit,
+                    ScheduledTimes = times.ToList(),
+                    WeeklyDays = _weeklyDays.ToList(),
+                    StartDate = DateOnly.FromDateTime(DateTime.Now),
                     RemindersEnabled = _remindersEnabled,
                     Notes = string.IsNullOrWhiteSpace(_scheduleNotes) ? null : _scheduleNotes.Trim()
                 });
@@ -609,7 +718,10 @@ else
                 ProfileId = _item.ProfileId,
                 MedicationId = _item.MedicationId,
                 FrequencyPerDay = _frequencyPerDay,
-                ScheduledTimes = times.OrderBy(t => t).ToList(),
+                ScheduleUnit = _scheduleUnit,
+                ScheduledTimes = times.ToList(),
+                WeeklyDays = _weeklyDays.ToList(),
+                StartDate = _schedule.StartDate,
                 RemindersEnabled = _remindersEnabled,
                 Notes = string.IsNullOrWhiteSpace(_scheduleNotes) ? null : _scheduleNotes.Trim()
             });
@@ -645,10 +757,14 @@ else
         _hasSchedule = false;
         _schedule = null;
         _frequencyPerDay = 1;
+        _scheduleUnit = MedicationScheduleUnit.Day;
         _scheduledTimeTexts = ["08:00"];
+        _weeklyDays = [];
         _remindersEnabled = true;
         _originalFrequency = _frequencyPerDay;
+        _originalScheduleUnit = _scheduleUnit;
         _originalTimes = _scheduledTimeTexts.ToList();
+        _originalWeeklyDays = _weeklyDays.ToList();
         _originalReminders = _remindersEnabled;
         _scheduleNotes = null;
         _originalNotes = null;

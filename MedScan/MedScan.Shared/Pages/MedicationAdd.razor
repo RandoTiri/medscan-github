@@ -86,32 +86,49 @@ else
                             <button class="frequency-btn @(active ? "active" : null)" @onclick="() => SetFrequency(option)">@option x</button>
                         }
                     </div>
-                    <div class="freq-caption">päevas</div>
+                    <div class="frequency-meta">
+                        <select class="period-select" value="@_scheduleUnit" @onchange="OnScheduleUnitChanged">
+                            <option value="@MedicationScheduleUnit.Day">päevas</option>
+                            <option value="@MedicationScheduleUnit.Week">nädalas</option>
+                            <option value="@MedicationScheduleUnit.Month">kuus</option>
+                        </select>
+                    </div>
 
                     <div class="section-title time-title">Kellaajad</div>
                     @for (var i = 0; i < _scheduledTimeTexts.Count; i++)
                     {
                         var index = i;
-                        <div class="time-row">
-                            <span class="clock-icon">◷</span>
-                            <div class="time-wheel-box">
-                                <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
-                                    @for (var hour = 0; hour < 24; hour++)
+                        <div class="time-row @(ShowWeeklyDaySelector ? "with-day" : "without-day")">
+                            @if (ShowWeeklyDaySelector)
+                            {
+                                <select class="day-select" value="@GetWeeklyDayValue(index)" @onchange="args => OnWeeklyDayChanged(index, args)">
+                                    @foreach (var day in _weekdayOptions)
                                     {
-                                        var hourText = hour.ToString("D2");
-                                        <option value="@hourText">@hourText</option>
+                                        <option value="@day.Value">@day.Label</option>
                                     }
                                 </select>
-                            </div>
-                            <span class="time-separator">:</span>
-                            <div class="time-wheel-box">
-                                <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
-                                    @for (var minute = 0; minute < 60; minute++)
-                                    {
-                                        var minuteText = minute.ToString("D2");
-                                        <option value="@minuteText">@minuteText</option>
-                                    }
-                                </select>
+                            }
+                            <div class="time-controls">
+                                <span class="clock-icon">◷</span>
+                                <div class="time-wheel-box">
+                                    <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
+                                        @for (var hour = 0; hour < 24; hour++)
+                                        {
+                                            var hourText = hour.ToString("D2");
+                                            <option value="@hourText">@hourText</option>
+                                        }
+                                    </select>
+                                </div>
+                                <span class="time-separator">:</span>
+                                <div class="time-wheel-box">
+                                    <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
+                                        @for (var minute = 0; minute < 60; minute++)
+                                        {
+                                            var minuteText = minute.ToString("D2");
+                                            <option value="@minuteText">@minuteText</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     }
@@ -312,7 +329,7 @@ else
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 10px;
-        margin-bottom: 4px;
+        margin-bottom: 8px;
     }
 
     .frequency-btn {
@@ -331,9 +348,34 @@ else
         border-color: #1f7a60;
     }
 
-    .freq-caption {
-        color: #6a7a7e;
-        font-size: 14px;
+    .frequency-meta {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .period-select,
+    .day-select {
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid #d3d9db;
+        border-radius: 12px;
+        background: #fff;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2362727a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px 8px;
+        color: #253645;
+        font-size: 15px;
+        font-weight: 600;
+        text-align: left;
+        text-align-last: left;
+        padding: 10px 36px 10px 12px;
+    }
+
+    .day-select {
+        min-width: 124px;
     }
 
     .time-title {
@@ -349,6 +391,23 @@ else
         align-items: center;
         gap: 8px;
         margin-bottom: 8px;
+        flex-wrap: wrap;
+    }
+
+    .time-row.without-day {
+        justify-content: flex-start;
+        width: fit-content;
+        max-width: 100%;
+    }
+
+    .time-row.with-day {
+        justify-content: space-between;
+    }
+
+    .time-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .clock-icon {
@@ -500,6 +559,16 @@ else
     [SupplyParameterFromQuery(Name = "lot")] public string? BatchQuery { get; set; }
 
     private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
+    private static readonly (int Value, string Label)[] _weekdayOptions =
+    [
+        ((int)DayOfWeek.Monday, "Esmaspäev"),
+        ((int)DayOfWeek.Tuesday, "Teisipäev"),
+        ((int)DayOfWeek.Wednesday, "Kolmapäev"),
+        ((int)DayOfWeek.Thursday, "Neljapäev"),
+        ((int)DayOfWeek.Friday, "Reede"),
+        ((int)DayOfWeek.Saturday, "Laupäev"),
+        ((int)DayOfWeek.Sunday, "Pühapäev")
+    ];
 
     private readonly List<ProfileSummary> _profiles = [];
     private bool _isReady;
@@ -510,7 +579,9 @@ else
     private bool? _willTakeMedication;
     private int _selectedProfileId;
     private int _frequencyPerDay = 1;
+    private MedicationScheduleUnit _scheduleUnit = MedicationScheduleUnit.Day;
     private List<string> _scheduledTimeTexts = ["08:00"];
+    private List<int> _weeklyDays = [];
     private bool _remindersEnabled = true;
     private string? _notes;
     private DateOnly? _expiresOn;
@@ -575,6 +646,8 @@ else
         }
     }
 
+    private bool ShowWeeklyDaySelector => _scheduleUnit == MedicationScheduleUnit.Week && _frequencyPerDay > 1;
+
     private int ResolveTargetProfileId()
     {
         if (ProfileId is int routeProfileId && _profiles.Any(profile => profile.Id == routeProfileId))
@@ -598,18 +671,20 @@ else
     private void SetFrequency(int frequency)
     {
         _frequencyPerDay = frequency;
-        var defaults = GetDefaultTimes(frequency);
+        var targetTimeCount = GetVisibleTimeCount();
+        var defaults = GetDefaultTimes(Math.Max(frequency, targetTimeCount));
 
-        if (_scheduledTimeTexts.Count > frequency)
+        if (_scheduledTimeTexts.Count > targetTimeCount)
         {
-            _scheduledTimeTexts = _scheduledTimeTexts.Take(frequency).ToList();
-            return;
+            _scheduledTimeTexts = _scheduledTimeTexts.Take(targetTimeCount).ToList();
         }
 
-        while (_scheduledTimeTexts.Count < frequency)
+        while (_scheduledTimeTexts.Count < targetTimeCount)
         {
             _scheduledTimeTexts.Add(defaults[_scheduledTimeTexts.Count]);
         }
+
+        SyncWeeklyDays();
     }
 
     private static List<string> GetDefaultTimes(int frequency)
@@ -622,6 +697,125 @@ else
             4 => ["08:00", "12:00", "16:00", "20:00"],
             _ => ["08:00"]
         };
+    }
+
+    private void OnScheduleUnitChanged(ChangeEventArgs args)
+    {
+        if (!Enum.TryParse<MedicationScheduleUnit>(args.Value?.ToString(), out var parsed))
+        {
+            parsed = MedicationScheduleUnit.Day;
+        }
+
+        _scheduleUnit = parsed;
+        EnsureVisibleTimeCount();
+        SyncWeeklyDays();
+    }
+
+    private int GetVisibleTimeCount()
+    {
+        return _scheduleUnit == MedicationScheduleUnit.Month
+            ? 1
+            : _frequencyPerDay;
+    }
+
+    private void EnsureVisibleTimeCount()
+    {
+        var targetTimeCount = GetVisibleTimeCount();
+        var defaults = GetDefaultTimes(Math.Max(_frequencyPerDay, targetTimeCount));
+
+        if (_scheduledTimeTexts.Count > targetTimeCount)
+        {
+            _scheduledTimeTexts = _scheduledTimeTexts.Take(targetTimeCount).ToList();
+        }
+
+        while (_scheduledTimeTexts.Count < targetTimeCount)
+        {
+            _scheduledTimeTexts.Add(defaults[_scheduledTimeTexts.Count]);
+        }
+    }
+
+    private void SyncWeeklyDays()
+    {
+        if (!ShowWeeklyDaySelector)
+        {
+            _weeklyDays = [];
+            return;
+        }
+
+        var defaults = GetDefaultWeeklyDays(_frequencyPerDay);
+        if (_weeklyDays.Count > _frequencyPerDay)
+        {
+            _weeklyDays = _weeklyDays.Take(_frequencyPerDay).ToList();
+        }
+
+        while (_weeklyDays.Count < _frequencyPerDay)
+        {
+            _weeklyDays.Add(defaults[_weeklyDays.Count]);
+        }
+
+        ReorderWeeklyPairs();
+    }
+
+    private static List<int> GetDefaultWeeklyDays(int frequency)
+    {
+        var mondayBasedDays =
+            new[]
+            {
+                (int)DayOfWeek.Monday,
+                (int)DayOfWeek.Tuesday,
+                (int)DayOfWeek.Wednesday,
+                (int)DayOfWeek.Thursday,
+                (int)DayOfWeek.Friday,
+                (int)DayOfWeek.Saturday,
+                (int)DayOfWeek.Sunday
+            };
+
+        return mondayBasedDays.Take(frequency).ToList();
+    }
+
+    private string GetWeeklyDayValue(int index)
+    {
+        return index < _weeklyDays.Count
+            ? _weeklyDays[index].ToString()
+            : ((int)DayOfWeek.Monday).ToString();
+    }
+
+    private void OnWeeklyDayChanged(int index, ChangeEventArgs args)
+    {
+        if (!int.TryParse(args.Value?.ToString(), out var parsedDay))
+        {
+            return;
+        }
+
+        while (_weeklyDays.Count <= index)
+        {
+            _weeklyDays.Add((int)DayOfWeek.Monday);
+        }
+
+        _weeklyDays[index] = parsedDay;
+        ReorderWeeklyPairs();
+    }
+
+    private void ReorderWeeklyPairs()
+    {
+        if (!ShowWeeklyDaySelector || _weeklyDays.Count != _scheduledTimeTexts.Count)
+        {
+            return;
+        }
+
+        var orderedPairs = _weeklyDays
+            .Select((day, index) => new { Day = day, Time = _scheduledTimeTexts[index], Index = index })
+            .OrderBy(pair => GetWeekdayOrder(pair.Day))
+            .ThenBy(pair => pair.Index)
+            .ToList();
+
+        _weeklyDays = orderedPairs.Select(pair => pair.Day).ToList();
+        _scheduledTimeTexts = orderedPairs.Select(pair => pair.Time).ToList();
+    }
+
+    private static int GetWeekdayOrder(int day)
+    {
+        return day == (int)DayOfWeek.Sunday ? 6 : day - 1;
     }
 
     private void OnHourChanged(int index, ChangeEventArgs args)
@@ -683,21 +877,27 @@ else
 
         if (_willTakeMedication == true)
         {
-            if (parsedTimes.Count != _frequencyPerDay)
+            var expectedTimeCount = GetVisibleTimeCount();
+            if (parsedTimes.Count != expectedTimeCount)
             {
                 _message = "Kellaaegade arv peab vastama manustamissagedusele.";
                 return;
             }
 
-            if (parsedTimes.Distinct().Count() != parsedTimes.Count)
+            if (ShowWeeklyDaySelector)
             {
-                _message = "Kellaajad peavad olema erinevad.";
-                return;
-            }
+                if (_weeklyDays.Count != _frequencyPerDay)
+                {
+                    _message = "Vali igale nädalasele korrale päev.";
+                    return;
+                }
 
-            parsedTimes = parsedTimes
-                .OrderBy(t => t)
-                .ToList();
+                if (_weeklyDays.Distinct().Count() != _weeklyDays.Count)
+                {
+                    _message = "Vali igale nädalasele korrale erinev päev.";
+                    return;
+                }
+            }
         }
 
         _isSaving = true;
@@ -712,7 +912,10 @@ else
                     ProfileId = _selectedProfileId,
                     MedicationId = _medication.Id,
                     FrequencyPerDay = _frequencyPerDay,
+                    ScheduleUnit = _scheduleUnit,
                     ScheduledTimes = parsedTimes,
+                    WeeklyDays = ShowWeeklyDaySelector ? _weeklyDays.ToList() : [],
+                    StartDate = DateOnly.FromDateTime(DateTime.Now),
                     ExpiresOn = _expiresOn,
                     RemindersEnabled = _remindersEnabled,
                     Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
@@ -779,5 +982,4 @@ else
             ? parsed
             : 1;
     }
-
 }

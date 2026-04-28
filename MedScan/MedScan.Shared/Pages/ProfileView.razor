@@ -812,6 +812,11 @@ else
                         dose.Status));
                 }
 
+                if (m.ScheduleUnit != MedicationScheduleUnit.Day)
+                {
+                    return Enumerable.Empty<DoseEntry>();
+                }
+
                 return m.ScheduledTimes.Select(time => new DoseEntry(
                     time,
                     BuildDisplayName(m),

@@ -22,7 +22,10 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 ProfileId = x.ProfileId,
                 MedicationId = x.MedicationId,
                 Frequency = x.Frequency,
+                ScheduleUnit = x.ScheduleUnit,
                 ScheduledTimesJson = x.ScheduledTimesJson,
+                WeeklyDaysJson = x.WeeklyDaysJson,
+                StartDate = x.StartDate,
                 ExpiresOn = x.ExpiresOn,
                 RemindersEnabled = x.RemindersEnabled,
                 Notes = x.Notes,
@@ -64,7 +67,10 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 ProfileId = x.ProfileId,
                 MedicationId = x.MedicationId,
                 Frequency = x.Frequency,
+                ScheduleUnit = x.ScheduleUnit,
                 ScheduledTimesJson = x.ScheduledTimesJson,
+                WeeklyDaysJson = x.WeeklyDaysJson,
+                StartDate = x.StartDate,
                 ExpiresOn = x.ExpiresOn,
                 RemindersEnabled = x.RemindersEnabled,
                 Notes = x.Notes,
@@ -94,6 +100,11 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                     .ToList()
             })
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<UserMedication?> GetTrackedByIdAsync(int userMedicationId) {
+        return await _dbContext.UserMedications
+            .FirstOrDefaultAsync(x => x.Id == userMedicationId);
     }
 
     public async Task AddAsync(UserMedication userMedication) {

@@ -126,6 +126,9 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
         builder.Entity<UserMedication>(entity =>
         {
             entity.Property(x => x.Frequency).HasColumnName("FrequencyPerDay");
+            entity.Property(x => x.ScheduleUnit).HasConversion<int>();
+            entity.Property(x => x.WeeklyDaysJson).HasDefaultValue("[]");
+            entity.Property(x => x.StartDate).HasColumnType("date");
         });
 
         builder.Entity<Medication>(entity =>

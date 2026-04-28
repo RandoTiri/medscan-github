@@ -98,6 +98,11 @@ public sealed class DoseDueWatcherService(
                 .ToList();
         }
 
+        if (medication.ScheduleUnit != MedicationScheduleUnit.Day)
+        {
+            return [];
+        }
+
         return medication.ScheduledTimes
             .Where(time => IsWithinGraceWindow(time, gracePeriodStart, now))
             .ToList();
