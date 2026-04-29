@@ -1179,7 +1179,8 @@ else
             _showEarlyDoneConfirmation = false;
             _showLastUnitConfirmation = false;
             _earlyDoneMinutesRemaining = 0;
-            if (string.IsNullOrWhiteSpace(result.StockWarning))
+            var medicationRemovedFromStock = result.RemainingQuantity.HasValue && result.RemainingQuantity.Value <= 0;
+            if (medicationRemovedFromStock || string.IsNullOrWhiteSpace(result.StockWarning))
             {
                 CloseDoseModal();
             }

@@ -28,13 +28,13 @@ public sealed class AuthController(
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
         if (user is null)
         {
-            return Results.BadRequest(new { message = "Vale email või parool." });
+            return Results.BadRequest(new { message = "Vale email vÃµi parool." });
         }
 
         var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (!result.Succeeded)
         {
-            return Results.BadRequest(new { message = "Vale email või parool." });
+            return Results.BadRequest(new { message = "Vale email vÃµi parool." });
         }
 
         var principal = await signInManager.CreateUserPrincipalAsync(user);
@@ -49,9 +49,16 @@ public sealed class AuthController(
     {
         if (string.IsNullOrWhiteSpace(request.FullName) ||
             string.IsNullOrWhiteSpace(request.Email) ||
-            string.IsNullOrWhiteSpace(request.Password))
+            string.IsNullOrWhiteSpace(request.Password) ||
+            string.IsNullOrWhiteSpace(request.Gender) ||
+            request.BirthDate is null)
         {
-            return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
+            return Results.BadRequest(new { message = "Koik valjad on kohustuslikud." });
+        }
+
+        if (request.BirthDate > DateOnly.FromDateTime(DateTime.Today))
+        {
+            return Results.BadRequest(new { message = "Sunnikuupaev ei saa olla tulevikus." });
         }
 
         var existingUser = await userManager.FindByEmailAsync(request.Email);
@@ -84,7 +91,8 @@ public sealed class AuthController(
         {
             UserId = user.Id,
             Name = user.FullName,
-            Gender = "Määramata",
+            Gender = request.Gender.Trim(),
+            BirthDate = request.BirthDate,
             ProfileType = ProfileTypeEnum.Ise
         };
 
@@ -165,7 +173,7 @@ public sealed class AuthController(
         catch (Exception)
         {
             // E-maili saatmise viga
-            return Results.BadRequest(new { message = "Kinnituskoodi saatmine ebaõnnestus. Kontrolli SMTP konfigureerimist." });
+            return Results.BadRequest(new { message = "Kinnituskoodi saatmine ebaÃµnnestus. Kontrolli SMTP konfigureerimist." });
         }
 
         return Results.Ok(new { message = "Kood saadetud." });
@@ -181,7 +189,7 @@ public sealed class AuthController(
 
         if (_resetCodes.TryGetValue(request.Email.Trim(), out var code) && code == request.Code.Trim())
         {
-            return Results.Ok(new { message = "Kood on õige." });
+            return Results.Ok(new { message = "Kood on Ãµige." });
         }
 
         return Results.BadRequest(new { message = "Sisestatud kinnituskood on vale" });
@@ -192,17 +200,17 @@ public sealed class AuthController(
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
-            return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
+            return Results.BadRequest(new { message = "KÃµik vÃ¤ljad on kohustuslikud." });
         }
 
         if (request.NewPassword.Length < 6)
         {
-            return Results.BadRequest(new { message = "Parool peab olema olema vähemalt 6 tähemärki." });
+            return Results.BadRequest(new { message = "Parool peab olema olema vÃ¤hemalt 6 tÃ¤hemÃ¤rki." });
         }
 
         if (!_resetCodes.TryGetValue(request.Email.Trim(), out var code) || code != request.Code.Trim())
         {
-            return Results.BadRequest(new { message = "Kinnituskood on vale või aegunud." });
+            return Results.BadRequest(new { message = "Kinnituskood on vale vÃµi aegunud." });
         }
 
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
@@ -235,12 +243,12 @@ public sealed class AuthController(
     {
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
-            return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
+            return Results.BadRequest(new { message = "KÃµik vÃ¤ljad on kohustuslikud." });
         }
 
         if (request.NewPassword.Length < 6)
         {
-            return Results.BadRequest(new { message = "Parool peab olema vähemalt 6 tähemärki pikk." });
+            return Results.BadRequest(new { message = "Parool peab olema vÃ¤hemalt 6 tÃ¤hemÃ¤rki pikk." });
         }
 
         var user = await userManager.GetUserAsync(User);
