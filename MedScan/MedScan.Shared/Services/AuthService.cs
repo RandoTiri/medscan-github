@@ -1,8 +1,7 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Diagnostics;
 using MedScan.Shared.Models;
 
 namespace MedScan.Shared.Services;
@@ -47,7 +46,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         NotifyStateChanged();
     }
 
-    public async Task<(bool Success, string ErrorMessage)> RegisterAsync(string fullName, string email, string password)
+    public async Task<(bool Success, string ErrorMessage)> RegisterAsync(string fullName, string email, string password, string gender, DateOnly? birthDate)
     {
         var baseAddress = httpClient.BaseAddress?.ToString() ?? "NULL";
 
@@ -55,7 +54,9 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         {
             if (string.IsNullOrWhiteSpace(fullName) ||
                 string.IsNullOrWhiteSpace(email) ||
-                string.IsNullOrWhiteSpace(password))
+                string.IsNullOrWhiteSpace(password) ||
+                string.IsNullOrWhiteSpace(gender) ||
+                birthDate is null)
             {
                 return (false, "Koik valjad on kohustuslikud.");
             }
@@ -64,7 +65,9 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
             {
                 FullName = fullName.Trim(),
                 Email = email.Trim(),
-                Password = password
+                Password = password,
+                Gender = gender.Trim(),
+                BirthDate = birthDate
             });
 
             if (!response.IsSuccessStatusCode)
@@ -203,7 +206,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(newPassword))
             {
-                return (false, "Kõik väljad on kohustuslikud.");
+                return (false, "KÃµik vÃ¤ljad on kohustuslikud.");
             }
 
             var response = await httpClient.PostAsJsonAsync("/api/auth/reset-password", new ResetPasswordRequest
@@ -235,7 +238,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         {
             if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
-                return (false, "Kõik väljad on kohustuslikud.");
+                return (false, "KÃµik vÃ¤ljad on kohustuslikud.");
             }
 
             var response = await httpClient.PostAsJsonAsync("/api/auth/change-password", new ChangePasswordRequest
@@ -385,15 +388,15 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
     {
         if (ex is HttpRequestException)
         {
-            return "Serveriga ei saadud ühendust. Kontrolli, et API töötab. USB Android testis tee ka adb reverse tcp:5183 tcp:5183.";
+            return "Serveriga ei saadud Ã¼hendust. Kontrolli, et API tÃ¶Ã¶tab. USB Android testis tee ka adb reverse tcp:5183 tcp:5183.";
         }
 
         if (ex is TaskCanceledException)
         {
-            return "Päring aegus. Proovi uuesti.";
+            return "PÃ¤ring aegus. Proovi uuesti.";
         }
 
-        return $"{operation} ebaõnnestus. Proovi uuesti.";
+        return $"{operation} ebaÃµnnestus. Proovi uuesti.";
     }
 }
 

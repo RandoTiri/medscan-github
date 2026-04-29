@@ -10,7 +10,7 @@ public interface IAuthService {
     UserInfo? CurrentUser { get; }
 
     Task InitializeAsync();
-    Task<(bool Success,string ErrorMessage)> RegisterAsync(string fullName,string email,string password);
+    Task<(bool Success,string ErrorMessage)> RegisterAsync(string fullName,string email,string password,string gender,DateOnly? birthDate);
     Task<(bool Success,string ErrorMessage)> LoginAsync(string email,string password);
     Task<(bool Success,string ErrorMessage)> ForgotPasswordAsync(string email);
     Task<(bool Success,string ErrorMessage)> VerifyCodeAsync(string email, string code);
