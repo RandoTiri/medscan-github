@@ -1,4 +1,4 @@
-﻿@page "/profile/view/{ProfileId:int}"
+@page "/profile/view/{ProfileId:int}"
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
@@ -845,8 +845,8 @@ else
     {
         return status switch
         {
-            DoseStatusEnum.Done => new StatusView("✓ Tehtud", "status-done", ""),
-            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("! Tegemata", "status-missed", ""),
+            DoseStatusEnum.Done => new StatusView("✓ Võetud", "status-done", ""),
+            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("! Võtmata", "status-missed", ""),
             _ => new StatusView("◔ Ootel", "status-pending", "")
         };
     }

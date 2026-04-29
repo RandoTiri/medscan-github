@@ -388,7 +388,7 @@ else
 
     private List<HomePharmacyItemDto> _selectedItems =>
         _selectedProfileId != 0 && _itemsByProfile.TryGetValue(_selectedProfileId, out var items)
-            ? items
+            ? items.Where(item => item.Quantity > 0).ToList()
             : [];
 
     protected override async Task OnInitializedAsync()
@@ -520,7 +520,9 @@ else
 
     private int GetProfileCount(int profileId)
     {
-        return _itemsByProfile.TryGetValue(profileId, out var items) ? items.Count : 0;
+        return _itemsByProfile.TryGetValue(profileId, out var items)
+            ? items.Count(item => item.Quantity > 0)
+            : 0;
     }
 
     private static string BuildExpirationLabel(DateOnly expiresOn)
