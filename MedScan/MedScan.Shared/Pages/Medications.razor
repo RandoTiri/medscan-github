@@ -249,14 +249,20 @@ else
     }
 
     .add-med-btn {
-        border: 0;
-        border-radius: 12px;
-        background: #2f6f58;
+        border: none;
+        border-radius: 8px;
+        background: #3b705e;
         color: #fff;
-        padding: 8px 14px;
+        padding: 12px 16px;
         font-size: 16px;
         font-weight: 700;
         line-height: 1;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(37, 141, 107, 0.2);
+    }
+
+    .add-med-btn:active {
+        transform: scale(0.98);
     }
 
     .profiles-row {
@@ -405,7 +411,7 @@ else
         align-items: center;
         gap: 8px;
         padding: 8px 16px;
-        border-radius: 99px;
+        border-radius: 8px;
         font-size: 15px;
         font-weight: 600;
         border: 2px solid var(--ms-text);
@@ -444,7 +450,7 @@ else
     }
 
     .empty-state {
-        color: var(--ms-text-muted);
+        color: var(--ms-text);
     }
 </style>
 

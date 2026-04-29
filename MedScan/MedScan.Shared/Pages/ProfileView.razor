@@ -101,10 +101,13 @@ else
 
             @if (_isPatientProfile)
             {
-                <section class="crud-panel">
-                    <button class="crud-toggle" @onclick="ToggleEdit">
-                        @(_isEditing ? "Sulge muutmine" : "Muuda hooldatava andmeid")
-                    </button>
+                <section class="crud-panel patient-action-panel">
+                    @if (!_isEditing)
+                    {
+                        <button class="patient-edit-btn" @onclick="ToggleEdit">
+                            Muuda hooldatava andmeid
+                        </button>
+                    }
 
                     @if (_isEditing)
                     {
@@ -156,20 +159,26 @@ else
                             </div>
 
                             <div class="edit-actions">
+                                <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
                                 <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
                             </div>
                         </div>
                     }
+                </section>
 
-                    <button class="delete-btn" @onclick="PromptDelete">Kustuta hooldatav</button>
+                <section class="crud-panel patient-action-panel">
+                    <button class="patient-delete-btn" @onclick="PromptDelete">Kustuta hooldatav</button>
                 </section>
             }
             else
             {
-                <section class="crud-panel">
-                    <button class="crud-toggle" @onclick="ToggleEdit">
-                        @(_isEditing ? "Sulge muutmine" : "Muuda kasutaja andmeid")
-                    </button>
+                <section class="crud-panel patient-action-panel">
+                    @if (!_isEditing)
+                    {
+                        <button class="patient-edit-btn" @onclick="ToggleEdit">
+                            Muuda kasutaja andmeid
+                        </button>
+                    }
 
                     @if (_isEditing)
                     {
@@ -221,6 +230,7 @@ else
                             </div>
 
                             <div class="edit-actions">
+                                <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
                                 <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
                             </div>
                         </div>
@@ -329,7 +339,7 @@ else
     }
 
     .main-card-view {
-        background-color: var(--ms-accent);
+        background-color: var(--ms-primary-card-bg);
         color: white;
         padding: 20px;
         gap: 16px;
@@ -392,6 +402,7 @@ else
     .patient-info-view h1 {
         color: var(--ms-text);
         font-size: 16px;
+        font-weight: 800;
     }
 
     .patient-info-view p {
@@ -483,27 +494,67 @@ else
         padding: 12px;
     }
 
+    .patient-action-panel {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+    }
+
     .crud-toggle {
         width: 100%;
         border: none;
         background: var(--ms-surface-soft);
-        color: var(--ms-text-muted);
+        color: var(--ms-text);
         border-radius: 10px;
         padding: 10px;
         font-weight: 700;
         margin-bottom: 10px;
     }
 
+    .patient-edit-btn,
+    .patient-delete-btn {
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 18px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .patient-edit-btn {
+        border: none;
+        background: #1d735c;
+        color: #fff;
+        margin-bottom: 10px;
+    }
+
+    .patient-delete-btn {
+        background-color: #fdf5f5;
+        color: #d1303b;
+        border: 2px solid #f9d8db;
+    }
+
     .edit-form {
         display: grid;
         gap: 8px;
         margin-bottom: 12px;
+        background: var(--ms-surface);
+        padding: 16px;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .edit-form label {
-        color: var(--ms-text-muted);
+        display: block;
+        color: var(--ms-text);
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 700;
+        margin-bottom: 6px;
     }
 
     .form-control {
@@ -511,8 +562,15 @@ else
         box-sizing: border-box;
         border: 1px solid var(--ms-divider);
         border-radius: 8px;
-        padding: 10px;
-        font-size: 14px;
+        padding: 12px;
+        font-size: 15px;
+        background-color: var(--ms-bg);
+        color: var(--ms-text);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2e8b6c;
     }
 
     .birthdate-picker {
@@ -524,6 +582,14 @@ else
     .birth-field {
         display: grid;
         gap: 6px;
+    }
+
+    .birth-field label {
+        display: block;
+        font-size: 13px;
+        color: var(--ms-text);
+        margin-bottom: 0;
+        font-weight: 700;
     }
 
     .birth-select {
@@ -569,8 +635,10 @@ else
     }
 
     .cancel-btn {
-        background: var(--ms-surface-soft);
-        color: var(--ms-text-muted);
+        border: 2px solid #f9d8db;
+        background: #fdf5f5;
+        color: #d1303b;
+        box-sizing: border-box;
         flex: 1;
     }
 
@@ -620,6 +688,7 @@ else
         margin: 0 0 14px 0;
         color: var(--ms-text);
         font-size: 15px;
+        font-weight: 700;
     }
 
     .confirm-actions {
@@ -630,21 +699,23 @@ else
     .confirm-yes,
     .confirm-no {
         flex: 1;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 12px;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 18px;
         font-weight: 700;
         cursor: pointer;
     }
 
     .confirm-yes {
-        background: #be3b46;
-        color: #fff;
+        background-color: #fdf5f5;
+        color: #d1303b;
+        border: 2px solid #f9d8db;
     }
 
     .confirm-no {
-        background: var(--ms-surface-soft);
-        color: var(--ms-text-muted);
+        border: 1px solid var(--ms-accent);
+        background: var(--ms-surface);
+        color: var(--ms-accent);
     }
 
     .success-box {
@@ -921,6 +992,7 @@ else
     private void ToggleEdit()
     {
         _isEditing = !_isEditing;
+        _errorMessage = null;
 
         if (_isEditing && _patient is not null)
         {
@@ -944,6 +1016,16 @@ else
                 _birthYear = string.Empty;
             }
         }
+    }
+
+    private void CloseEdit()
+    {
+        if (!_isEditing)
+        {
+            return;
+        }
+
+        ToggleEdit();
     }
 
     private bool ApplyBirthDateFromPicker()

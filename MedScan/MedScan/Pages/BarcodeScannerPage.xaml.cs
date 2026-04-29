@@ -1,4 +1,4 @@
-using MedScan.Shared.Models;
+ï»¿using MedScan.Shared.Models;
 using MedScan.Services;
 using ZXing.Net.Maui;
 
@@ -8,6 +8,7 @@ public partial class BarcodeScannerPage : ContentPage
 {
     private readonly TaskCompletionSource<BarcodeScanResult> _completionSource = new();
     private readonly CancellationTokenSource _timeoutSource = new();
+    private TaskCompletionSource<bool?>? _alertCompletionSource;
     private int _isCompleted;
 
     public BarcodeScannerPage()
@@ -74,6 +75,8 @@ public partial class BarcodeScannerPage : ContentPage
         this.AbortAnimation("ScanLineAnimation");
         CameraView.BarcodesDetected -= OnBarcodesDetected;
         _timeoutSource.Cancel();
+        _alertCompletionSource?.TrySetResult(null);
+        _alertCompletionSource = null;
         base.OnDisappearing();
     }
 
@@ -87,7 +90,7 @@ public partial class BarcodeScannerPage : ContentPage
                 return;
             }
 
-            var retry = await TryDisplayAlertAsync("Viga", "Kaamera ei tuvastanud ravimit.", "Skaneeri uuesti", "Käsitsi otsimine");
+            var retry = await TryDisplayAlertAsync("Viga", "Kaamera ei tuvastanud ravimit.", "Skaneeri uuesti", "KÃ¤sitsi otsimine");
             if (!retry.HasValue)
             {
                 return;
@@ -210,7 +213,7 @@ public partial class BarcodeScannerPage : ContentPage
             }
             catch
             {
-                var retryFromError = await TryDisplayAlertAsync("Viga", "Skannimisel tekkis tõrge.", "Skaneeri uuesti", "Käsitsi otsimine");
+                var retryFromError = await TryDisplayAlertAsync("Viga", "Skannimisel tekkis tÃµrge.", "Skaneeri uuesti", "KÃ¤sitsi otsimine");
                 if (retryFromError.GetValueOrDefault())
                 {
                     CameraView.IsDetecting = true;
@@ -231,7 +234,7 @@ public partial class BarcodeScannerPage : ContentPage
                     "Tundmatu triipkood",
                     "Tuvastatud triipkoodi andmeid ei leitud andmebaasist.",
                     "Skaneeri uuesti",
-                    "Käsitsi otsimine");
+                    "KÃ¤sitsi otsimine");
 
                 if (!retry.HasValue)
                 {
@@ -305,12 +308,43 @@ public partial class BarcodeScannerPage : ContentPage
 
         try
         {
-            return await MainThread.InvokeOnMainThreadAsync(async () =>
-                await DisplayAlertAsync(title, message, accept, cancel));
+            return await MainThread.InvokeOnMainThreadAsync(() =>
+            {
+                if (_alertCompletionSource is not null)
+                {
+                    return Task.FromResult<bool?>(null);
+                }
+
+                _alertCompletionSource = new TaskCompletionSource<bool?>();
+                AlertTitleLabel.Text = title;
+                AlertMessageLabel.Text = message;
+                AlertPrimaryButton.Text = accept;
+                AlertSecondaryButton.Text = cancel;
+                AlertOverlay.IsVisible = true;
+                return _alertCompletionSource.Task;
+            });
         }
         catch
         {
             return null;
         }
     }
+
+    private void AlertPrimaryClicked(object? sender, EventArgs e)
+    {
+        CloseAlert(true);
+    }
+
+    private void AlertSecondaryClicked(object? sender, EventArgs e)
+    {
+        CloseAlert(false);
+    }
+
+    private void CloseAlert(bool result)
+    {
+        AlertOverlay.IsVisible = false;
+        _alertCompletionSource?.TrySetResult(result);
+        _alertCompletionSource = null;
+    }
 }
+
