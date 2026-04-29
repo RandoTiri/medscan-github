@@ -100,6 +100,20 @@ else
                 </div>
             </div>
 
+            @if (!_hasSchedule && !_isAddingSchedule)
+            {
+                <div class="info-card">
+                    <div class="card-title">Märkused</div>
+                    <textarea id="medication-notes" class="notes-area" @bind="_editableNotes" placeholder="Lisa märkused..."></textarea>
+                    @if (!NotesUnchanged)
+                    {
+                        <button class="save-schedule-btn" @onclick="SaveNotesAsync" disabled="@(_isSaving || _item is null)">
+                            @(_isSaving ? "Salvestan..." : "Salvesta")
+                        </button>
+                    }
+                </div>
+            }
+
             @if (!string.IsNullOrWhiteSpace(_item.Warnings))
             {
                 <div class="warnings-card">
@@ -192,9 +206,9 @@ else
                     </div>
 
                     <label class="section-title" for="schedule-notes">Märkused (valikuline)</label>
-                    <textarea id="schedule-notes" class="notes-area" @bind="_scheduleNotes" placeholder="Lisa märkused..."></textarea>
+                    <textarea id="schedule-notes" class="notes-area" @bind="_editableNotes" placeholder="Lisa märkused..."></textarea>
 
-                    @if (_isAddingSchedule || _scheduleDirty)
+                    @if (_isAddingSchedule || _scheduleDirty || !NotesUnchanged)
                     {
                         <button class="save-schedule-btn" @onclick="SaveScheduleAsync" disabled="@_isSaving">
                             @(_isSaving ? "Salvestan..." : "Salvesta")
@@ -346,6 +360,7 @@ else
     private bool _hasSchedule;
     private bool _isAddingSchedule;
     private int _editableQuantity = 1;
+    private string? _editableNotes;
 
     private int _frequencyPerDay = 1;
     private MedicationScheduleUnit _scheduleUnit = MedicationScheduleUnit.Day;
@@ -400,6 +415,7 @@ else
             }
 
             _editableQuantity = Math.Clamp(_item.Quantity, 1, 100);
+            _editableNotes = _item.Notes;
 
             var schedules = await MedicationService.GetScheduleAsync(_item.ProfileId);
             _schedule = schedules.FirstOrDefault(x => x.MedicationId == _item.MedicationId && x.IsActive);
@@ -702,12 +718,21 @@ else
                     WeeklyDays = _weeklyDays.ToList(),
                     StartDate = DateOnly.FromDateTime(DateTime.Now),
                     RemindersEnabled = _remindersEnabled,
-                    Notes = string.IsNullOrWhiteSpace(_scheduleNotes) ? null : _scheduleNotes.Trim()
+                    Notes = NormalizeNotes(_editableNotes)
                 });
 
+                var updatedItem = await SaveMedicationNotesAsync();
+                if (updatedItem is null)
+                {
+                    _errorMessage = "Ravimi märkuste uuendamine ebaõnnestus.";
+                    return;
+                }
+
                 _schedule = created;
+                _item = updatedItem;
                 _hasSchedule = true;
                 _isAddingSchedule = false;
+                _editableNotes = updatedItem.Notes;
                 ApplySchedule(created);
                 _message = "Raviskeem salvestatud.";
                 return;
@@ -723,7 +748,7 @@ else
                 WeeklyDays = _weeklyDays.ToList(),
                 StartDate = _schedule.StartDate,
                 RemindersEnabled = _remindersEnabled,
-                Notes = string.IsNullOrWhiteSpace(_scheduleNotes) ? null : _scheduleNotes.Trim()
+                Notes = NormalizeNotes(_editableNotes)
             });
 
             if (updated is null)
@@ -732,7 +757,16 @@ else
                 return;
             }
 
+            var updatedItemAfterSchedule = await SaveMedicationNotesAsync();
+            if (updatedItemAfterSchedule is null)
+            {
+                _errorMessage = "Ravimi märkuste uuendamine ebaõnnestus.";
+                return;
+            }
+
             _schedule = updated;
+            _item = updatedItemAfterSchedule;
+            _editableNotes = updatedItemAfterSchedule.Notes;
             ApplySchedule(updated);
             _message = "Raviskeem salvestatud.";
         }
@@ -823,7 +857,7 @@ else
                 BatchNumber = _item.BatchNumber,
                 ExpiresOn = _item.ExpiresOn,
                 Quantity = _editableQuantity,
-                Notes = _item.Notes
+                Notes = NormalizeNotes(_editableNotes)
             });
 
             if (updated is null)
@@ -834,7 +868,45 @@ else
 
             _item = updated;
             _editableQuantity = Math.Clamp(updated.Quantity, 1, 100);
+            _editableNotes = updated.Notes;
             _message = "Ravimi kogus uuendatud.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private bool NotesUnchanged => string.Equals(NormalizeNotes(_editableNotes), NormalizeNotes(_item?.Notes), StringComparison.Ordinal);
+
+    private async Task SaveNotesAsync()
+    {
+        if (_isSaving || _item is null || NotesUnchanged)
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            var updated = await SaveMedicationNotesAsync();
+            if (updated is null)
+            {
+                _errorMessage = "Ravimi märkuste uuendamine ebaõnnestus.";
+                return;
+            }
+
+            _item = updated;
+            _editableNotes = updated.Notes;
+            _editableQuantity = Math.Clamp(updated.Quantity, 1, 100);
+            _message = "Ravimi märkused uuendatud.";
         }
         catch (Exception ex)
         {
@@ -851,9 +923,8 @@ else
         Navigation.NavigateTo($"/home-pharmacy?profileId={_item?.ProfileId}");
     }
 
-    private string ShelfLifeDisplay => _item?.ExpiresOn?.ToString("dd/MM/yyyy")
-        ?? _item?.AddedAt.AddYears(2).ToString("dd/MM/yyyy")
-        ?? "-";
+    private string ShelfLifeDisplay => _item?.ExpiresOn?.ToString("dd.MM.yyyy")
+        ?? "Puudub";
 
     private void OpenPdfAsync()
     {
@@ -875,5 +946,27 @@ else
 
         var digits = new string(packSize.Where(char.IsDigit).ToArray());
         return string.IsNullOrWhiteSpace(digits) ? packSize.Trim() : digits;
+    }
+
+    private async Task<HomePharmacyItemDto?> SaveMedicationNotesAsync()
+    {
+        if (_item is null)
+        {
+            return null;
+        }
+
+        return await HomePharmacyService.UpdateAsync(_item.Id, new UpdateHomePharmacyItemDto
+        {
+            PackageNumber = _item.PackageNumber,
+            BatchNumber = _item.BatchNumber,
+            ExpiresOn = _item.ExpiresOn,
+            Quantity = _item.Quantity,
+            Notes = NormalizeNotes(_editableNotes)
+        });
+    }
+
+    private static string? NormalizeNotes(string? notes)
+    {
+        return string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
     }
 }
