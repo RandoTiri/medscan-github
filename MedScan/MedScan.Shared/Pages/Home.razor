@@ -212,12 +212,23 @@ else
                     </div>
                 }
 
+                @if (_showLastUnitConfirmation)
+                {
+                    <div class="confirm-box">
+                        See on skännitud karbi viimane ravim. Kui märgid annuse võetuks, on kogus 0tk ning ravim kustutatakse.
+                        <div class="confirm-box-actions">
+                            <button type="button" class="confirm-yes" disabled="@_isUpdatingDose" @onclick="ConfirmLastUnitDoneAsync">Jah</button>
+                            <button type="button" class="confirm-no" disabled="@_isUpdatingDose" @onclick="CancelLastUnitConfirmation">Ei</button>
+                        </div>
+                    </div>
+                }
+
                 @if (!string.IsNullOrWhiteSpace(_modalInfoMessage))
                 {
                     <div class="success-box">@_modalInfoMessage</div>
                 }
 
-                @if (!_showEarlyDoneConfirmation)
+                @if (!_showEarlyDoneConfirmation && !_showLastUnitConfirmation)
                 {
                     <div class="dose-modal-actions">
                         <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Tehtud</button>
@@ -749,6 +760,7 @@ else
     private string? _modalInfoMessage;
     private SelectedDoseCard? _selectedDoseCard;
     private bool _showEarlyDoneConfirmation;
+    private bool _showLastUnitConfirmation;
     private int _earlyDoneMinutesRemaining;
     private bool _isNotificationCenterOpen;
     private bool _hasUnrespondedNotifications;
@@ -780,19 +792,23 @@ else
         var profiles = await ProfileService.GetMyProfilesAsync();
         var mainProfile = ResolveMainProfile(profiles);
 
-        var allMedications = new List<(ProfileSummary Profile, UserMedicationDto Medication)>();
+        var allMedications = new List<(ProfileSummary Profile, UserMedicationDto Medication, int RemainingQuantity)>();
 
         foreach (var profile in profiles)
         {
             var schedule = await MedicationService.GetScheduleAsync(profile.Id);
             var homePharmacyItems = await HomePharmacyService.GetByProfileIdAsync(profile.Id);
+            var quantitiesByMedicationId = homePharmacyItems
+                .GroupBy(item => item.MedicationId)
+                .ToDictionary(group => group.Key, group => group.Sum(item => item.Quantity));
             var allowedMedicationIds = homePharmacyItems
+                .Where(item => item.Quantity > 0)
                 .Select(item => item.MedicationId)
                 .ToHashSet();
 
             allMedications.AddRange(schedule
                 .Where(medication => allowedMedicationIds.Contains(medication.MedicationId))
-                .Select(medication => (profile, medication)));
+                .Select(medication => (profile, medication, quantitiesByMedicationId.TryGetValue(medication.MedicationId, out var quantity) ? quantity : 0)));
         }
 
         var allTodayDoses = allMedications
@@ -807,7 +823,7 @@ else
         _myMedicationCards.AddRange(allMedications
             .Where(tuple => mainProfile is not null && tuple.Profile.Id == mainProfile.Id)
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => BuildHomeMedicationCards(tuple.Medication))
+            .SelectMany(tuple => BuildHomeMedicationCards(tuple.Medication, tuple.RemainingQuantity))
             .OrderBy(card => card.NextTimeSortKey)
             .ThenBy(card => card.Name));
 
@@ -815,7 +831,7 @@ else
         _familyMedicationCards.AddRange(allMedications
             .Where(tuple => tuple.Profile.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase))
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile, tuple.Medication))
+            .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile, tuple.Medication, tuple.RemainingQuantity))
             .OrderBy(card => card.NextTimeSortKey)
             .ThenBy(card => card.ProfileName)
             .ThenBy(card => card.Name)
@@ -828,7 +844,7 @@ else
                ?? profiles.FirstOrDefault();
     }
 
-    private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication)
+    private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication, int remainingQuantity)
     {
         var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
@@ -845,6 +861,7 @@ else
                     Note: note,
                     ScheduledTime: dose.ScheduledTime,
                     TimeSlots: [dose.ScheduledTime],
+                    RemainingQuantity: remainingQuantity,
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
@@ -887,6 +904,7 @@ else
                 Note: note,
                 ScheduledTime: fallbackTime,
                 TimeSlots: [fallbackTime],
+                RemainingQuantity: remainingQuantity,
                 Status: DoseStatusEnum.Pending,
                 StatusLabel: "Ootel",
                 StatusCss: "status-pending",
@@ -896,7 +914,7 @@ else
         }
     }
 
-    private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication)
+    private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication, int remainingQuantity)
     {
         var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
@@ -914,6 +932,7 @@ else
                     Note: note,
                     ScheduledTime: dose.ScheduledTime,
                     TimeSlots: [dose.ScheduledTime],
+                    RemainingQuantity: remainingQuantity,
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
@@ -957,6 +976,7 @@ else
                 Note: note,
                 ScheduledTime: fallbackTime,
                 TimeSlots: [fallbackTime],
+                RemainingQuantity: remainingQuantity,
                 Status: DoseStatusEnum.Pending,
                 StatusLabel: "Ootel",
                 StatusCss: "status-pending",
@@ -1076,19 +1096,21 @@ else
 
     private void OpenDoseModal(HomeMedicationCard card)
     {
-        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, card.Name, card.ScheduledTime, card.Status);
+        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, card.Name, card.ScheduledTime, card.Status, card.RemainingQuantity);
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
+        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
     private void OpenDoseModal(FamilyMedicationCard card)
     {
-        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} · {card.Name}", card.ScheduledTime, card.Status);
+        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} · {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity);
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
+        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
@@ -1098,6 +1120,7 @@ else
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
+        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
@@ -1120,6 +1143,12 @@ else
                 {
                     _showEarlyDoneConfirmation = true;
                     _earlyDoneMinutesRemaining = minutesUntilDose;
+                    return;
+                }
+
+                if (!_showLastUnitConfirmation && _selectedDoseCard.RemainingQuantity == 1)
+                {
+                    _showLastUnitConfirmation = true;
                     return;
                 }
             }
@@ -1148,6 +1177,7 @@ else
             }
 
             _showEarlyDoneConfirmation = false;
+            _showLastUnitConfirmation = false;
             _earlyDoneMinutesRemaining = 0;
             if (string.IsNullOrWhiteSpace(result.StockWarning))
             {
@@ -1219,10 +1249,26 @@ else
         await UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done);
     }
 
+    private async Task ConfirmLastUnitDoneAsync()
+    {
+        if (_selectedDoseCard is null)
+        {
+            return;
+        }
+
+        await UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done);
+    }
+
     private void CancelEarlyDoneConfirmation()
     {
         _showEarlyDoneConfirmation = false;
+        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
+    }
+
+    private void CancelLastUnitConfirmation()
+    {
+        _showLastUnitConfirmation = false;
     }
 
     private static int GetRemainingMinutesUntilDose(TimeOnly scheduledTime)
@@ -1267,6 +1313,7 @@ else
         string? Note,
         TimeOnly ScheduledTime,
         IReadOnlyList<TimeOnly> TimeSlots,
+        int RemainingQuantity,
         DoseStatusEnum Status,
         string StatusLabel,
         string StatusCss,
@@ -1280,6 +1327,7 @@ else
         string? Note,
         TimeOnly ScheduledTime,
         IReadOnlyList<TimeOnly> TimeSlots,
+        int RemainingQuantity,
         DoseStatusEnum Status,
         string StatusLabel,
         string StatusCss,
@@ -1290,5 +1338,6 @@ else
         int UserMedicationId,
         string Name,
         TimeOnly ScheduledTime,
-        DoseStatusEnum Status);
+        DoseStatusEnum Status,
+        int RemainingQuantity = 0);
 }

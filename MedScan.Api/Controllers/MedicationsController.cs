@@ -218,12 +218,13 @@ public sealed class MedicationsController(
             if (stockItem is not null && stockItem.Quantity > 0)
             {
                 stockItem.Quantity = Math.Max(0, stockItem.Quantity - 1);
+
                 remainingQuantity = stockItem.Quantity;
 
                 if (stockItem.Quantity <= 3)
                 {
                     var medName = userMedication.Medication?.Name ?? "Ravim";
-                    stockWarning = $"{medName}: alles on {stockItem.Quantity} tk. Vajadusel osta juurde, kui jÃ¤tkad vÃµtmist.";
+                    stockWarning = $"{medName}: alles on {stockItem.Quantity} tk. Vajadusel osta juurde, kui jätkad võtmist.";
                 }
             }
         }
