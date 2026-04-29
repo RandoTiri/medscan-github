@@ -141,9 +141,7 @@ else
                 }
             </section>
 
-            <section class="crud-panel">
-                <button class="delete-btn" @onclick="PromptDeleteAccount">Kustuta kasutaja</button>
-            </section>
+            <button class="delete-btn main-profile-delete" @onclick="PromptDeleteAccount">Kustuta kasutaja</button>
 
             @if (_showDeleteConfirm)
             {
@@ -239,19 +237,20 @@ else
 
     .crud-panel {
         margin-top: 14px;
-        background: var(--ms-surface);
-        border: 1px solid var(--ms-divider);
-        border-radius: 14px;
-        padding: 12px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
     }
 
     .crud-toggle {
         width: 100%;
         border: none;
-        background: var(--ms-surface-soft);
-        color: var(--ms-text-muted);
-        border-radius: 10px;
-        padding: 10px;
+        background: #1d735c;
+        color: #fff;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 18px;
         font-weight: 700;
         margin-bottom: 10px;
     }
@@ -327,6 +326,19 @@ else
     .save-btn {
         background: #1d735c;
         color: #fff;
+    }
+
+    .main-profile-delete {
+        margin-top: 14px;
+        width: 100%;
+        border: 2px solid #f9d8db;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 18px;
+        font-weight: 700;
+        background: #fdf5f5;
+        color: #d1303b;
+        box-sizing: border-box;
     }
 
     .delete-btn {

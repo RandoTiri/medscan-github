@@ -13,15 +13,17 @@ else
 {
     <div class="settings-subpage">
         <div class="settings-subpage-content">
-            <button class="back-link" @onclick="GoBack">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Seaded
-            </button>
-
-            <h1 class="page-title">Keel</h1>
+            <div class="medicine-header">
+                <button class="back-link" @onclick="GoBack">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    Tagasi
+                </button>
+                <h1>Keel</h1>
+                <span class="header-spacer"></span>
+            </div>
 
             <div class="settings-card">
                 <div class="settings-item selected">
@@ -47,16 +49,39 @@ else
         margin-top: -1.1rem;
         min-height: 100vh;
         background: var(--ms-bg);
-        padding-top: calc(max(20px, env(safe-area-inset-top)) + 18px);
         padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 84px);
-        padding-left: max(20px, env(safe-area-inset-left));
-        padding-right: max(20px, env(safe-area-inset-right));
         box-sizing: border-box;
     }
 
     .settings-subpage-content {
         max-width: 560px;
         margin: 0 auto;
+        padding: 0 16px;
+    }
+
+    .medicine-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 8px;
+        padding: calc(max(20px, env(safe-area-inset-top)) + 18px) 0 14px 0;
+        background: var(--ms-bg);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .medicine-header h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        color: var(--ms-text);
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .header-spacer {
+        width: 56px;
     }
 
     .back-link {
@@ -69,19 +94,10 @@ else
         font-weight: 600;
         cursor: pointer;
         padding: 10px 0;
-        margin-bottom: 12px;
-        margin-top: 16px;
     }
 
     .back-link svg {
         margin-right: 8px;
-    }
-
-    .page-title {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--ms-text);
-        margin: 0 0 20px 0;
     }
 
     .settings-card {
