@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @implements IDisposable
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.Models
@@ -47,7 +47,7 @@ else
             <div class="stats-card">
                 <div class="stat-item">
                     <span class="stat-number">@_doneCount</span>
-                    <span class="stat-label">Tehtud</span>
+                    <span class="stat-label">Võetud</span>
                 </div>
                 <div class="stat-divider"></div>
                 <div class="stat-item">
@@ -231,8 +231,8 @@ else
                 @if (!_showEarlyDoneConfirmation && !_showLastUnitConfirmation)
                 {
                     <div class="dose-modal-actions">
-                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Tehtud</button>
-                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Tegemata</button>
+                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Võetud</button>
+                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Võtmata</button>
                     </div>
                 }
 
@@ -865,9 +865,9 @@ else
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
-                        DoseStatusEnum.Done => "Tehtud",
-                        DoseStatusEnum.Missed => "Tegemata",
-                        DoseStatusEnum.Skipped => "Tegemata",
+                        DoseStatusEnum.Done => "Võetud",
+                        DoseStatusEnum.Missed => "Võtmata",
+                        DoseStatusEnum.Skipped => "Võtmata",
                         _ => "Ootel"
                     },
                     StatusCss: dose.Status switch
@@ -936,9 +936,9 @@ else
                     Status: dose.Status,
                     StatusLabel: dose.Status switch
                     {
-                        DoseStatusEnum.Done => "Tehtud",
-                        DoseStatusEnum.Missed => "Tegemata",
-                        DoseStatusEnum.Skipped => "Tegemata",
+                        DoseStatusEnum.Done => "Võetud",
+                        DoseStatusEnum.Missed => "Võtmata",
+                        DoseStatusEnum.Skipped => "Võtmata",
                         _ => "Ootel"
                     },
                     StatusCss: dose.Status switch
@@ -1089,7 +1089,7 @@ else
 
     private static string GetNotificationTimeChipCss(NotificationInboxItem item)
     {
-        return item.IsResponded && string.Equals(item.ResponseLabel, "Tehtud", StringComparison.OrdinalIgnoreCase)
+        return item.IsResponded && string.Equals(item.ResponseLabel, "Võetud", StringComparison.OrdinalIgnoreCase)
             ? "done"
             : string.Empty;
     }

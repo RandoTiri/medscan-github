@@ -152,7 +152,7 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
                 [
                     new NotificationAction(DoneActionId)
                     {
-                        Title = "Tehtud",
+                        Title = "Võetud",
                         Android = new AndroidAction
                         {
                             LaunchAppWhenTapped = false

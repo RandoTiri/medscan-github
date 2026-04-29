@@ -214,7 +214,7 @@ public sealed class LocalNotificationInboxService(
     {
         label = actionId switch
         {
-            MauiMedicineReminderScheduler.DoneActionId => "Tehtud",
+            MauiMedicineReminderScheduler.DoneActionId => "Võetud",
             _ => string.Empty
         };
 
