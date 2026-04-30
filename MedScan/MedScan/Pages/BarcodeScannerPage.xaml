@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:zxing="clr-namespace:ZXing.Net.Maui.Controls;assembly=ZXing.Net.MAUI.Controls"
@@ -105,6 +105,60 @@
                     </StackLayout>
                 </Border>
             </Grid>
+        </Grid>
+
+        <Grid x:Name="AlertOverlay"
+              IsVisible="False"
+              BackgroundColor="#73000000"
+              InputTransparent="False">
+            <Border HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    MaximumWidthRequest="340"
+                    Margin="24"
+                    Padding="16"
+                    BackgroundColor="White"
+                    Stroke="Transparent"
+                    StrokeShape="RoundRectangle 18">
+                <VerticalStackLayout Spacing="16">
+                    <VerticalStackLayout Spacing="8">
+                        <Label x:Name="AlertTitleLabel"
+                               Text="Viga"
+                               TextColor="#1A4A3C"
+                               FontSize="16"
+                               FontAttributes="Bold" />
+                        <Label x:Name="AlertMessageLabel"
+                               TextColor="#1A4A3C"
+                               FontSize="14"
+                               LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="*,*"
+                          ColumnSpacing="10">
+                        <Button x:Name="AlertPrimaryButton"
+                                Grid.Column="0"
+                                Text="Skaneeri uuesti"
+                                Clicked="AlertPrimaryClicked"
+                                BackgroundColor="#1F7A60"
+                                TextColor="White"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                CornerRadius="14"
+                                Padding="16,12" />
+                        <Button x:Name="AlertSecondaryButton"
+                                Grid.Column="1"
+                                Text="Käsitsi otsimine"
+                                Clicked="AlertSecondaryClicked"
+                                BackgroundColor="White"
+                                TextColor="#258D6B"
+                                BorderColor="#258D6B"
+                                BorderWidth="1"
+                                FontSize="18"
+                                FontAttributes="Bold"
+                                CornerRadius="14"
+                                Padding="16,12" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
         </Grid>
     </Grid>
 </ContentPage>

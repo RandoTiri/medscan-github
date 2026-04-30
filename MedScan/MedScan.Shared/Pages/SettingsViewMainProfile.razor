@@ -57,9 +57,12 @@ else
             }
 
             <section class="crud-panel">
-                <button class="crud-toggle" @onclick="ToggleEdit">
-                    @(_isEditing ? "Sulge muutmine" : "Muuda kasutaja andmeid")
-                </button>
+                @if (!_isEditing)
+                {
+                    <button class="crud-toggle" @onclick="ToggleEdit">
+                        Muuda kasutaja andmeid
+                    </button>
+                }
 
                 @if (_isEditing)
                 {
@@ -111,6 +114,7 @@ else
                         </div>
 
                         <div class="edit-actions">
+                            <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
                             <button class="save-btn" @onclick="SaveProfileAsync">Salvesta</button>
                         </div>
                     </div>
@@ -118,9 +122,12 @@ else
             </section>
 
             <section class="crud-panel">
-                <button class="crud-toggle" @onclick="TogglePasswordForm">
-                    @(_isChangingPassword ? "Sulge parooli muutmine" : "Muuda parooli")
-                </button>
+                @if (!_isChangingPassword)
+                {
+                    <button class="crud-toggle" @onclick="TogglePasswordForm">
+                        Muuda parooli
+                    </button>
+                }
 
                 @if (_isChangingPassword)
                 {
@@ -135,6 +142,7 @@ else
                         <input class="form-control" type="password" @bind="_confirmNewPassword" />
 
                         <div class="edit-actions">
+                            <button class="cancel-btn" @onclick="ClosePasswordForm">Sulge</button>
                             <button class="save-btn" @onclick="ChangePasswordAsync">Salvesta</button>
                         </div>
                     </div>
@@ -199,7 +207,7 @@ else
     }
 
     .profile-summary-card {
-        background-color: var(--ms-accent);
+        background-color: var(--ms-primary-card-bg);
         color: white;
         padding: 20px;
         gap: 16px;
@@ -320,6 +328,7 @@ else
     }
 
     .save-btn,
+    .cancel-btn,
     .delete-btn {
         border: none;
         border-radius: 10px;
@@ -332,6 +341,15 @@ else
     .save-btn {
         background: #1d735c;
         color: #fff;
+        flex: 1;
+    }
+
+    .cancel-btn {
+        border: 2px solid #f9d8db;
+        background: #fdf5f5;
+        color: #d1303b;
+        box-sizing: border-box;
+        flex: 1;
     }
 
     .main-profile-delete {
@@ -394,6 +412,7 @@ else
         margin: 0 0 14px 0;
         color: var(--ms-text);
         font-size: 15px;
+        font-weight: 700;
     }
 
     .confirm-actions {
@@ -404,21 +423,23 @@ else
     .confirm-yes,
     .confirm-no {
         flex: 1;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 12px;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 18px;
         font-weight: 700;
         cursor: pointer;
     }
 
     .confirm-yes {
-        background: #be3b46;
-        color: #fff;
+        background-color: #fdf5f5;
+        color: #d1303b;
+        border: 2px solid #f9d8db;
     }
 
     .confirm-no {
-        background: var(--ms-surface-soft);
-        color: var(--ms-text-muted);
+        border: 1px solid var(--ms-accent);
+        background: var(--ms-surface);
+        color: var(--ms-accent);
     }
 </style>
 
@@ -531,6 +552,16 @@ else
         }
     }
 
+    private void CloseEdit()
+    {
+        if (!_isEditing)
+        {
+            return;
+        }
+
+        ToggleEdit();
+    }
+
     private async Task SaveProfileAsync()
     {
         if (_profile is null || string.IsNullOrWhiteSpace(_editModel.Name))
@@ -614,6 +645,16 @@ else
             _newPassword = string.Empty;
             _confirmNewPassword = string.Empty;
         }
+    }
+
+    private void ClosePasswordForm()
+    {
+        if (!_isChangingPassword)
+        {
+            return;
+        }
+
+        TogglePasswordForm();
     }
 
     private async Task ChangePasswordAsync()
