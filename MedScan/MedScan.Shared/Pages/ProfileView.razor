@@ -262,7 +262,7 @@ else
                             <div class="error-box">@_manualSearchMessage</div>
                         }
 
-                        <div class="manual-search-bar">
+                        <div class="manual-search-bar" style="margin-bottom: 12px;">
                             <input class="form-control" @bind="_manualSearchQuery" placeholder="Sisesta ravimi nimi" />
                             <button class="save-btn" @onclick="SearchMedicationAsync" disabled="@_isManualSearchBusy">
                                 @(_isManualSearchBusy ? "Otsin..." : "Otsi")
@@ -282,8 +282,8 @@ else
                             </div>
                         }
 
-                        <div class="confirm-actions">
-                            <button class="confirm-no" @onclick="CloseManualSearch">Sulge</button>
+                        <div class="confirm-actions" style="margin-top: 24px;">
+                            <button class="patient-delete-btn" @onclick="CloseManualSearch">Sulge</button>
                         </div>
                     </div>
                 </div>
