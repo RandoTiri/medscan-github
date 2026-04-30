@@ -303,24 +303,19 @@ else
         try
         {
             var selectedDate = new DateOnly(_selectedYear, _selectedMonth, _selectedDay);
-            var medications = await MedicationService.GetScheduleAsync(ProfileId, selectedDate);
+            var history = await MedicationService.GetHistoryAsync(ProfileId, selectedDate);
 
-            _historyItems.AddRange(medications
-                .Where(medication => medication.IsActive)
-                .SelectMany(medication => medication.TodayDoses.Select(dose => new HistoryItem(
-                    DisplayName: BuildDisplayName(medication),
-                    ScheduleText: $"{selectedDate:dd.MM.yyyy} Â· {dose.ScheduledTime:HH\\:mm}",
-                    StatusLabel: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "VÃµetud",
-                        _ => "VÃµtmata"
-                    },
-                    StatusCss: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "status-done",
-                        _ => "status-missed"
-                    },
-                    SortKey: dose.ScheduledTime.ToTimeSpan())))
+            _historyItems.AddRange(history
+                .Select(entry =>
+                {
+                    var localTime = entry.ScheduledTime.ToLocalTime();
+                    return new HistoryItem(
+                        DisplayName: BuildDisplayName(entry.MedicationName, entry.Strength),
+                        ScheduleText: $"{selectedDate:dd.MM.yyyy} · {localTime:HH:mm}",
+                        StatusLabel: entry.Status == DoseStatusEnum.Done ? "Võetud" : "Võtmata",
+                        StatusCss: entry.Status == DoseStatusEnum.Done ? "status-done" : "status-missed",
+                        SortKey: localTime.TimeOfDay);
+                })
                 .OrderBy(item => item.SortKey)
                 .ThenBy(item => item.DisplayName));
         }
@@ -330,14 +325,14 @@ else
         }
     }
 
-    private static string BuildDisplayName(UserMedicationDto medication)
+    private static string BuildDisplayName(string medicationName, string? strength)
     {
-        if (string.IsNullOrWhiteSpace(medication.Strength) || medication.MedicationName.Contains(medication.Strength, StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(strength) || medicationName.Contains(strength, StringComparison.OrdinalIgnoreCase))
         {
-            return medication.MedicationName;
+            return medicationName;
         }
 
-        return $"{medication.MedicationName} {medication.Strength}";
+        return $"{medicationName} {strength}";
     }
 
     private void GoBack()
@@ -363,3 +358,5 @@ else
         string StatusCss,
         TimeSpan SortKey);
 }
+
+

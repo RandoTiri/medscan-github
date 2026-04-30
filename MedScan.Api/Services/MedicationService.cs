@@ -122,6 +122,16 @@ public sealed class MedicationService : IMedicationService
         throw new NotSupportedException("Status updates are handled by MedicationsController.");
     }
 
+    public Task<IEnumerable<DoseHistoryItemDto>> GetHistoryAsync(int profileId, DateOnly date)
+    {
+        throw new NotSupportedException("History is handled by MedicationsController.");
+    }
+
+    public Task<TakeMedicationOnceResultDto> TakeOnceAsync(int medicationId, TakeMedicationOnceDto dto)
+    {
+        throw new NotSupportedException("One-time take is handled by MedicationsController.");
+    }
+
     private static UserMedicationDto MapToDto(UserMedication userMedication, DateOnly? forDate = null)
     {
         var scheduledTimes = DeserializeTimes(userMedication.ScheduledTimesJson);
