@@ -176,20 +176,12 @@ else
 
                             <p class="quantity-line">@BuildShelfLifeLabel(item.ExpiresOn)</p>
 
-                            @if (item.PackageNumber is not null || !string.IsNullOrWhiteSpace(item.BatchNumber))
+                            @if (item.PackageNumber is not null)
                             {
                                 <p class="meta-line">
                                     @if (item.PackageNumber is not null)
                                     {
                                         <span>Karp #@item.PackageNumber</span>
-                                    }
-                                    @if (item.PackageNumber is not null && !string.IsNullOrWhiteSpace(item.BatchNumber))
-                                    {
-                                        <span> · </span>
-                                    }
-                                    @if (!string.IsNullOrWhiteSpace(item.BatchNumber))
-                                    {
-                                        <span>LOT: @item.BatchNumber</span>
                                     }
                                 </p>
                             }

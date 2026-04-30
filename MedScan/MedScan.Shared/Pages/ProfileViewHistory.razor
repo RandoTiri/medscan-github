@@ -311,8 +311,8 @@ else
                     var localTime = entry.ScheduledTime.ToLocalTime();
                     return new HistoryItem(
                         DisplayName: BuildDisplayName(entry.MedicationName, entry.Strength),
-                        ScheduleText: $"{selectedDate:dd.MM.yyyy} · {localTime:HH:mm}",
-                        StatusLabel: entry.Status == DoseStatusEnum.Done ? "Võetud" : "Võtmata",
+                        ScheduleText: $"{selectedDate:dd.MM.yyyy} Â· {localTime:HH:mm}",
+                        StatusLabel: entry.Status == DoseStatusEnum.Done ? "VÃµetud" : "VÃµtmata",
                         StatusCss: entry.Status == DoseStatusEnum.Done ? "status-done" : "status-missed",
                         SortKey: localTime.TimeOfDay);
                 })
@@ -358,5 +358,6 @@ else
         string StatusCss,
         TimeSpan SortKey);
 }
+
 
 

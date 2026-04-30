@@ -56,100 +56,102 @@ else
                 <div class="success-box">@_successMessage</div>
             }
 
-            <section class="crud-panel">
-                @if (!_isEditing)
-                {
-                    <button class="crud-toggle" @onclick="ToggleEdit">
-                        Muuda kasutaja andmeid
-                    </button>
-                }
+            <section class="settings-actions-panel">
+                <section class="crud-panel">
+                    @if (!_isEditing)
+                    {
+                        <button class="crud-toggle" @onclick="ToggleEdit">
+                            Muuda kasutaja andmeid
+                        </button>
+                    }
 
-                @if (_isEditing)
-                {
-                    <div class="edit-form">
-                        <label>Nimi</label>
-                        <input class="form-control" @bind="_editModel.Name" />
+                    @if (_isEditing)
+                    {
+                        <div class="edit-form">
+                            <label>Nimi</label>
+                            <input class="form-control" @bind="_editModel.Name" />
 
-                        <label>Sugu</label>
-                        <select class="form-control" @bind="_editModel.Gender">
-                            <option value="Mees">Mees</option>
-                            <option value="Naine">Naine</option>
-                            <option value="Määramata">Määramata</option>
-                        </select>
+                            <label>Sugu</label>
+                            <select class="form-control" @bind="_editModel.Gender">
+                                <option value="Mees">Mees</option>
+                                <option value="Naine">Naine</option>
+                                <option value="Määramata">Määramata</option>
+                            </select>
 
-                        <label>Sünniaeg</label>
-                        <div class="birthdate-picker">
-                            <div class="birth-field">
-                                <label>Päev</label>
-                                <select class="birth-select" @bind="_birthDay">
-                                    <option value="">DD</option>
-                                    @foreach (var day in _days)
-                                    {
-                                        <option value="@day">@day</option>
-                                    }
-                                </select>
+                            <label>Sünniaeg</label>
+                            <div class="birthdate-picker">
+                                <div class="birth-field">
+                                    <label>Päev</label>
+                                    <select class="birth-select" @bind="_birthDay">
+                                        <option value="">DD</option>
+                                        @foreach (var day in _days)
+                                        {
+                                            <option value="@day">@day</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Kuu</label>
+                                    <select class="birth-select" @bind="_birthMonth">
+                                        <option value="">MM</option>
+                                        @foreach (var month in _months)
+                                        {
+                                            <option value="@month">@month</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="birth-field">
+                                    <label>Aasta</label>
+                                    <select class="birth-select" @bind="_birthYear">
+                                        <option value="">YYYY</option>
+                                        @foreach (var year in _years)
+                                        {
+                                            <option value="@year">@year</option>
+                                        }
+                                    </select>
+                                </div>
                             </div>
 
-                            <div class="birth-field">
-                                <label>Kuu</label>
-                                <select class="birth-select" @bind="_birthMonth">
-                                    <option value="">MM</option>
-                                    @foreach (var month in _months)
-                                    {
-                                        <option value="@month">@month</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="birth-field">
-                                <label>Aasta</label>
-                                <select class="birth-select" @bind="_birthYear">
-                                    <option value="">YYYY</option>
-                                    @foreach (var year in _years)
-                                    {
-                                        <option value="@year">@year</option>
-                                    }
-                                </select>
+                            <div class="edit-actions">
+                                <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
+                                <button class="save-btn" @onclick="SaveProfileAsync">Salvesta</button>
                             </div>
                         </div>
+                    }
+                </section>
 
-                        <div class="edit-actions">
-                            <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
-                            <button class="save-btn" @onclick="SaveProfileAsync">Salvesta</button>
+                <section class="crud-panel">
+                    @if (!_isChangingPassword)
+                    {
+                        <button class="crud-toggle" @onclick="TogglePasswordForm">
+                            Muuda parooli
+                        </button>
+                    }
+
+                    @if (_isChangingPassword)
+                    {
+                        <div class="edit-form">
+                            <label>Praegune parool</label>
+                            <input class="form-control" type="password" @bind="_currentPassword" />
+
+                            <label>Uus parool</label>
+                            <input class="form-control" type="password" @bind="_newPassword" />
+
+                            <label>Korda uut parooli</label>
+                            <input class="form-control" type="password" @bind="_confirmNewPassword" />
+
+                            <div class="edit-actions">
+                                <button class="cancel-btn" @onclick="ClosePasswordForm">Sulge</button>
+                                <button class="save-btn" @onclick="ChangePasswordAsync">Salvesta</button>
+                            </div>
                         </div>
-                    </div>
-                }
+                    }
+                </section>
+
+                <button class="delete-btn main-profile-delete" @onclick="PromptDeleteAccount">Kustuta kasutaja</button>
             </section>
-
-            <section class="crud-panel">
-                @if (!_isChangingPassword)
-                {
-                    <button class="crud-toggle" @onclick="TogglePasswordForm">
-                        Muuda parooli
-                    </button>
-                }
-
-                @if (_isChangingPassword)
-                {
-                    <div class="edit-form">
-                        <label>Praegune parool</label>
-                        <input class="form-control" type="password" @bind="_currentPassword" />
-
-                        <label>Uus parool</label>
-                        <input class="form-control" type="password" @bind="_newPassword" />
-
-                        <label>Korda uut parooli</label>
-                        <input class="form-control" type="password" @bind="_confirmNewPassword" />
-
-                        <div class="edit-actions">
-                            <button class="cancel-btn" @onclick="ClosePasswordForm">Sulge</button>
-                            <button class="save-btn" @onclick="ChangePasswordAsync">Salvesta</button>
-                        </div>
-                    </div>
-                }
-            </section>
-
-            <button class="delete-btn main-profile-delete" @onclick="PromptDeleteAccount">Kustuta kasutaja</button>
 
             @if (_showDeleteConfirm)
             {
@@ -249,6 +251,18 @@ else
         border: none;
         border-radius: 0;
         padding: 0;
+    }
+
+    .settings-actions-panel {
+        margin-top: 14px;
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
+        border-radius: 14px;
+        padding: 12px;
+    }
+
+    .settings-actions-panel .crud-panel:first-child {
+        margin-top: 0;
     }
 
     .crud-toggle {

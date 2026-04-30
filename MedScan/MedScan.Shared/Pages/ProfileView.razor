@@ -164,9 +164,6 @@ else
                             </div>
                         </div>
                     }
-                </section>
-
-                <section class="crud-panel patient-action-panel">
                     <button class="patient-delete-btn" @onclick="PromptDelete">Kustuta hooldatav</button>
                 </section>
             }
@@ -495,10 +492,11 @@ else
     }
 
     .patient-action-panel {
-        background: transparent;
-        border: none;
-        border-radius: 0;
-        padding: 0;
+        margin-top: 14px;
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
+        border-radius: 14px;
+        padding: 12px;
     }
 
     .crud-toggle {
