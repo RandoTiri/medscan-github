@@ -127,7 +127,7 @@ else
                     @foreach (var med in _scheduledMedications)
                     {
                         <button class="medicine-card schedule-card" @onclick="() => OpenScheduledMedicationDetails(med)">
-                            <div class="left-icon">R</div>
+                            <div class="left-icon">@GetMedicationInitial(med.MedicationName)</div>
                             <div class="card-content">
                                 <div class="top-line">
                                     <h2>@med.MedicationName</h2>
@@ -158,7 +158,7 @@ else
                 @foreach (var item in _selectedItems)
                 {
                     <button class="medicine-card" @onclick="() => OpenDetails(item.Id)">
-                        <div class="left-icon">R</div>
+                        <div class="left-icon">@GetMedicationInitial(item.MedicationName)</div>
 
                         <div class="card-content">
                             <div class="top-line">
@@ -711,5 +711,18 @@ else
         return expiresOn is DateOnly date
             ? $"Säilimisaeg: {date:dd.MM.yyyy}"
             : "Säilimisaeg puudub";
+    }
+
+    private static string GetMedicationInitial(string? medicationName)
+    {
+        if (string.IsNullOrWhiteSpace(medicationName))
+        {
+            return "R";
+        }
+
+        var firstLetter = medicationName.Trim().FirstOrDefault(char.IsLetter);
+        return firstLetter == default
+            ? "R"
+            : char.ToUpperInvariant(firstLetter).ToString();
     }
 }
