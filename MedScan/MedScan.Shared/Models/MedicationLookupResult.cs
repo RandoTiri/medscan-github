@@ -13,4 +13,5 @@ public sealed class MedicationLookupResult
     public string? PackSize { get; set; }
     public string? ShortDescription { get; set; }
     public string? Warnings { get; set; }
+    public string? PdfUrl { get; set; }
 }

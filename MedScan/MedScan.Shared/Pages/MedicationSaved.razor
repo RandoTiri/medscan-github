@@ -1,4 +1,4 @@
-@page "/home-pharmacy/saved-medication"
+﻿@page "/home-pharmacy/saved-medication"
 @inject NavigationManager Navigation
 
 <PageTitle>Ravim salvestatud</PageTitle>
@@ -19,7 +19,7 @@
         position: relative;
         left: 50%;
         margin-left: -50vw;
-        background: #f3f4f4;
+        background: var(--ms-bg);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -28,7 +28,7 @@
     }
 
     .saved-card {
-        background: #fff;
+        background: var(--ms-surface);`r`n        border: 1px solid var(--ms-divider);
         border-radius: 18px;
         padding: 24px;
         text-align: center;
@@ -60,7 +60,7 @@
 
     .saved-card p {
         margin: 0;
-        color: #425767;
+        color: var(--ms-text-muted);
         font-size: 17px;
     }
 </style>
@@ -96,3 +96,4 @@
         Navigation.NavigateTo("/home-pharmacy", replace: true);
     }
 }
+

@@ -42,7 +42,8 @@ public sealed class MedicationCatalogService(IMedicationRepository medicationRep
         PackSize = medication.PackSize,
         MedicationForm = medication.MedicationForm,
         ShortDescription = medication.Indication,
-        Warnings = medication.Warnings
+        Warnings = medication.Warnings,
+        PdfUrl = medication.PdfUrl
     };
 
     private static string NormalizeBarcode(string barcode)

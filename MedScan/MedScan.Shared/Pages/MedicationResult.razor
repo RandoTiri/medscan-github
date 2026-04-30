@@ -113,7 +113,7 @@ else
         </div>
 
         <div class="action-bar">
-            <button class="action-btn action-pdf">
+            <button class="action-btn action-pdf" @onclick="OpenPdfAsync">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -189,7 +189,7 @@ else
     }
 
     .content-scroll {
-        background: #f3f4f4;
+        background: var(--ms-bg);
         padding: 16px;
         display: flex;
         flex-direction: column;
@@ -197,7 +197,8 @@ else
     }
 
     .section-card {
-        background: #fff;
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
         border-radius: 14px;
         padding: 14px;
     }
@@ -217,14 +218,15 @@ else
         font-size: 22px;
         font-weight: 800;
         line-height: 1.1;
-        color: #1f7a60;
+        color: var(--ms-accent);
     }
 
     .header-card {
         display: flex;
         align-items: center;
         gap: 16px;
-        background: #fff;
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
         border-radius: 16px;
         padding: 20px;
     }
@@ -243,18 +245,19 @@ else
     .header-info h2 {
         margin: 0 0 4px 0;
         font-size: 20px;
-        color: #132340;
+        color: var(--ms-text);
         font-weight: 800;
     }
 
     .header-info p {
         margin: 0;
-        color: #5e7072;
+        color: var(--ms-text-muted);
         font-size: 14px;
     }
 
     .info-card {
-        background: #fff;
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
         border-radius: 16px;
         padding: 20px;
     }
@@ -264,11 +267,11 @@ else
         align-items: center;
         gap: 10px;
         font-size: 16px;
-        color: #132340;
+        color: var(--ms-text);
         font-weight: 700;
         margin-bottom: 16px;
         padding-bottom: 16px;
-        border-bottom: 1px solid #f3f4f4;
+        border-bottom: 1px solid var(--ms-divider);
     }
 
     .info-row {
@@ -280,16 +283,16 @@ else
     }
 
     .info-row:not(:last-child) {
-        border-bottom: 1px dashed #f3f4f4;
+        border-bottom: 1px dashed var(--ms-divider);
     }
 
     .info-row .label {
-        color: #5e7072;
+        color: var(--ms-text-muted);
         font-size: 14px;
     }
 
     .info-row .val {
-        color: #132340;
+        color: var(--ms-text);
         font-size: 15px;
         font-weight: 600;
         text-align: right;
@@ -354,7 +357,7 @@ else
     }
 
     .action-pdf {
-        background: #fff;
+        background: var(--ms-surface);
         color: #267863;
         border: 2px solid #267863;
     }
@@ -485,6 +488,17 @@ else
         }
 
         Navigation.NavigateTo(fallbackRoute);
+    }
+
+    private void OpenPdfAsync()
+    {
+        if (_medication is null || string.IsNullOrWhiteSpace(_medication.PdfUrl))
+        {
+            _message = "Ametlik infoleht puudub.";
+            return;
+        }
+
+        Navigation.NavigateTo(_medication.PdfUrl, true);
     }
 
     private void BackToSearch()

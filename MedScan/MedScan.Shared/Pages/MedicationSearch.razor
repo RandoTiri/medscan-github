@@ -37,7 +37,7 @@ else
         <section class="search-card">
             <div class="manual-search-bar">
                 <input class="field-input"
-                       placeholder="Otsi ravimit nime jargi"
+                       placeholder="Otsi ravimit nime järgi"
                        @bind="_query" />
                 <button class="search-btn"
                         @onclick="SearchAsync"
@@ -123,7 +123,8 @@ else
     }
 
     .search-card {
-        background: #fff;
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
         border-radius: 16px;
         box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
         padding: 14px;
@@ -215,12 +216,12 @@ else
 
     .field-input {
         width: 100%;
-        border: 1px solid #d9dfde;
+        border: 1px solid var(--ms-divider);
         border-radius: 12px;
-        background: #f9fbfa;
+        background: var(--ms-surface-soft);
         padding: 10px 12px;
         font-size: 16px;
-        color: #1f2a3d;
+        color: var(--ms-text);
     }
 
     .field-textarea {
