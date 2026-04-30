@@ -122,40 +122,31 @@ else
                                 <option value="Määramata">Määramata</option>
                             </select>
 
-                            <label>Sünniaeg</label>
+                            <label>Sünnikuupäev</label>
                             <div class="birthdate-picker">
-                                <div class="birth-field">
-                                    <label>Päev</label>
-                                    <select class="birth-select" @bind="_birthDay">
-                                        <option value="">DD</option>
-                                        @foreach (var day in _days)
-                                        {
-                                            <option value="@day">@day</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthDay">
+                                    <option value="">Päev</option>
+                                    @foreach (var day in _days)
+                                    {
+                                        <option value="@day">@day</option>
+                                    }
+                                </select>
 
-                                <div class="birth-field">
-                                    <label>Kuu</label>
-                                    <select class="birth-select" @bind="_birthMonth">
-                                        <option value="">MM</option>
-                                        @foreach (var month in _months)
-                                        {
-                                            <option value="@month">@month</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthMonth">
+                                    <option value="">Kuu</option>
+                                    @foreach (var month in _months)
+                                    {
+                                        <option value="@month">@month</option>
+                                    }
+                                </select>
 
-                                <div class="birth-field">
-                                    <label>Aasta</label>
-                                    <select class="birth-select" @bind="_birthYear">
-                                        <option value="">YYYY</option>
-                                        @foreach (var year in _years)
-                                        {
-                                            <option value="@year">@year</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthYear">
+                                    <option value="">Aasta</option>
+                                    @foreach (var year in _years)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
                             </div>
 
                             <div class="edit-actions">
@@ -190,40 +181,31 @@ else
                                 <option value="Määramata">Määramata</option>
                             </select>
 
-                            <label>Sünniaeg</label>
+                            <label>Sünnikuupäev</label>
                             <div class="birthdate-picker">
-                                <div class="birth-field">
-                                    <label>Päev</label>
-                                    <select class="birth-select" @bind="_birthDay">
-                                        <option value="">DD</option>
-                                        @foreach (var day in _days)
-                                        {
-                                            <option value="@day">@day</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthDay">
+                                    <option value="">Päev</option>
+                                    @foreach (var day in _days)
+                                    {
+                                        <option value="@day">@day</option>
+                                    }
+                                </select>
 
-                                <div class="birth-field">
-                                    <label>Kuu</label>
-                                    <select class="birth-select" @bind="_birthMonth">
-                                        <option value="">MM</option>
-                                        @foreach (var month in _months)
-                                        {
-                                            <option value="@month">@month</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthMonth">
+                                    <option value="">Kuu</option>
+                                    @foreach (var month in _months)
+                                    {
+                                        <option value="@month">@month</option>
+                                    }
+                                </select>
 
-                                <div class="birth-field">
-                                    <label>Aasta</label>
-                                    <select class="birth-select" @bind="_birthYear">
-                                        <option value="">YYYY</option>
-                                        @foreach (var year in _years)
-                                        {
-                                            <option value="@year">@year</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthYear">
+                                    <option value="">Aasta</option>
+                                    @foreach (var year in _years)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
                             </div>
 
                             <div class="edit-actions">
@@ -485,10 +467,10 @@ else
 
     .crud-panel {
         margin-top: 14px;
-        background: var(--ms-surface);
-        border: 1px solid var(--ms-divider);
-        border-radius: 14px;
-        padding: 12px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
     }
 
     .patient-action-panel {
@@ -499,13 +481,18 @@ else
         padding: 12px;
     }
 
+    .patient-action-panel .crud-panel:first-child {
+        margin-top: 0;
+    }
+
     .crud-toggle {
         width: 100%;
         border: none;
-        background: var(--ms-surface-soft);
-        color: var(--ms-text);
-        border-radius: 10px;
-        padding: 10px;
+        background: #1d735c;
+        color: #fff;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 18px;
         font-weight: 700;
         margin-bottom: 10px;
     }
@@ -513,6 +500,9 @@ else
     .patient-edit-btn,
     .patient-delete-btn {
         width: 100%;
+        border: none;
+        background: #1d735c;
+        color: #fff;
         border-radius: 14px;
         padding: 12px 16px;
         font-size: 18px;
@@ -525,13 +515,11 @@ else
     }
 
     .patient-edit-btn {
-        border: none;
-        background: #1d735c;
-        color: #fff;
         margin-bottom: 10px;
     }
 
     .patient-delete-btn {
+        margin-top: 10px;
         background-color: #fdf5f5;
         color: #d1303b;
         border: 2px solid #f9d8db;
@@ -548,11 +536,10 @@ else
     }
 
     .edit-form label {
-        display: block;
         color: var(--ms-text);
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 700;
-        margin-bottom: 6px;
+        margin-top: 4px;
     }
 
     .form-control {
@@ -560,10 +547,9 @@ else
         box-sizing: border-box;
         border: 1px solid var(--ms-divider);
         border-radius: 8px;
-        padding: 12px;
-        font-size: 15px;
-        background-color: var(--ms-bg);
-        color: var(--ms-text);
+        padding: 8px 10px;
+        font-size: 14px;
+        background: var(--ms-bg);
     }
 
     .form-control:focus {
@@ -592,28 +578,28 @@ else
 
     .birth-select {
         width: 100%;
-        height: 46px;
-        border: 2px solid #7a7a7a;
-        border-radius: 10px;
-        padding: 0 12px;
-        padding-right: 36px;
+        height: 38px;
+        border: 1px solid var(--ms-divider);
+        border-radius: 8px;
+        padding: 0 10px;
+        padding-right: 32px;
         font-size: 14px;
-        font-weight: 700;
-        background: var(--ms-surface);
-        color: #111827;
+        font-weight: 600;
+        background: var(--ms-bg);
+        color: var(--ms-text);
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: right 12px center;
-        background-size: 18px 18px;
+        background-position: right 10px center;
+        background-size: 16px 16px;
     }
 
     .edit-actions {
         display: flex;
         gap: 10px;
-        margin-top: 4px;
+        margin-top: 10px;
     }
 
     .save-btn,

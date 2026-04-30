@@ -80,38 +80,29 @@ else
 
                             <label>Sünniaeg</label>
                             <div class="birthdate-picker">
-                                <div class="birth-field">
-                                    <label>Päev</label>
-                                    <select class="birth-select" @bind="_birthDay">
-                                        <option value="">DD</option>
-                                        @foreach (var day in _days)
-                                        {
-                                            <option value="@day">@day</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthDay">
+                                    <option value="">Päev</option>
+                                    @foreach (var day in _days)
+                                    {
+                                        <option value="@day">@day</option>
+                                    }
+                                </select>
 
-                                <div class="birth-field">
-                                    <label>Kuu</label>
-                                    <select class="birth-select" @bind="_birthMonth">
-                                        <option value="">MM</option>
-                                        @foreach (var month in _months)
-                                        {
-                                            <option value="@month">@month</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthMonth">
+                                    <option value="">Kuu</option>
+                                    @foreach (var month in _months)
+                                    {
+                                        <option value="@month">@month</option>
+                                    }
+                                </select>
 
-                                <div class="birth-field">
-                                    <label>Aasta</label>
-                                    <select class="birth-select" @bind="_birthYear">
-                                        <option value="">YYYY</option>
-                                        @foreach (var year in _years)
-                                        {
-                                            <option value="@year">@year</option>
-                                        }
-                                    </select>
-                                </div>
+                                <select class="birth-select" @bind="_birthYear">
+                                    <option value="">Aasta</option>
+                                    @foreach (var year in _years)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
                             </div>
 
                             <div class="edit-actions">
