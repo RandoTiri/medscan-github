@@ -60,14 +60,16 @@ else
         }
 
         <div class="content-scroll">
-            <section class="section-card medication-card">
-                <div class="field-title">Ravim</div>
-                <div class="medication-name">@_medication.Name</div>
+            <section class="section-card quick-add-card">
+                <div class="field-title">RAVIMI NIMI</div>
+                <div class="medication-name-box">
+                    <span class="medication-name">@_medication.Name</span>
+                </div>
             </section>
 
-            <section class="section-card">
-                <div class="section-title">Profiil</div>
-                <div class="profile-chips">
+            <section class="section-card quick-add-card">
+                <div class="section-title profile-title">KELLELE?</div>
+                <div class="profile-segment">
                     @foreach (var profile in _profiles)
                     {
                         var active = profile.Id == _selectedProfileId;
@@ -202,15 +204,15 @@ else
         width: min(420px, 100%);
         background: var(--ms-surface);
         border: 1px solid var(--ms-divider);
-        border-radius: 16px;
-        padding: 18px;
+        border-radius: 20px;
+        padding: 20px;
         box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
     }
 
     .decision-modal h2 {
         margin: 0;
         color: var(--ms-text);
-        font-size: 22px;
+        font-size: 28px;
         line-height: 1.2;
         font-weight: 800;
     }
@@ -223,12 +225,12 @@ else
     }
 
     .decision-btn {
-        border-radius: 12px;
+        border-radius: 14px;
         border: 1px solid var(--ms-divider);
-        padding: 10px 12px;
-        font-size: 18px;
+        padding: 14px 14px;
+        font-size: 22px;
         font-weight: 700;
-        background: var(--ms-surface);
+        background: var(--ms-surface-soft);
         color: var(--ms-text);
     }
 
@@ -238,10 +240,24 @@ else
         color: #fff;
     }
 
+    .decision-btn.now {
+        background: var(--ms-surface);
+        border-color: var(--ms-divider);
+        color: var(--ms-text);
+    }
+
     .decision-btn.no {
         border-color: var(--ms-accent);
         background: var(--ms-surface);
         color: var(--ms-accent);
+    }
+
+    @@media (prefers-color-scheme: dark) {
+        .decision-btn.no {
+            border-color: #1f7a60;
+            background: #0f1b24;
+            color: #7af0cd;
+        }
     }
 
     .medicine-header h1 {
@@ -288,51 +304,69 @@ else
         padding: 14px;
     }
 
-    .medication-card {
-        border-bottom: 1px solid #ecf0ef;
-    }
-
     .field-title {
         margin: 0 0 8px 0;
-        font-size: 16px;
-        color: var(--ms-text);
+        font-size: 13px;
+        color: var(--ms-text-muted);
         font-weight: 700;
+        letter-spacing: 0.06em;
     }
 
     .medication-name {
         font-size: 22px;
         font-weight: 800;
         line-height: 1.1;
-        color: #1f7a60;
+        color: var(--ms-accent);
     }
 
     .section-title {
         margin: 0 0 8px 0;
-        font-size: 16px;
-        color: var(--ms-text);
+        font-size: 13px;
+        color: var(--ms-text-muted);
         font-weight: 700;
+        letter-spacing: 0.06em;
     }
 
-    .profile-chips {
+    .quick-add-card {
+        padding: 16px;
+    }
+
+    .medication-name-box {
+        margin-top: 2px;
+        background: var(--ms-surface-soft);
+        border: 1px solid var(--ms-divider);
+        border-radius: 12px;
+        padding: 14px 16px;
+    }
+
+    .profile-title {
+        margin-top: 2px;
+    }
+
+    .profile-segment {
         display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
+        gap: 6px;
+        background: var(--ms-surface-soft);
+        border: 1px solid var(--ms-divider);
+        border-radius: 12px;
+        padding: 6px;
+        overflow-x: auto;
     }
 
     .profile-chip {
-        border: 1px solid var(--ms-divider);
-        border-radius: 14px;
-        background: var(--ms-surface);
+        border: none;
+        border-radius: 10px;
+        background: transparent;
         color: var(--ms-text);
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 15px;
+        font-weight: 700;
         padding: 10px 18px;
+        white-space: nowrap;
     }
 
     .profile-chip.active {
-        background: #1f7a60;
-        border-color: #1f7a60;
-        color: #fff;
+        background: var(--ms-surface);
+        color: var(--ms-accent);
     }
 
     .frequency-grid {
