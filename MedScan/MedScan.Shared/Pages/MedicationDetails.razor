@@ -138,7 +138,7 @@ else
             @if (_hasSchedule || _isAddingSchedule)
             {
                 <div class="schedule-card">
-                    <div class="card-title">Raviskeem</div>
+                    <div class="card-title">Manustamine</div>
 
                     <div class="section-title">Manustamissagedus</div>
                     <div class="frequency-grid">
@@ -221,8 +221,11 @@ else
             else
             {
                 <div class="schedule-card">
-                    <div class="card-title">Raviskeem</div>
+                    <div class="card-title">Manustamine</div>
                     <button class="add-schedule-btn" @onclick="StartAddSchedule">+ Lisa raviskeemi</button>
+                    <button type="button" class="add-schedule-btn one-time-in-card-btn" @onclick="OpenTakeOnceModal" disabled="@_isSaving">
+                        Märgi ühekordselt võetuks
+                    </button>
                 </div>
             }
 
@@ -241,6 +244,29 @@ else
                 Kustuta ravim
             </button>
         </div>
+
+        @if (_showTakeOnceModal)
+        {
+            <div class="modal-backdrop" @onclick="CloseTakeOnceModal">
+                <div class="take-once-modal" @onclick:stopPropagation="true">
+                    <h3>Kinnita võtmine</h3>
+                    <p>
+                        @if (_item?.Quantity == 1)
+                        {
+                            <text>See on viimane ühik. Võtmisega jätkates pead uue paki ostma.</text>
+                        }
+                        else
+                        {
+                            <text>Kas oled kindel, et võtsid selle ravimi praegu? Salvestame selle logisse ilma meeldetuletuseta.</text>
+                        }
+                    </p>
+                    <div class="take-once-actions">
+                        <button type="button" class="confirm-btn" @onclick="ConfirmTakeOnceAsync" disabled="@_isSaving">Jah</button>
+                        <button type="button" class="cancel-btn" @onclick="CloseTakeOnceModal" disabled="@_isSaving">Ei</button>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 }
 
@@ -327,6 +353,14 @@ else
     .save-schedule-btn,.add-schedule-btn { margin-top: 14px; border: 0; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #1f7a60; color: #fff; }
     .end-schedule-btn { margin-top: 10px; border: 1px solid #f3b7be; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #fde9eb; color: #ab3f4c; }
     .delete-med-btn { margin-top: 4px; border: 1px solid #f3b7be; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #fde9eb; color: #ab3f4c; }
+    .one-time-in-card-btn { margin-top: 10px; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 2000; }
+    .take-once-modal { width: min(420px, 100%); background: #fff; border-radius: 16px; padding: 16px; box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28); }
+    .take-once-modal h3 { margin: 0 0 8px; color: #132340; font-size: 20px; font-weight: 800; }
+    .take-once-modal p { margin: 0; color: #334155; font-size: 16px; line-height: 1.45; }
+    .take-once-actions { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .confirm-btn { border: none; border-radius: 12px; padding: 10px 12px; font-size: 16px; font-weight: 700; background: #0f766e; color: #fff; }
+    .cancel-btn { border: 1px solid #d3d9db; border-radius: 12px; padding: 10px 12px; font-size: 16px; font-weight: 700; background: #fff; color: #334155; }
     .action-pdf { margin-top: 10px; border: 2px solid #267863; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: transparent; color: #267863; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
     .error-box,.success-box { border-radius: 14px; padding: 12px; font-size: 15px; margin: 12px 16px 0; }
     .error-box { background: #fde9eb; color: #ab3f4c; }
@@ -351,6 +385,7 @@ else
     private bool _isReady;
     private bool _isLoading;
     private bool _isSaving;
+    private bool _showTakeOnceModal;
     private string? _message;
     private string? _errorMessage;
     private HomePharmacyItemDto? _item;
@@ -868,6 +903,78 @@ else
             _editableQuantity = Math.Clamp(updated.Quantity, 1, 100);
             _editableNotes = updated.Notes;
             _message = "Ravimi kogus uuendatud.";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private void OpenTakeOnceModal()
+    {
+        if (_isSaving || _item is null)
+        {
+            return;
+        }
+
+        _message = null;
+        _errorMessage = null;
+        _showTakeOnceModal = true;
+    }
+
+    private void CloseTakeOnceModal()
+    {
+        if (_isSaving)
+        {
+            return;
+        }
+
+        _showTakeOnceModal = false;
+    }
+
+    private async Task ConfirmTakeOnceAsync()
+    {
+        if (_isSaving || _item is null)
+        {
+            return;
+        }
+
+        _isSaving = true;
+        _message = null;
+        _errorMessage = null;
+
+        try
+        {
+            var result = await MedicationService.TakeOnceAsync(_item.MedicationId, new TakeMedicationOnceDto
+            {
+                ProfileId = _item.ProfileId,
+                Quantity = 1,
+                Notes = NormalizeNotes(_editableNotes),
+                ConfirmLastUnit = true
+            });
+
+            if (!result.Success)
+            {
+                _errorMessage = string.IsNullOrWhiteSpace(result.Message)
+                    ? "Ühekordse võtmise salvestamine ebaõnnestus."
+                    : result.Message;
+                return;
+            }
+
+            _message = result.Message;
+            _showTakeOnceModal = false;
+
+            if (result.RemovedFromHomePharmacy || result.RemainingQuantity == 0)
+            {
+                Navigation.NavigateTo($"/home-pharmacy?profileId={_item.ProfileId}");
+                return;
+            }
+
+            await LoadAsync();
         }
         catch (Exception ex)
         {

@@ -49,6 +49,13 @@ public sealed class ApiMedicationService(
         return savedMedication;
     }
 
+    public async Task<IEnumerable<DoseHistoryItemDto>> GetHistoryAsync(int profileId, DateOnly date)
+    {
+        var route = $"api/medications/history?profileId={profileId}&date={date:yyyy-MM-dd}";
+        var history = await _httpClient.GetFromJsonAsync<List<DoseHistoryItemDto>>(route);
+        return history ?? [];
+    }
+
     public async Task<UserMedicationDto?> UpdateScheduleAsync(int userMedicationId, AddMedicationDto dto)
     {
         var existingMedication = await GetByIdAsync(userMedicationId);
@@ -113,6 +120,29 @@ public sealed class ApiMedicationService(
         }
 
         return true;
+    }
+
+    public async Task<TakeMedicationOnceResultDto> TakeOnceAsync(int medicationId, TakeMedicationOnceDto dto)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"api/medications/{medicationId}/take-once", dto);
+        var result = await response.Content.ReadFromJsonAsync<TakeMedicationOnceResultDto>();
+
+        if (response.IsSuccessStatusCode && result is not null)
+        {
+            return result;
+        }
+
+        if ((int)response.StatusCode == 409 && result is not null)
+        {
+            return result;
+        }
+
+        response.EnsureSuccessStatusCode();
+        return result ?? new TakeMedicationOnceResultDto
+        {
+            Success = false,
+            Message = "Ühekordse võtmise salvestamine ebaõnnestus."
+        };
     }
 
     private async Task TryScheduleAsync(UserMedicationDto medication)

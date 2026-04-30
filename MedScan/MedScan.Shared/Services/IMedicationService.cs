@@ -8,5 +8,7 @@ public interface IMedicationService {
     Task<UserMedicationDto> AddToScheduleAsync(AddMedicationDto dto);
     Task<UserMedicationDto?> UpdateScheduleAsync(int userMedicationId,AddMedicationDto dto);
     Task<UserMedicationDto?> UpdateStatusAsync(int userMedicationId, UpdateMedicationStatusDto dto);
+    Task<IEnumerable<DoseHistoryItemDto>> GetHistoryAsync(int profileId, DateOnly date);
+    Task<TakeMedicationOnceResultDto> TakeOnceAsync(int medicationId, TakeMedicationOnceDto dto);
     Task<bool> RemoveFromScheduleAsync(int userMedicationId);
 }

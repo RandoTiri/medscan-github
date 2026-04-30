@@ -28,14 +28,15 @@ else if (_medication is null)
 else
 {
     <div class="add-med-screen">
-        @if (_willTakeMedication is null)
+        @if (_takeMode is null)
         {
             <div class="decision-overlay">
                 <div class="decision-modal">
-                    <h2>Kas plaanite seda ravimit võtma hakata?</h2>
+                    <h2>Kuidas soovid seda ravimit kasutada?</h2>
                     <div class="decision-actions">
-                        <button class="decision-btn yes" @onclick="() => SetWillTakeMedication(true)">Jah</button>
-                        <button class="decision-btn no" @onclick="() => SetWillTakeMedication(false)">Ei</button>
+                        <button class="decision-btn yes" @onclick="() => SetTakeMode(MedicationTakeMode.Regular)">Regulaarselt</button>
+                        <button class="decision-btn now" @onclick="() => SetTakeMode(MedicationTakeMode.OneTimeNow)">Ainult praegu</button>
+                        <button class="decision-btn no" @onclick="() => SetTakeMode(MedicationTakeMode.StorageOnly)">Lisa Minu Ravimid nimekirja</button>
                     </div>
                 </div>
             </div>
@@ -75,7 +76,7 @@ else
                 </div>
             </section>
 
-            @if (_willTakeMedication == true)
+            @if (_takeMode == MedicationTakeMode.Regular)
             {
                 <section class="section-card">
                     <div class="section-title">Manustamissagedus</div>
@@ -135,7 +136,7 @@ else
                 </section>
             }
 
-            @if (_willTakeMedication == true)
+            @if (_takeMode == MedicationTakeMode.Regular)
             {
                 <section class="section-card toggle-card">
                     <div>
@@ -216,7 +217,7 @@ else
     .decision-actions {
         margin-top: 16px;
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 10px;
     }
 
@@ -583,7 +584,7 @@ else
     private bool _isSaving;
     private string? _message;
     private MedicationLookupResult? _medication;
-    private bool? _willTakeMedication;
+    private MedicationTakeMode? _takeMode;
     private int _selectedProfileId;
     private int _frequencyPerDay = 1;
     private MedicationScheduleUnit _scheduleUnit = MedicationScheduleUnit.Day;
@@ -858,9 +859,9 @@ else
             return;
         }
 
-        if (_willTakeMedication is null)
+        if (_takeMode is null)
         {
-            _message = "Vali esmalt, kas plaanid ravimit võtma hakata.";
+            _message = "Vali esmalt ravimi kasutusviis.";
             return;
         }
 
@@ -882,7 +883,7 @@ else
             parsedTimes.Add(parsed);
         }
 
-        if (_willTakeMedication == true)
+        if (_takeMode == MedicationTakeMode.Regular)
         {
             var expectedTimeCount = GetVisibleTimeCount();
             if (parsedTimes.Count != expectedTimeCount)
@@ -912,7 +913,7 @@ else
 
         try
         {
-            if (_willTakeMedication == true)
+            if (_takeMode == MedicationTakeMode.Regular)
             {
                 await MedicationService.AddToScheduleAsync(new AddMedicationDto
                 {
@@ -939,6 +940,25 @@ else
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
             });
 
+            if (_takeMode == MedicationTakeMode.OneTimeNow)
+            {
+                var oneTimeResult = await MedicationService.TakeOnceAsync(_medication.Id, new TakeMedicationOnceDto
+                {
+                    ProfileId = _selectedProfileId,
+                    Quantity = 1,
+                    Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim(),
+                    ConfirmLastUnit = true
+                });
+
+                if (!oneTimeResult.Success)
+                {
+                    _message = string.IsNullOrWhiteSpace(oneTimeResult.Message)
+                        ? "Ühekordse võtmise salvestamine ebaõnnestus."
+                        : oneTimeResult.Message;
+                    return;
+                }
+            }
+
             var profileName = _profiles.FirstOrDefault(p => p.Id == _selectedProfileId)?.Name ?? "kasutaja";
             Navigation.NavigateTo($"/home-pharmacy/saved-medication?medicationName={Uri.EscapeDataString(_medication.Name)}&profileName={Uri.EscapeDataString(profileName)}&profileId={_selectedProfileId}");
         }
@@ -952,9 +972,9 @@ else
         }
     }
 
-    private void SetWillTakeMedication(bool willTakeMedication)
+    private void SetTakeMode(MedicationTakeMode mode)
     {
-        _willTakeMedication = willTakeMedication;
+        _takeMode = mode;
     }
 
     private void GoBack()
@@ -989,4 +1009,12 @@ else
             ? parsed
             : 1;
     }
+
+    private enum MedicationTakeMode
+    {
+        Regular,
+        OneTimeNow,
+        StorageOnly
+    }
 }
+
