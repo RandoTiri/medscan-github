@@ -61,14 +61,14 @@ else
 
         <div class="content-scroll">
             <section class="section-card quick-add-card">
-                <div class="field-title">RAVIMI NIMI</div>
+                <div class="field-title">Ravimi nimi</div>
                 <div class="medication-name-box">
                     <span class="medication-name">@_medication.Name</span>
                 </div>
             </section>
 
             <section class="section-card quick-add-card">
-                <div class="section-title profile-title">KELLELE?</div>
+                <div class="section-title profile-title">Kellele?</div>
                 <div class="profile-segment">
                     @foreach (var profile in _profiles)
                     {
@@ -201,34 +201,34 @@ else
     }
 
     .decision-modal {
-        width: min(420px, 100%);
+        width: min(380px, 100%);
         background: var(--ms-surface);
         border: 1px solid var(--ms-divider);
-        border-radius: 20px;
-        padding: 20px;
+        border-radius: 16px;
+        padding: 16px;
         box-shadow: 0 12px 26px rgba(0, 0, 0, 0.2);
     }
 
     .decision-modal h2 {
         margin: 0;
         color: var(--ms-text);
-        font-size: 28px;
-        line-height: 1.2;
+        font-size: 20px;
+        line-height: 1.25;
         font-weight: 800;
     }
 
     .decision-actions {
-        margin-top: 16px;
+        margin-top: 14px;
         display: grid;
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 8px;
     }
 
     .decision-btn {
-        border-radius: 14px;
+        border-radius: 12px;
         border: 1px solid var(--ms-divider);
-        padding: 14px 14px;
-        font-size: 22px;
+        padding: 11px 12px;
+        font-size: 16px;
         font-weight: 700;
         background: var(--ms-surface-soft);
         color: var(--ms-text);
@@ -241,9 +241,9 @@ else
     }
 
     .decision-btn.now {
-        background: var(--ms-surface);
-        border-color: var(--ms-divider);
-        color: var(--ms-text);
+        background: #f1f5f3;
+        border-color: #d7e2dd;
+        color: #1f4f42;
     }
 
     .decision-btn.no {

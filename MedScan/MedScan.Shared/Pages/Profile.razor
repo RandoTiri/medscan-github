@@ -96,7 +96,6 @@
         font-size: 14px;
         font-weight: 700;
         color: var(--ms-text);
-        text-transform: uppercase;
         margin: 0;
     }
 
@@ -361,7 +360,7 @@ else
                             <div class="birth-field">
                                 <label>Päev</label>
                                 <select class="birth-select" @bind="_birthDay" @bind:after="OnBirthDatePartChanged">
-                                    <option value="">DD</option>
+                                    <option value="">pp</option>
                                     @foreach (var day in _days)
                                     {
                                         <option value="@day">@day</option>
@@ -372,7 +371,7 @@ else
                             <div class="birth-field">
                                 <label>Kuu</label>
                                 <select class="birth-select" @bind="_birthMonth" @bind:after="OnBirthDatePartChanged">
-                                    <option value="">MM</option>
+                                    <option value="">kk</option>
                                     @foreach (var month in _months)
                                     {
                                         <option value="@month">@month</option>
@@ -383,7 +382,7 @@ else
                             <div class="birth-field">
                                 <label>Aasta</label>
                                 <select class="birth-select" @bind="_birthYear" @bind:after="OnBirthDatePartChanged">
-                                    <option value="">YYYY</option>
+                                    <option value="">aaaa</option>
                                     @foreach (var year in _years)
                                     {
                                         <option value="@year">@year</option>
