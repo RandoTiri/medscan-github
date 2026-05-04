@@ -27,13 +27,13 @@
     }
     .header-section {
         background: linear-gradient(180deg, #ecf7f4 0%, #fff 100%);
-        padding: calc(max(20px, env(safe-area-inset-top)) + 20px) 30px 20px;
+        padding: calc(max(20px, env(safe-area-inset-top)) + 20px) 16px 20px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
     }
     .form-section {
-        padding: 0 30px 20px;
+        padding: 0 16px 20px;
         display: flex;
         flex-direction: column;
     }
@@ -55,30 +55,22 @@
         margin-right: 8px;
     }
     .icon-container {
-        background-color: #ecf7f4;
-        width: 60px;
-        height: 60px;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-        color: #267863;
+        display: none;
     }
     .title {
         font-size: 26px;
         font-weight: 700;
         margin: 0 0 10px;
-        color: #0b2b40;
+        color: #1A2E29;
     }
     .subtitle {
         font-size: 14px;
-        color: #648191;
+        color: #1A2E29;
         margin: 0 0 30px;
         line-height: 1.5;
     }
     .auth-input-group {
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -88,9 +80,9 @@
     .auth-input-group label {
         display: block;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
         margin-bottom: 8px;
-        color: #1c3d4f;
+        color: #1A2E29;
         text-align: left;
         width: 100%;
     }
@@ -101,7 +93,7 @@
         border-radius: 16px;
         overflow: hidden;
         padding: 0 15px;
-        background: #fafafc;
+        background: var(--ms-surface);
         width: 100%;
         box-sizing: border-box;
         transition: all 0.2s ease;
@@ -117,7 +109,7 @@
         padding: 15px 10px;
         width: 100%;
         font-size: 14px;
-        color: #1c3d4f;
+        color: #1A2E29;
         background: transparent;
     }
     .input-wrapper input::placeholder {
@@ -176,13 +168,6 @@
             </svg>
             Tagasi
         </button>
-
-        <div class="icon-container">
-            <svg viewBox="0 0 24 24" width="30" height="30" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-            </svg>
-        </div>
 
         <h1 class="title">Unustasin parooli</h1>
         <p class="subtitle">Sisesta oma e-mail ja saadame sulle parooli lähtestamise lingi.</p>
