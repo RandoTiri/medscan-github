@@ -27,40 +27,40 @@
     }
     .header-section {
         background: linear-gradient(180deg, #ecf7f4 0%, #fff 100%);
-        padding: calc(max(20px, env(safe-area-inset-top)) + 64px) 20px 20px;
+        padding: calc(max(20px, env(safe-area-inset-top)) + 64px) 20px 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
     }
     .logo-container {
-        background-color: #267863;
-        width: 80px;
-        height: 80px;
-        border-radius: 20px;
+        background-color: #277863;
+        width: 82px;
+        height: 82px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
     .brand-name {
         font-size: 28px;
         font-weight: 700;
-        margin: 0 0 10px;
-        color: #0b2b40;
+        margin: 0 0 16px;
+        color: #1A2E29;
     }
     .brand-subtitle {
         font-size: 14px;
-        color: #648191;
+        color: #1A2E29;
         margin: 0;
     }
     .form-section {
-        padding: 20px 30px;
+        padding: 48px 30px 20px;
         display: flex;
         flex-direction: column;
     }
     .auth-input-group {
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         display: flex;
         flex-direction: column;
         align-items: flex-start;
@@ -70,9 +70,9 @@
     .auth-input-group label {
         display: block;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 500;
         margin-bottom: 8px;
-        color: #1c3d4f;
+        color: #1A2E29;
         text-align: left;
         width: 100%;
     }
@@ -98,8 +98,23 @@
         padding: 15px 10px;
         width: 100%;
         font-size: 14px;
-        color: #1c3d4f;
+        color: #1A2E29;
         background: transparent;
+    }
+    .input-wrapper select {
+        border: none;
+        outline: none;
+        padding: 15px 10px;
+        width: 100%;
+        font-size: 14px;
+        color: #1A2E29;
+        background: transparent;
+    }
+    .empty-select {
+        color: #a0b6c2 !important;
+    }
+    option {
+        color: #1A2E29;
     }
     .input-wrapper input::placeholder {
         color: #a0b6c2;
@@ -157,9 +172,9 @@
         padding: 0 15px;
     }
     .btn-secondary {
-        background-color: var(--ms-surface);
-        color: #267863;
-        border: 2px solid #267863;
+        background-color: #ffffff;
+        color: #277863;
+        border: 2px solid #277863;
         border-radius: 12px;
         padding: 14px;
         font-size: 16px;
@@ -219,7 +234,7 @@
         padding: 10px 12px;
         padding-right: 36px;
         font-size: 14px;
-        color: #1c3d4f;
+        color: #1A2E29;
         background: #fff;
         appearance: none;
         -webkit-appearance: none;
@@ -322,7 +337,7 @@
                             <path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path>
                         </svg>
                     </div>
-                    <select id="gender" @bind="Gender" disabled="@IsBusy" style="border:none;outline:none;padding:15px 10px;width:100%;font-size:14px;color:#1c3d4f;background:transparent;">
+                    <select id="gender" @bind="Gender" disabled="@IsBusy" class="@(string.IsNullOrEmpty(Gender) ? "empty-select" : "")">
                         <option value="">Vali sugu</option>
                         <option value="Naine">Naine</option>
                         <option value="Mees">Mees</option>
@@ -333,21 +348,21 @@
             <div class="auth-input-group">
                 <label for="birthdate">Sünnikuupäev</label>
                 <div class="birth-grid">
-                    <select class="birth-select" @bind="_birthDay" disabled="@IsBusy">
+                    <select class="birth-select @(string.IsNullOrEmpty(_birthDay) ? "empty-select" : "")" @bind="_birthDay" disabled="@IsBusy">
                         <option value="">Päev</option>
                         @for (var day = 1; day <= 31; day++)
                         {
                             <option value="@day">@day</option>
                         }
                     </select>
-                    <select class="birth-select" @bind="_birthMonth" disabled="@IsBusy">
+                    <select class="birth-select @(string.IsNullOrEmpty(_birthMonth) ? "empty-select" : "")" @bind="_birthMonth" disabled="@IsBusy">
                         <option value="">Kuu</option>
                         @for (var month = 1; month <= 12; month++)
                         {
                             <option value="@month">@month</option>
                         }
                     </select>
-                    <select class="birth-select" @bind="_birthYear" disabled="@IsBusy">
+                    <select class="birth-select @(string.IsNullOrEmpty(_birthYear) ? "empty-select" : "")" @bind="_birthYear" disabled="@IsBusy">
                         <option value="">Aasta</option>
                         @for (var year = DateTime.Today.Year; year >= 1900; year--)
                         {
