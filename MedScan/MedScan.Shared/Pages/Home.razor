@@ -133,6 +133,11 @@ else
                                 }
                             </div>
                         </div>
+                        <div class="dose-card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
                     </button>
                 }
             }
@@ -187,6 +192,11 @@ else
                                 }
                             </div>
                         </div>
+                        <div class="dose-card-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
                     </button>
                 }
             }
@@ -234,8 +244,8 @@ else
                 @if (!_showEarlyDoneConfirmation && !_showLastUnitConfirmation)
                 {
                     <div class="dose-modal-actions">
-                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Võetud</button>
-                        <button type="button" class="status-btn @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Võtmata</button>
+                        <button type="button" class="status-btn status-btn-done @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Võetud</button>
+                        <button type="button" class="status-btn status-btn-missed @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Võtmata</button>
                     </div>
                 }
 
@@ -271,7 +281,13 @@ else
                                     <p>@item.Description</p>
                                 }
                                 <div class="notification-time-row">
-                                    <span class="notification-time-chip @GetNotificationTimeChipCss(item)">@item.OccurredAt.ToString("HH:mm")</span>
+                                    <span class="notification-time-chip @GetNotificationTimeChipCss(item)">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="9"></circle>
+                                            <path d="M12 7v5l3 2"></path>
+                                        </svg>
+                                        @item.OccurredAt.ToString("HH:mm")
+                                    </span>
                                 </div>
                             </article>
                         }
@@ -303,7 +319,7 @@ else
     .header-section {
         background-color: #277863;
         color: white;
-        padding: 20px;
+        padding: 20px 16px;
         padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
         border-bottom-left-radius: 20px;
         border-bottom-right-radius: 20px;
@@ -377,21 +393,21 @@ else
         align-self: center;
     }
 
-    .main-content { padding: 20px; margin-top: -10px; }
+    .main-content { padding: 20px 16px; margin-top: -10px; }
 
     .scan-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; cursor: pointer; }
-    .scan-icon-wrapper { background: #f6fbf8; color: #277863; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+    .scan-icon-wrapper { background: #f6fbf8; color: #277863; width: 66px; height: 63px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; }
     .scan-text { flex-grow: 1; display: flex; align-items: center; }
-    .scan-text h3 { margin: 0; font-size: 16px; font-weight: 700; color: #1a2e29; }
+    .scan-text h3 { margin: 0; font-size: 20px; font-weight: 700; color: #1a2e29; }
     .scan-arrow { display: flex; align-items: center; justify-content: center; }
 
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
     .section-header h2 { margin: 0; font-size: 18px; color: #1a2e29; font-weight: bold; }
     .section-header a { color: #277863; text-decoration: none; font-size: 14px; font-weight: 700; }
 
-    .med-card { width: 100%; border: none; text-align: left; cursor: pointer; background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
-    .med-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 0; flex-shrink: 0; }
-    .med-info { flex-grow: 1; }
+    .med-card { width: 100%; border: none; text-align: left; cursor: pointer; background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
+    .med-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 0; flex-shrink: 0; }
+    .med-info { flex: 1; min-width: 0; }
     .med-info h3 { margin: 0; font-size: 16px; color: #1a2e29; font-weight: 700; }
     .med-info p { margin: 5px 0 0 0; font-size: 13px; color: #1a2e29; }
 
@@ -399,33 +415,34 @@ else
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
-        margin-right: 12px;
+        justify-content: center;
+        gap: 4px;
         flex-shrink: 0;
-        border-radius: 12px;
-        min-width: 72px;
-        padding: 8px 8px 7px;
+        width: 66px;
+        height: 63px;
+        border-radius: 16px;
+        padding: 6px;
     }
 
     .status-box.status-done {
-        background: #e8f5f1;
-        color: var(--ms-accent);
+        background: #f0fcf6;
+        color: #287f70;
     }
 
     .status-box.status-pending {
-        background: #fff5e6;
-        color: #c8812b;
+        background: #fffbef;
+        color: #b85f00;
     }
 
     .status-box.status-missed {
-        background: #fde9eb;
-        color: var(--ms-danger-text);
+        background: #ffe9ed;
+        color: #d74444;
     }
 
     .status-label {
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 800;
-        line-height: 1;
+        line-height: 1.1;
     }
 
     .med-note,
@@ -453,28 +470,35 @@ else
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        border-radius: 12px;
-        background: #dceae8;
-        color: #245f54;
-        padding: 6px 10px;
-        font-size: 13px;
-        font-weight: 700;
+        min-height: 24px;
+        border-radius: 999px;
+        background: #eef8f4;
+        color: #287f70;
+        padding: 4px 9px;
+        font-size: 12px;
+        font-weight: 800;
         line-height: 1;
     }
 
     .time-chip.status-done {
-        background: #e8f5f1;
-        color: var(--ms-accent);
+        background: #eef8f4;
+        color: #287f70;
     }
 
     .time-chip.status-pending {
-        background: #fff5e6;
-        color: #c8812b;
+        background: #fff9ea;
+        color: #b85f00;
     }
 
     .time-chip.status-missed {
-        background: #fde9eb;
-        color: var(--ms-danger-text);
+        background: #ffe9ed;
+        color: #d74444;
+    }
+
+    .time-chip svg {
+        width: 14px;
+        height: 14px;
+        stroke-width: 3;
     }
 
     .med-status { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
@@ -495,6 +519,14 @@ else
         gap: 12px;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
         margin-bottom: 14px;
+    }
+
+    .dose-card-arrow {
+        color: #a0b6c2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
     .family-dose-info {
@@ -539,38 +571,41 @@ else
     .confirm-box {
         background: var(--ms-surface);
         border: 1px solid var(--ms-divider);
-        border-radius: 8px;
-        padding: 8px;
-        color: var(--ms-text);
-        font-size: 12px;
-        margin-bottom: 10px;
+        border-radius: 12px;
+        padding: 12px;
+        color: #1A2E29;
+        font-size: 14px;
+        line-height: 1.4;
+        margin-bottom: 12px;
     }
 
     .confirm-box-actions {
-        margin-top: 8px;
+        margin-top: 12px;
         display: flex;
-        gap: 6px;
+        gap: 10px;
     }
 
     .confirm-yes,
     .confirm-no {
         flex: 1;
-        border: none;
-        border-radius: 8px;
-        padding: 7px 10px;
-        font-size: 12px;
-        font-weight: 700;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
+        transition: all 0.1s ease;
     }
 
     .confirm-yes {
+        border: none;
         background: #1d735c;
         color: #fff;
     }
 
     .confirm-no {
-        background: var(--ms-surface-soft);
-        color: var(--ms-text);
+        background: #fdf5f5;
+        color: #d1303b;
+        border: 2px solid #f9d8db;
     }
 
     .dose-modal-backdrop {
@@ -590,43 +625,47 @@ else
         border: 1px solid var(--ms-divider);
         border-radius: 14px;
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
-        padding: 12px;
+        padding: 16px;
         z-index: 991;
     }
 
     .dose-modal h3 {
         margin: 0;
-        color: var(--ms-text);
+        color: #1A2E29;
         font-size: 16px;
+        font-weight: 700;
     }
 
     .dose-modal-time {
-        margin: 4px 0 10px 0;
-        color: var(--ms-text-muted);
-        font-size: 13px;
+        margin: 4px 0 12px 0;
+        color: #1A2E29;
+        font-size: 14px;
     }
 
     .dose-modal-actions {
         display: flex;
-        gap: 6px;
+        gap: 10px;
     }
 
     .status-btn {
         flex: 1;
-        border: 1px solid var(--ms-divider);
-        border-radius: 8px;
-        background: var(--ms-surface-soft);
-        color: var(--ms-text);
-        font-size: 12px;
-        font-weight: 700;
-        padding: 8px 8px;
+        background-color: #ffffff;
+        color: #277863;
+        border: 2px solid #277863;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 14px;
+        font-weight: 600;
         cursor: pointer;
+        width: 100%;
+        transition: all 0.1s ease;
     }
 
     .status-btn.active {
-        background: var(--ms-accent);
-        border-color: var(--ms-accent);
+        background-color: #267863;
+        border-color: #267863;
         color: #fff;
+        box-shadow: 0 4px 10px rgba(38, 120, 99, 0.2);
     }
 
     .status-btn:disabled {
@@ -635,14 +674,15 @@ else
     }
 
     .dose-modal-close {
-        margin-top: 8px;
+        margin-top: 10px;
         width: 100%;
-        border: none;
-        border-radius: 8px;
-        background: var(--ms-surface-soft);
-        color: var(--ms-text);
+        border: 2px solid #f9d8db;
+        border-radius: 14px;
+        background: #fdf5f5;
+        color: #d1303b;
         font-weight: 700;
-        padding: 9px;
+        font-size: 18px;
+        padding: 12px 16px;
         cursor: pointer;
     }
 
@@ -681,8 +721,8 @@ else
 
     .notification-center-header h3 {
         margin: 0;
-        color: var(--ms-text);
-        font-size: 18px;
+        color: #1A2E29;
+        font-size: 16px;
     }
 
     .notification-center-close {
@@ -699,7 +739,7 @@ else
 
     .notification-empty {
         margin: 0;
-        color: var(--ms-text);
+        color: #1A2E29;
         font-size: 14px;
     }
 
@@ -734,19 +774,19 @@ else
     }
 
     .notification-item-top strong {
-        color: var(--ms-text);
+        color: #1A2E29;
         font-size: 14px;
     }
 
     .notification-item-top span {
-        color: var(--ms-text-muted);
+        color: #1A2E29;
         font-size: 12px;
         white-space: nowrap;
     }
 
     .notification-item p {
         margin: 6px 0 0;
-        color: var(--ms-text);
+        color: #1A2E29;
         font-size: 13px;
     }
 
@@ -755,18 +795,28 @@ else
     }
 
     .notification-time-chip {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 24px;
         font-size: 12px;
-        font-weight: 700;
+        font-weight: 800;
         border-radius: 999px;
-        padding: 4px 8px;
-        background: #fde2e5;
-        color: #b42332;
+        padding: 4px 9px;
+        line-height: 1;
+        background: #ffe9ed;
+        color: #d74444;
     }
 
     .notification-time-chip.done {
-        background: #def2e8;
-        color: #116149;
+        background: #eef8f4;
+        color: #287f70;
+    }
+
+    .notification-time-chip svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
     }
 </style>
 
@@ -1197,6 +1247,8 @@ else
                 _modalInfoMessage = result.StockWarning;
             }
 
+            _selectedDoseCard = _selectedDoseCard with { Status = effectiveStatus };
+
             _showEarlyDoneConfirmation = false;
             _showLastUnitConfirmation = false;
             _earlyDoneMinutesRemaining = 0;
@@ -1221,6 +1273,11 @@ else
         if (_selectedDoseCard is null)
         {
             return string.Empty;
+        }
+
+        if (targetStatus == DoseStatusEnum.Missed && (_selectedDoseCard.Status == DoseStatusEnum.Missed || _selectedDoseCard.Status == DoseStatusEnum.Skipped))
+        {
+            return "active";
         }
 
         return _selectedDoseCard.Status == targetStatus ? "active" : string.Empty;

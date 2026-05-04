@@ -24,8 +24,8 @@
                 <p class="dose-alert-note">@InAppDoseAlertService.Current.Note</p>
             }
             <div class="dose-alert-actions">
-                <button type="button" class="dose-alert-dismiss" disabled="@_isUpdatingFromPopup" @onclick="DismissAlert">Sulge</button>
                 <button type="button" class="dose-alert-done" disabled="@_isUpdatingFromPopup" @onclick="MarkDoneFromAlertAsync">Võetud</button>
+                <button type="button" class="dose-alert-dismiss" disabled="@_isUpdatingFromPopup" @onclick="DismissAlert">Sulge</button>
             </div>
         </section>
     }
@@ -55,23 +55,23 @@
 
     .dose-alert-modal h2 {
         margin: 0;
-        font-size: 36px;
+        font-size: 24px;
         line-height: 1;
-        color: #1b2b3a;
+        color: #1A2E29;
         font-weight: 900;
     }
 
     .dose-alert-med {
         margin: 10px 0 0;
-        color: #1b2b3a;
-        font-size: 22px;
+        color: #1A2E29;
+        font-size: 16px;
         font-weight: 800;
     }
 
     .dose-alert-profile {
         margin: 6px 0 0;
-        color: #4f6472;
-        font-size: 16px;
+        color: #1A2E29;
+        font-size: 14px;
         font-weight: 700;
     }
 
@@ -91,19 +91,21 @@
     .dose-alert-dismiss,
     .dose-alert-done {
         flex: 1;
-        border: none;
         border-radius: 12px;
         padding: 12px 10px;
         font-size: 16px;
         font-weight: 800;
+        cursor: pointer;
     }
 
     .dose-alert-dismiss {
-        background: #eef1f4;
-        color: #293847;
+        background: #fdf5f5;
+        color: #d1303b;
+        border: 2px solid #f9d8db;
     }
 
     .dose-alert-done {
+        border: none;
         background: #1f7a60;
         color: #fff;
     }
