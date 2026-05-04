@@ -259,36 +259,39 @@ else
 
     .profiles-row {
         display: flex;
-        gap: 14px;
-        padding: 12px 6px 10px;
-        border-bottom: 1px solid var(--ms-divider);
+        gap: 6px;
+        padding: 8px;
+        margin: 12px 6px 10px;
+        border: 1px solid var(--ms-divider);
+        border-radius: 12px;
+        background: var(--ms-surface-soft);
         margin-bottom: 12px;
         overflow-x: auto;
     }
 
     .profile-chip {
         border: 0;
-        border-bottom: 4px solid transparent;
         background: transparent;
-        color: var(--ms-text-muted);
-        font-size: 17px;
-        font-weight: 600;
-        padding: 0 2px 8px;
+        color: var(--ms-text);
+        font-size: 15px;
+        font-weight: 700;
+        padding: 10px 16px;
+        border-radius: 10px;
         display: inline-flex;
         align-items: center;
         gap: 8px;
     }
 
     .profile-chip.active {
-        color: #2f6654;
-        border-bottom-color: #3b705e;
+        color: var(--ms-accent);
+        background: var(--ms-surface);
     }
 
     .count-badge {
         min-width: 28px;
         height: 28px;
         border-radius: 999px;
-        background: var(--ms-divider);
+        background: var(--ms-surface);
         color: var(--ms-text-muted);
         display: inline-flex;
         align-items: center;
@@ -299,7 +302,7 @@ else
     }
 
     .profile-chip.active .count-badge {
-        background: #3b705e;
+        background: var(--ms-accent);
         color: #fff;
     }
 
