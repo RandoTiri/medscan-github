@@ -6,13 +6,13 @@
 @if (AuthService.IsLoggedIn)
 {
     <nav class="bottom-nav">
-        <div class="@GetNavItemClass("/")" @onclick='() => NavigateTo("/")'>
+        <div class="nav-item @(currentUrl == "" ? "active" : "")" @onclick='() => NavigateTo("/")'>
             <span class="nav-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </span>
             <span class="nav-label">Avaleht</span>
         </div>
-        <div class="@GetNavItemClass("/home-pharmacy")" @onclick='() => NavigateTo("/home-pharmacy")'>
+        <div class="nav-item @(currentUrl == "home-pharmacy" ? "active" : "")" @onclick='() => NavigateTo("/home-pharmacy")'>
             <span class="nav-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path><path d="m8.5 8.5 7 7"></path></svg>
             </span>
@@ -25,13 +25,13 @@
                 </span>
             </div>
         </div>
-        <div class="@GetNavItemClass("/profile")" @onclick='() => NavigateTo("/profile")'>
+        <div class="nav-item @(currentUrl == "profile" ? "active" : "")" @onclick='() => NavigateTo("/profile")'>
             <span class="nav-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </span>
             <span class="nav-label">Profiilid</span>
         </div>
-        <div class="@GetNavItemClass("/settings")" @onclick='() => NavigateTo("/settings")'>
+        <div class="nav-item @(currentUrl == "settings" ? "active" : "")" @onclick='() => NavigateTo("/settings")'>
             <span class="nav-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </span>
@@ -46,15 +46,13 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: var(--ms-nav-bg);
+        background: #ffffff;
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 10px 15px calc(10px + max(10px, env(safe-area-inset-bottom))) 15px;
-        box-shadow: var(--ms-nav-shadow);
         border-top-left-radius: 20px;
         border-top-right-radius: 20px;
-        border-top: 1px solid var(--ms-nav-border);
         z-index: 1000;
     }
 
@@ -65,17 +63,17 @@
         right: 0;
         bottom: calc(-1 * max(0px, env(safe-area-inset-bottom)));
         height: max(0px, env(safe-area-inset-bottom));
-        background: var(--ms-nav-bg);
+        background: #ffffff;
     }
 
-    .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--ms-nav-icon); cursor: pointer; flex: 1; text-align:center; transition: color 0.2s; }
-    .nav-item:hover { color: var(--ms-nav-icon-active); }
-    .nav-item.active { color: var(--ms-nav-icon-active); font-weight: bold; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; color: #a0b6c2; cursor: pointer; flex: 1; text-align:center; transition: color 0.2s; }
+    .nav-item:hover { color: #277863; }
+    .nav-item.active { color: #277863; font-weight: bold; }
     .nav-icon { font-size: 22px; margin-bottom: 4px; }
-    .nav-label { font-size: 10px; }
+    .nav-label { font-size: 10px; font-weight: 500; }
 
     .nav-item-center { flex: 0.8; display: flex; justify-content: center; position: relative; }
-    .center-button { position: absolute; top: -35px; background: var(--ms-accent); width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; box-shadow: 0 4px 10px rgba(37,141,107,0.3); border: 4px solid var(--ms-bg); cursor: pointer; transition: transform 0.2s; }
+    .center-button { position: absolute; top: -35px; background: #277863; width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 28px; box-shadow: 0 4px 10px rgba(39,120,99,0.3); border: 4px solid var(--ms-bg); cursor: pointer; transition: transform 0.2s; }
     .center-button:hover { transform: scale(1.05); }
 </style>
 

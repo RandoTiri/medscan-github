@@ -75,9 +75,12 @@ else
                 </div>
                 <div class="scan-text">
                     <h3>Skaneeri ravim</h3>
-                    <p>Skan triipkoodi infole</p>
                 </div>
-                <div class="scan-arrow">›</div>
+                <div class="scan-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a0b6c2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </div>
             </div>
 
             <div class="section-header">
@@ -135,7 +138,7 @@ else
             }
 
             <div class="section-header">
-                <h2>Perekond</h2>
+                <h2>Hooldatavad</h2>
             </div>
 
             @if (_familyMedicationCards.Count == 0)
@@ -298,7 +301,7 @@ else
     }
 
     .header-section {
-        background-color: var(--ms-primary-card-bg);
+        background-color: #277863;
         color: white;
         padding: 20px;
         padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
@@ -307,14 +310,13 @@ else
     }
 
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .header-date { font-size: 13px; opacity: 0.85; }
+    .header-date { font-size: 14px;}
     .header-icons { display: flex; gap: 15px; align-items: center; margin-left: auto; }
     .notification-icon {
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0.95;
         border: none;
         background: transparent;
         color: inherit;
@@ -365,12 +367,12 @@ else
         justify-content: center;
         min-width: 0;
     }
-    .stat-number { font-size: 24px; font-weight: bold; margin-bottom: 5px; }
+    .stat-number { font-size: 24px; font-weight: bold; margin-bottom: 5px; color: white; }
     .stat-number-warning { color: #f5c04d; }
-    .stat-label { font-size: 12px; opacity: 0.9; }
+    .stat-label { font-size: 12px; color: white; opacity: 0.9; }
     .stat-divider {
         width: 1px;
-        height: 56px;
+        height: 50px;
         background-color: rgba(255,255,255,0.3);
         align-self: center;
     }
@@ -378,21 +380,20 @@ else
     .main-content { padding: 20px; margin-top: -10px; }
 
     .scan-card { background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; cursor: pointer; }
-    .scan-icon-wrapper { background: var(--ms-surface-soft); color: var(--ms-accent); width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
-    .scan-text { flex-grow: 1; }
-    .scan-text h3 { margin: 0; font-size: 18px; color: var(--ms-text); }
-    .scan-text p { margin: 5px 0 0 0; font-size: 14px; color: var(--ms-text-muted); }
-    .scan-arrow { font-size: 24px; color: var(--ms-text-muted); font-weight: bold; }
+    .scan-icon-wrapper { background: #f6fbf8; color: #277863; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
+    .scan-text { flex-grow: 1; display: flex; align-items: center; }
+    .scan-text h3 { margin: 0; font-size: 16px; font-weight: 700; color: #1a2e29; }
+    .scan-arrow { display: flex; align-items: center; justify-content: center; }
 
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .section-header h2 { margin: 0; font-size: 18px; color: var(--ms-text); font-weight: bold; }
-    .section-header a { color: var(--ms-accent); text-decoration: none; font-size: 14px; font-weight: 500; }
+    .section-header h2 { margin: 0; font-size: 18px; color: #1a2e29; font-weight: bold; }
+    .section-header a { color: #277863; text-decoration: none; font-size: 14px; font-weight: 700; }
 
     .med-card { width: 100%; border: none; text-align: left; cursor: pointer; background: var(--ms-surface); border-radius: 15px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.03); margin-bottom: 15px; }
     .med-icon { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 0; flex-shrink: 0; }
     .med-info { flex-grow: 1; }
-    .med-info h3 { margin: 0; font-size: 16px; color: var(--ms-text); }
-    .med-info p { margin: 5px 0 0 0; font-size: 13px; color: var(--ms-text); }
+    .med-info h3 { margin: 0; font-size: 16px; color: #1a2e29; font-weight: 700; }
+    .med-info p { margin: 5px 0 0 0; font-size: 13px; color: #1a2e29; }
 
     .status-box {
         display: flex;
@@ -430,14 +431,14 @@ else
     .med-note,
     .family-note {
         margin: 6px 0 0 0;
-        color: #8f84a1;
+        color: #1a2e29;
         font-size: 13px;
         font-style: italic;
     }
 
     .family-med-name {
         margin: 6px 0 0 0;
-        color: var(--ms-text);
+        color: #1a2e29;
         font-size: 13px;
     }
 
@@ -505,7 +506,7 @@ else
         margin: 0;
         font-size: 17px;
         line-height: 1;
-        color: var(--ms-text);
+        color: #1a2e29;
         font-weight: 800;
     }
 
@@ -513,7 +514,7 @@ else
         margin: 8px 0 0 0;
         font-size: 13px;
         line-height: 1.2;
-        color: var(--ms-text);
+        color: #1a2e29;
     }
 
     .empty-card {
