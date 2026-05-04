@@ -45,14 +45,14 @@ html[data-theme='dark'] {
     margin-top: -1.1rem;
 
     padding: 24px;
-    padding-top: calc(max(24px, env(safe-area-inset-top)) + 32px);
+    padding-top: calc(max(24px, env(safe-area-inset-top)) + 48px);
     padding-bottom: calc(max(24px, env(safe-area-bottom)) + 80px);
     padding-left: max(24px, env(safe-area-inset-left));
     padding-right: max(24px, env(safe-area-inset-right));
 
     background-color: var(--ms-bg);
     min-height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     box-sizing: border-box;
 }
 
@@ -63,7 +63,7 @@ html[data-theme='dark'] {
 }
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-color: var(--ms-bg);
     color: var(--ms-text);
 }

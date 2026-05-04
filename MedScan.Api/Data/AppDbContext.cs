@@ -30,7 +30,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
         {
             new()
             {
-                Barcode = "4740006010012",
+                Barcode = "9005800326696",
                 Name = "Paratsetamool",
                 ActiveIngredient = "Paratsetamool",
                 StrengthMg = "500 mg",
