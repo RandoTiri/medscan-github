@@ -30,11 +30,12 @@ else
                 <div class="settings-item">
                     <div class="item-text">
                         <h3>Teema</h3>
-                        <p>@(_darkModeEnabled ? "Tume teema" : "Hele teema")</p>
+                        <p>Hele teema</p>
                     </div>
                     <label class="toggle-switch" aria-label="Teema">
                         <input type="checkbox"
                                checked="@_darkModeEnabled"
+                               disabled
                                @onchange="OnThemeToggleChanged" />
                         <span class="toggle-slider"></span>
                     </label>
@@ -175,6 +176,15 @@ else
     .toggle-switch input:checked + .toggle-slider:before {
         transform: translateX(22px);
     }
+
+    .toggle-switch input:disabled + .toggle-slider {
+        cursor: not-allowed;
+        opacity: 0.55;
+    }
+
+    .toggle-switch input:disabled + .toggle-slider:before {
+        box-shadow: none;
+    }
 </style>
 
 @code {
@@ -207,8 +217,8 @@ else
 
     private async Task OnThemeToggleChanged(ChangeEventArgs args)
     {
-        _darkModeEnabled = args.Value is bool value && value;
-        await ThemeService.SetDarkModeAsync(_darkModeEnabled);
+        _darkModeEnabled = false;
+        await ThemeService.SetDarkModeAsync(false);
     }
 
     private void GoBack() => Navigation.NavigateTo("/settings");
