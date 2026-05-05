@@ -94,9 +94,9 @@ else
 
     .medicine-header h1 {
         margin: 0;
-        font-size: 22px;
+        font-size: 24px;
         letter-spacing: -0.02em;
-        color: var(--ms-text);
+        color: #1A2E29;
         font-weight: 800;
         text-align: center;
     }
@@ -110,9 +110,9 @@ else
         align-items: center;
         border: none;
         background: transparent;
-        color: var(--ms-accent);
+        color: #277863;
         font-size: 16px;
-        font-weight: 600;
+        font-weight: 700;
         text-decoration: none;
         cursor: pointer;
         padding: 10px 0;
@@ -120,6 +120,8 @@ else
 
     .back-link svg {
         margin-right: 8px;
+        width: 24px;
+        height: 24px;
     }
 
     .search-card {
@@ -135,6 +137,14 @@ else
         display: grid;
         grid-template-columns: 1fr auto;
         gap: 8px;
+    }
+
+    .manual-search-bar input::placeholder {
+        color: #1A2E29;
+    }
+
+    .manual-search-bar input {
+        color: #1A2E29;
     }
 
     .search-btn {
@@ -171,17 +181,19 @@ else
     }
 
     .manual-result-text strong {
-        color: var(--ms-text);
-        font-size: 15px;
+        color: #1A2E29;
+        font-size: 16px;
+        font-weight: 600;
     }
 
     .manual-result-text span {
-        color: var(--ms-text-muted);
-        font-size: 13px;
+        color: #1A2E29;
+        font-size: 14px;
+        font-weight: 400;
     }
 
     .add-indicator {
-        color: var(--ms-accent);
+        color: #277863;
         font-size: 24px;
         font-weight: 700;
         line-height: 1;
@@ -222,6 +234,12 @@ else
         padding: 10px 12px;
         font-size: 16px;
         color: var(--ms-text);
+        box-sizing: border-box;
+    }
+
+    .field-input:focus {
+        outline: none;
+        border-color: #277863;
     }
 
     .field-textarea {
