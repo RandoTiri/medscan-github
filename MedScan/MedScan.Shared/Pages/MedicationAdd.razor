@@ -35,8 +35,8 @@ else
                     <h2>Kuidas soovid seda ravimit kasutada?</h2>
                     <div class="decision-actions">
                         <button class="decision-btn yes" @onclick="() => SetTakeMode(MedicationTakeMode.Regular)">Regulaarselt</button>
-                        <button class="decision-btn now" @onclick="() => SetTakeMode(MedicationTakeMode.OneTimeNow)">Ainult praegu</button>
-                        <button class="decision-btn no" @onclick="() => SetTakeMode(MedicationTakeMode.StorageOnly)">Lisa Minu Ravimid nimekirja</button>
+                        <button class="decision-btn now" @onclick="() => SetTakeMode(MedicationTakeMode.OneTimeNow)">Ühekordne kasutus</button>
+                        <button class="decision-btn no" @onclick="() => SetTakeMode(MedicationTakeMode.StorageOnly)">Lisa ravim kasutaja nimekirja</button>
                     </div>
                 </div>
             </div>
@@ -211,8 +211,8 @@ else
 
     .decision-modal h2 {
         margin: 0;
-        color: var(--ms-text);
-        font-size: 20px;
+        color: #1A2E29;
+        font-size: 18px;
         line-height: 1.25;
         font-weight: 800;
     }
@@ -241,22 +241,33 @@ else
     }
 
     .decision-btn.now {
-        background: #f1f5f3;
-        border-color: #d7e2dd;
-        color: #1f4f42;
+        background-color: #ffffff;
+        color: #277863;
+        border: 2px solid #277863;
+        border-radius: 12px;
+        padding: 10px 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.1s ease;
+    }
+
+    .decision-btn.now:active {
+        transform: scale(0.98);
+        background-color: #f0f7f5;
     }
 
     .decision-btn.no {
-        border-color: var(--ms-accent);
-        background: var(--ms-surface);
-        color: var(--ms-accent);
+        background: #1f7a60;
+        border-color: #1f7a60;
+        color: #fff;
     }
 
     @@media (prefers-color-scheme: dark) {
         .decision-btn.no {
             border-color: #1f7a60;
-            background: #0f1b24;
-            color: #7af0cd;
+            background: #1f7a60;
+            color: #fff;
         }
     }
 
