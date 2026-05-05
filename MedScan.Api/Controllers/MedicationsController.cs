@@ -284,7 +284,7 @@ public sealed class MedicationsController(
                     }
                     else
                     {
-                        stockWarning = $"NB seda ravimit on alles vaid {remainingQuantity} ühikut. Kui jätkad sama raviskeemi, osta uus karp.";
+                        stockWarning = $"NB seda ravimit on alles vaid {remainingQuantity} tk. Kui jätkad sama raviskeemi, osta uus karp.";
                     }
                 }
             }
