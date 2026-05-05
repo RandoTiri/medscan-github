@@ -449,7 +449,7 @@ else
     private Patient? _mainUserProfile;
     private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
     private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
-    private readonly List<int> _years = Enumerable.Range(1900, 201).ToList();
+    private readonly List<int> _years = Enumerable.Range(1900, DateTime.Today.Year - 1900 + 1).Reverse().ToList();
 
     private bool isAdding = false;
     private Patient newPatient = new Patient();
