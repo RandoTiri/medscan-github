@@ -105,87 +105,50 @@ else
             @if (_isPatientProfile)
             {
                 <section class="crud-panel patient-action-panel">
-                    @if (!_isEditing)
-                    {
-                        <button class="patient-edit-btn" @onclick="ToggleEdit">
-                            Muuda hooldatava andmeid
-                        </button>
-                    }
-
-                    @if (_isEditing)
-                    {
-                        <div class="edit-form">
-                            <label>Nimi</label>
-                            <input class="form-control" @bind="_editModel.Name" />
-
-                            <label>Sugu</label>
-                            <select class="form-control" @bind="_editModel.Gender">
-                                <option value="Mees">Mees</option>
-                                <option value="Naine">Naine</option>
-                                <option value="Määramata">Määramata</option>
-                            </select>
-
-                            <label>Sünnikuupäev</label>
-                            <div class="birthdate-picker">
-                                <select class="birth-select" @bind="_birthDay">
-                                    <option value="">Päev</option>
-                                    @foreach (var day in _days)
-                                    {
-                                        <option value="@day">@day</option>
-                                    }
-                                </select>
-
-                                <select class="birth-select" @bind="_birthMonth">
-                                    <option value="">Kuu</option>
-                                    @foreach (var month in _months)
-                                    {
-                                        <option value="@month">@month</option>
-                                    }
-                                </select>
-
-                                <select class="birth-select" @bind="_birthYear">
-                                    <option value="">Aasta</option>
-                                    @foreach (var year in _years)
-                                    {
-                                        <option value="@year">@year</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <div class="edit-actions">
-                                <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
-                                <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
-                            </div>
-                        </div>
-                    }
+                    <button class="patient-edit-btn" @onclick="ToggleEdit">
+                        Muuda hooldatava andmeid
+                    </button>
                     <button class="patient-delete-btn" @onclick="PromptDelete">Kustuta hooldatav</button>
                 </section>
             }
-            else
+
+            @if (_isEditing && _isPatientProfile)
             {
-                <section class="crud-panel patient-action-panel">
-                    @if (!_isEditing)
-                    {
-                        <button class="patient-edit-btn" @onclick="ToggleEdit">
-                            Muuda kasutaja andmeid
-                        </button>
-                    }
+                <div class="confirm-overlay edit-overlay" @onclick="CloseEdit">
+                    <div class="edit-dialog" @onclick:stopPropagation="true">
+                        <div class="auth-input-group">
+                            <label for="edit-name">Nimi</label>
+                            <div class="input-wrapper">
+                                <div class="input-icon">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <input id="edit-name" type="text" @bind="_editModel.Name" />
+                            </div>
+                        </div>
 
-                    @if (_isEditing)
-                    {
-                        <div class="edit-form">
-                            <label>Nimi</label>
-                            <input class="form-control" @bind="_editModel.Name" />
+                        <div class="auth-input-group">
+                            <label for="edit-gender">Sugu</label>
+                            <div class="input-wrapper">
+                                <div class="input-icon">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                        <path d="M5.5 21a6.5 6.5 0 0 1 13 0"></path>
+                                    </svg>
+                                </div>
+                                <select id="edit-gender" @bind="_editModel.Gender">
+                                    <option value="Mees">Mees</option>
+                                    <option value="Naine">Naine</option>
+                                    <option value="Määramata">Määramata</option>
+                                </select>
+                            </div>
+                        </div>
 
-                            <label>Sugu</label>
-                            <select class="form-control" @bind="_editModel.Gender">
-                                <option value="Mees">Mees</option>
-                                <option value="Naine">Naine</option>
-                                <option value="Määramata">Määramata</option>
-                            </select>
-
-                            <label>Sünnikuupäev</label>
-                            <div class="birthdate-picker">
+                        <div class="auth-input-group">
+                            <label for="edit-birthdate">Sünnikuupäev</label>
+                            <div id="edit-birthdate" class="birth-grid">
                                 <select class="birth-select" @bind="_birthDay">
                                     <option value="">Päev</option>
                                     @foreach (var day in _days)
@@ -210,14 +173,14 @@ else
                                     }
                                 </select>
                             </div>
-
-                            <div class="edit-actions">
-                                <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
-                                <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
-                            </div>
                         </div>
-                    }
-                </section>
+
+                        <div class="edit-actions">
+                            <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
+                            <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
+                        </div>
+                    </div>
+                </div>
             }
 
             @if (_showDeleteConfirm && _patient is not null && _isPatientProfile)
@@ -359,9 +322,9 @@ else
     .patient-avatar-view {
         width: 48px;
         height: 48px;
-        background-color: var(--ms-surface-soft);
-        color: var(--ms-accent);
-        border: 2px solid var(--ms-divider);
+        background-color: #e6f4f1;
+        color: #277863;
+        border: 2px solid #277863;
         font-size: 18px;
     }
 
@@ -385,9 +348,13 @@ else
     }
 
     .patient-info-view h1 {
-        color: var(--ms-text);
+        color: #1A2E29;
         font-size: 16px;
-        font-weight: 800;
+        font-weight: 700;
+    }
+
+    .patient-info-view p {
+        color: #1A2E29;
     }
 
     
@@ -402,8 +369,9 @@ else
     .section-title {
         margin: 0 0 12px 2px;
         color: var(--ms-text);
-        font-size: 20px;
+        font-size: 16px;
         font-weight: 800;
+        color: #1A2E29;
     }
 
 
@@ -425,8 +393,15 @@ else
         align-items: center;
         gap: 10px;
         flex-wrap: wrap;
-        color: var(--ms-text);
-        font-size: 16px;
+        color: #1A2E29;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .dose-title-row strong {
+        color: #1A2E29;
+        font-size: 14px;
+        font-weight: 600;
     }
 
     .dose-detail {
@@ -460,10 +435,10 @@ else
      .primary-action,
     .secondary-action {
         width: 100%;
-        border-radius: 14px;
-        padding: 16px 18px;
-        font-size: 18px;
-        font-weight: 700;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -493,16 +468,24 @@ else
         gap: 14px;
     }
 
+    .today-overview-panel .schedule-panel {
+        order: 1;
+    }
+
+    .today-overview-panel .action-panel {
+        order: 2;
+    }
+
     .primary-action {
         border: none;
-        background: #1d735c;
+        background: #277863;
         color: #fff;
     }
 
     .secondary-action {
-        border: 1px solid var(--ms-divider);
-        background: var(--ms-surface-soft);
-        color: var(--ms-accent-strong);
+        border: 2px solid #277863;
+        background: #ffffff;
+        color: #277863;
     }
 
     .crud-panel {
@@ -568,21 +551,77 @@ else
         border: 2px solid #f9d8db;
     }
 
-    .edit-form {
-        display: grid;
-        gap: 8px;
-        margin-bottom: 12px;
+    .edit-dialog {
+        width: 100%;
+        max-width: 420px;
         background: var(--ms-surface);
-        padding: 16px;
-        border-radius: 14px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     }
 
-    .edit-form label {
-        color: var(--ms-text);
+    .auth-input-group {
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .auth-input-group label {
+        display: block;
         font-size: 14px;
-        font-weight: 700;
-        margin-top: 4px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #1A2E29;
+        text-align: left;
+        width: 100%;
+    }
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        border: 2px solid #d4dfe5;
+        border-radius: 16px;
+        overflow: hidden;
+        padding: 0 15px;
+        background: var(--ms-surface);
+        width: 100%;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+
+    .input-wrapper:focus-within {
+        border-color: #267863;
+        box-shadow: 0 0 0 4px rgba(38, 120, 99, 0.1);
+    }
+
+    .input-wrapper input,
+    .input-wrapper select {
+        border: none;
+        outline: none;
+        padding: 15px 10px;
+        width: 100%;
+        font-size: 14px;
+        color: #1A2E29;
+        background: transparent;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+    .input-wrapper select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23a0b6c2' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0 center;
+        background-size: 18px 18px;
+    }
+
+    .input-icon {
+        color: #a0b6c2;
+        display: flex;
+        flex-shrink: 0;
     }
 
     .form-control {
@@ -593,6 +632,7 @@ else
         padding: 8px 10px;
         font-size: 14px;
         background: var(--ms-bg);
+        color: var(--ms-text);
     }
 
     .form-control:focus {
@@ -600,65 +640,58 @@ else
         border-color: #2e8b6c;
     }
 
-    .birthdate-picker {
+    .birth-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 10px;
-    }
-
-    .birth-field {
-        display: grid;
-        gap: 6px;
-    }
-
-    .birth-field label {
-        display: block;
-        font-size: 13px;
-        color: var(--ms-text);
-        margin-bottom: 0;
-        font-weight: 700;
+        width: 100%;
     }
 
     .birth-select {
         width: 100%;
-        height: 38px;
-        border: 1px solid var(--ms-divider);
-        border-radius: 8px;
-        padding: 0 10px;
-        padding-right: 32px;
+        border: 2px solid #d4dfe5;
+        border-radius: 12px;
+        padding: 10px 12px;
+        padding-right: 36px;
         font-size: 14px;
-        font-weight: 600;
-        background: var(--ms-bg);
-        color: var(--ms-text);
+        color: #1A2E29;
+        background: #fff;
         appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23a0b6c2' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: right 10px center;
-        background-size: 16px 16px;
+        background-position: right 12px center;
+        background-size: 18px 18px;
+    }
+
+    .input-wrapper option,
+    .birth-select option {
+        color: #1A2E29;
     }
 
     .edit-actions {
         display: flex;
         gap: 10px;
-        margin-top: 10px;
+        margin-top: 18px;
     }
 
     .save-btn,
     .cancel-btn,
     .delete-btn {
         border: none;
-        border-radius: 10px;
-        padding: 10px 12px;
-        font-weight: 700;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
         cursor: pointer;
     }
 
     .save-btn {
-        background: #1d735c;
+        background: #267863;
         color: #fff;
         flex: 1;
+        box-shadow: 0 4px 10px rgba(38, 120, 99, 0.2);
     }
 
     .cancel-btn {
@@ -681,7 +714,8 @@ else
         border-radius: 12px;
         border: 1px solid var(--ms-divider);
         padding: 12px;
-        color: var(--ms-text-muted);
+        color: #1A2E29;
+        font-size: 14px;
         margin-bottom: 12px;
     }
 
@@ -943,9 +977,9 @@ else
     {
         return status switch
         {
-            DoseStatusEnum.Done => new StatusView("✓ Võetud", "status-done", ""),
-            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("! Võtmata", "status-missed", ""),
-            _ => new StatusView("◔ Ootel", "status-pending", "")
+            DoseStatusEnum.Done => new StatusView("Võetud", "status-done", ""),
+            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("Võtmata", "status-missed", ""),
+            _ => new StatusView("Ootel", "status-pending", "")
         };
     }
 

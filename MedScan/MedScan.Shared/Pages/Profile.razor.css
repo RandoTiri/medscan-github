@@ -5,12 +5,24 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+.profile-header {
+    display: grid;
+    grid-template-columns: 52px 1fr 52px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
 .page-title {
     font-size: 24px;
     font-weight: 800;
-    color: var(--ms-text);
-    margin-bottom: 24px;
-    margin-top: 0;
+    color: #1A2E29;
+    margin: 0;
+    text-align: center;
+}
+
+.header-spacer {
+    width: 52px;
 }
 
 .main-user-card {
@@ -34,18 +46,25 @@
     justify-content: center;
     font-weight: 700;
     font-size: 18px;
+    color: #ffffff;
 }
 
 .main-user-info .name {
     font-weight: 700;
-    font-size: 18px;
+    font-size: 16px;
+    color: #ffffff;
     margin: 0;
 }
 
 .main-user-info .subtitle {
     font-size: 14px;
-    opacity: 0.9;
+    color: #ffffff;
+    opacity: 1;
     margin: 4px 0 0 0;
+}
+
+.main-user-chevron {
+    color: #ffffff;
 }
 
 .section-header {
@@ -56,21 +75,24 @@
 }
 
 .section-title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
-    color: var(--ms-text-muted);
-    text-transform: uppercase;
+    color: #1A2E29;
+    text-transform: none;
     margin: 0;
 }
 
 .btn-add {
-    background: none;
     border: none;
-    color: #2e8b6c;
-    font-weight: 700;
-    font-size: 14px;
+    border-radius: 8px;
+    background: #3b705e;
+    color: #fff;
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
     cursor: pointer;
-    padding: 0;
+    box-shadow: 0 4px 10px rgba(37, 141, 107, 0.2);
 }
 
 .patient-card {
@@ -94,8 +116,8 @@
     font-weight: 700;
     font-size: 18px;
     background-color: #e6f4f1;
-    color: #2e8b6c;
-    border: 2px solid #bce0d5;
+    color: #277863;
+    border: 2px solid #277863;
 }
 
 .patient-info {
@@ -105,13 +127,13 @@
 .patient-name {
     font-weight: 700;
     font-size: 16px;
-    color: var(--ms-text);
+    color: #1A2E29;
     margin: 0;
 }
 
 .patient-details {
     font-size: 14px;
-    color: var(--ms-text-muted);
+    color: #1A2E29;
     margin: 4px 0 0 0;
 }
 
