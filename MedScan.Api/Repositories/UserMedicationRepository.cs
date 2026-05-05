@@ -14,7 +14,13 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
     public async Task<List<UserMedication>> GetByProfileIdAsync(int profileId) {
         return await _dbContext.UserMedications
             .AsNoTracking()
-            .Where(x => x.ProfileId == profileId && x.IsActive)
+            .Where(x =>
+                x.ProfileId == profileId &&
+                x.IsActive &&
+                _dbContext.HomePharmacyItems.Any(item =>
+                    item.ProfileId == x.ProfileId &&
+                    item.MedicationId == x.MedicationId &&
+                    item.Quantity > 0))
             .OrderBy(x => x.Id)
             .Select(x => new UserMedication
             {
@@ -60,7 +66,13 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
     public async Task<UserMedication?> GetByIdAsync(int userMedicationId) {
         return await _dbContext.UserMedications
             .AsNoTracking()
-            .Where(x => x.Id == userMedicationId)
+            .Where(x =>
+                x.Id == userMedicationId &&
+                x.IsActive &&
+                _dbContext.HomePharmacyItems.Any(item =>
+                    item.ProfileId == x.ProfileId &&
+                    item.MedicationId == x.MedicationId &&
+                    item.Quantity > 0))
             .Select(x => new UserMedication
             {
                 Id = x.Id,
