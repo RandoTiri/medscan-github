@@ -281,7 +281,7 @@ else
     private string? _errorMessage;
     private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
     private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
-    private readonly List<int> _years = Enumerable.Range(1900, 201).Reverse().ToList();
+    private readonly List<int> _years = Enumerable.Range(1900, DateTime.Today.Year - 1900 + 1).Reverse().ToList();
     private int _selectedDay = DateTime.Today.Day;
     private int _selectedMonth = DateTime.Today.Month;
     private int _selectedYear = DateTime.Today.Year;
