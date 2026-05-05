@@ -23,10 +23,6 @@
             {
                 <p class="dose-alert-note">@InAppDoseAlertService.Current.Note</p>
             }
-            @if (!string.IsNullOrWhiteSpace(_popupInfoMessage))
-            {
-                <p class="dose-alert-note">@_popupInfoMessage</p>
-            }
             <div class="dose-alert-actions">
                 <button type="button" class="dose-alert-done" disabled="@_isUpdatingFromPopup" @onclick="MarkDoneFromAlertAsync">Võetud</button>
                 <button type="button" class="dose-alert-dismiss" disabled="@_isUpdatingFromPopup" @onclick="DismissAlert">Sulge</button>
@@ -117,7 +113,6 @@
 
 @code {
     private bool _isUpdatingFromPopup;
-    private string? _popupInfoMessage;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -143,7 +138,6 @@
 
     private void DismissAlert()
     {
-        _popupInfoMessage = null;
         InAppDoseAlertService.DismissCurrent();
     }
 
@@ -157,17 +151,11 @@
         _isUpdatingFromPopup = true;
         try
         {
-            var result = await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId, new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto
+            await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId, new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto
             {
                 ScheduledTime = InAppDoseAlertService.Current.ScheduledTime,
                 Status = MedScan.Shared.Models.Enums.DoseStatusEnum.Done
             });
-
-            if (result is not null && !string.IsNullOrWhiteSpace(result.StockWarning))
-            {
-                _popupInfoMessage = result.StockWarning;
-                return;
-            }
         }
         catch
         {
@@ -176,10 +164,7 @@
         finally
         {
             _isUpdatingFromPopup = false;
-            if (string.IsNullOrWhiteSpace(_popupInfoMessage))
-            {
-                InAppDoseAlertService.DismissCurrent();
-            }
+            InAppDoseAlertService.DismissCurrent();
         }
     }
 

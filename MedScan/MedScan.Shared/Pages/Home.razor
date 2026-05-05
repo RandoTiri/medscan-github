@@ -241,7 +241,7 @@ else
                     <div class="success-box">@_modalInfoMessage</div>
                 }
 
-                @if (!_showEarlyDoneConfirmation && !_showLastUnitConfirmation)
+                @if (!_showEarlyDoneConfirmation && !_showLastUnitConfirmation && string.IsNullOrWhiteSpace(_modalInfoMessage))
                 {
                     <div class="dose-modal-actions">
                         <button type="button" class="status-btn status-btn-done @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Võetud</button>

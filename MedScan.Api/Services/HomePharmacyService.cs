@@ -88,7 +88,10 @@ public sealed class HomePharmacyService(
 
         if (scheduleItems.Count > 0)
         {
-            dbContext.UserMedications.RemoveRange(scheduleItems);
+            foreach (var scheduleItem in scheduleItems)
+            {
+                scheduleItem.IsActive = false;
+            }
         }
 
         homePharmacyRepository.Remove(existing);
