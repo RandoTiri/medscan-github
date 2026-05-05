@@ -127,7 +127,12 @@ else
                     @foreach (var med in _scheduledMedications)
                     {
                         <button class="medicine-card schedule-card" @onclick="() => OpenScheduledMedicationDetails(med)">
-                            <div class="left-icon">@GetMedicationInitial(med.MedicationName)</div>
+                            <div class="left-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                                    <path d="m8.5 8.5 7 7"></path>
+                                </svg>
+                            </div>
                             <div class="card-content">
                                 <div class="top-line">
                                     <h2>@med.MedicationName</h2>
@@ -158,7 +163,12 @@ else
                 @foreach (var item in _selectedItems)
                 {
                     <button class="medicine-card" @onclick="() => OpenDetails(item.Id)">
-                        <div class="left-icon">@GetMedicationInitial(item.MedicationName)</div>
+                        <div class="left-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
+                                <path d="m8.5 8.5 7 7"></path>
+                            </svg>
+                        </div>
 
                         <div class="card-content">
                             <div class="top-line">
@@ -211,11 +221,10 @@ else
         margin-left: -50vw;
         margin-top: -1.1rem;
         box-sizing: border-box;
-        padding: 20px;
-        padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
+        padding-top: calc(max(32px, env(safe-area-inset-top)) + 20px);
         padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 80px);
-        padding-left: max(12px, env(safe-area-inset-left));
-        padding-right: max(12px, env(safe-area-inset-right));
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
     }
 
     .medicine-header {
@@ -223,15 +232,15 @@ else
         grid-template-columns: auto 1fr auto;
         align-items: center;
         gap: 8px;
-        padding: 6px 6px 14px 6px;
+        padding: 6px 16px 14px 16px;
         border-bottom: 1px solid var(--ms-divider);
     }
 
     .medicine-header h1 {
         margin: 0;
-        font-size: 22px;
+        font-size: 24px;
         letter-spacing: -0.02em;
-        color: var(--ms-text);
+        color: #1A2E29;
         font-weight: 800;
         text-align: center;
     }
@@ -245,9 +254,9 @@ else
         border-radius: 8px;
         background: #3b705e;
         color: #fff;
-        padding: 12px 16px;
+        padding: 8px 16px;
         font-size: 16px;
-        font-weight: 700;
+        font-weight: bold;
         line-height: 1;
         cursor: pointer;
         box-shadow: 0 4px 10px rgba(37, 141, 107, 0.2);
@@ -261,10 +270,10 @@ else
         display: flex;
         gap: 6px;
         padding: 8px;
-        margin: 12px 6px 10px;
+        margin: 12px 16px 10px;
         border: 1px solid var(--ms-divider);
         border-radius: 12px;
-        background: var(--ms-surface-soft);
+        background: #F6FBF8;
         margin-bottom: 12px;
         overflow-x: auto;
     }
@@ -272,8 +281,8 @@ else
     .profile-chip {
         border: 0;
         background: transparent;
-        color: var(--ms-text);
-        font-size: 15px;
+        color: #1A2E29;
+        font-size: 14px;
         font-weight: 700;
         padding: 10px 16px;
         border-radius: 10px;
@@ -283,7 +292,9 @@ else
     }
 
     .profile-chip.active {
-        color: var(--ms-accent);
+        color: #277863;
+        font-size: 14px;
+        font-weight: bold;
         background: var(--ms-surface);
     }
 
@@ -292,7 +303,7 @@ else
         height: 28px;
         border-radius: 999px;
         background: var(--ms-surface);
-        color: var(--ms-text-muted);
+        color: #1A2E29;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -302,13 +313,14 @@ else
     }
 
     .profile-chip.active .count-badge {
-        background: var(--ms-accent);
-        color: #fff;
+        background: #277863;
+        color: #ffffff;
     }
 
     .medicine-cards {
         display: grid;
         gap: 12px;
+        padding: 0 16px;
     }
 
     .medicine-card {
@@ -356,10 +368,10 @@ else
 
     .top-line h2 {
         margin: 0;
-        color: var(--ms-text);
-        font-size: 18px;
+        color: #1A2E29;
+        font-size: 16px;
         line-height: 1.08;
-        font-weight: 800;
+        font-weight: bold;
     }
 
     .open-arrow {
@@ -377,14 +389,15 @@ else
 
     .meta-line {
         margin: 0;
-        color: var(--ms-text-muted);
-        font-size: 15px;
+        color: #1A2E29;
+        font-size: 14px;
+        font-weight: 400;
     }
 
     .quantity-line {
         margin: 0;
-        color: var(--ms-text-muted);
-        font-size: 15px;
+        color: #1A2E29;
+        font-size: 14px;
         font-weight: 400;
     }
 
@@ -396,7 +409,7 @@ else
     }
 
     .schedule-toggle-container {
-        padding: 0 6px 12px;
+        padding: 0 16px 12px;
         display: flex;
         justify-content: flex-start;
     }
@@ -407,11 +420,11 @@ else
         gap: 8px;
         padding: 8px 16px;
         border-radius: 8px;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
-        border: 2px solid var(--ms-text);
-        background: transparent;
-        color: var(--ms-text);
+        border: 2px solid transparent;
+        background: #277863;
+        color: #fff;
         transition: all 0.2s ease;
         cursor: pointer;
     }
@@ -422,9 +435,9 @@ else
     }
 
     .schedule-toggle-btn.active {
-        background: #e2f1ea;
-        border-color: #20835d;
-        color: #20835d;
+        background-color: #ffffff;
+        color: #277863;
+        border-color: #277863;
     }
 
     .schedule-card {
@@ -436,7 +449,7 @@ else
         border-radius: 16px;
         padding: 12px;
         font-size: 15px;
-        margin: 0 6px 10px;
+        margin: 0 16px 10px;
     }
 
     .error-box {

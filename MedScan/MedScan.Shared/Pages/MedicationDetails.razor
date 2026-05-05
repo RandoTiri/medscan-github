@@ -48,8 +48,10 @@ else
 
         <div class="content-scroll">
             <div class="section-card medication-card">
-                <div class="field-title" style="color: var(--ms-text-muted); font-size: 13px; font-weight: 700; margin-bottom: 4px;">Ravim</div>
-                <div class="medication-name" style="font-size: 18px; font-weight: 700;">@_item.MedicationName</div>
+                <div class="field-title" style="color: #1A2E29; font-size: 16px; font-weight: 600; margin-bottom: 8px;">Ravim</div>
+                <div class="medication-name-box" style="background-color: #F6FBF8; padding: 12px; border-radius: 12px;">
+                    <span class="medication-name" style="font-size: 18px; font-weight: 600; color: #277863;">@_item.MedicationName</span>
+                </div>
             </div>
 
             <div class="info-card">
@@ -271,38 +273,40 @@ else
 }
 
 <style>
-    .medicine-screen { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: var(--ms-bg); min-height: 100vh; width: 100vw; position: relative; left: 50%; margin-left: -50vw; box-sizing: border-box; padding-bottom: calc(env(safe-area-inset-bottom) + 160px); color-scheme: light; }
-    .medicine-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: calc(max(20px, env(safe-area-inset-top)) + 6px) calc(max(12px, env(safe-area-inset-right)) + 6px) 14px calc(max(12px, env(safe-area-inset-left)) + 6px); background: var(--ms-bg); position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--ms-divider); }
-    .medicine-header h1 { margin: 0; font-size: 22px; color: var(--ms-text); font-weight: 800; text-align: center; }
+    .medicine-screen { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: var(--ms-bg); min-height: 100vh; width: 100vw; position: relative; left: 50%; margin-left: -50vw; box-sizing: border-box; padding-top: calc(max(32px, env(safe-area-inset-top))); padding-bottom: calc(env(safe-area-inset-bottom) + 160px); color-scheme: light; }
+    .medicine-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 6px 16px 14px 16px; background: var(--ms-bg); border-bottom: 1px solid var(--ms-divider); }
+    .medicine-header h1 { margin: 0; font-size: 24px; color: #1A2E29; font-weight: 800; text-align: center; }
     .header-spacer { width: 56px; }
-    .back-link { display: inline-flex; align-items: center; border: none; background: transparent; color: var(--ms-accent); font-size: 16px; font-weight: 600; cursor: pointer; padding: 10px 0; }
-    .back-link svg { margin-right: 8px; }
+    .back-link { display: inline-flex; align-items: center; border: none; background: transparent; color: #277863; font-size: 16px; font-weight: 700; cursor: pointer; padding: 10px 0; }
+    .back-link svg { margin-right: 8px; width: 24px; height: 24px; }
     .content-scroll { background: var(--ms-bg); padding: 16px; display: flex; flex-direction: column; gap: 16px; }
     .header-card,.info-card,.schedule-card { background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 16px; padding: 16px; }
     .header-card { display: flex; gap: 14px; align-items: center; }
     .pill-icon { width: 62px; height: 62px; border-radius: 14px; background: #e6f2ee; color: #267863; display: grid; place-items: center; font-size: 28px; font-weight: 700; }
     .header-info h2 { margin: 0 0 4px; font-size: 22px; color: var(--ms-text); font-weight: 800; }
     .header-info p { margin: 0; color: var(--ms-text-muted); font-size: 14px; }
-    .card-title { display: flex; align-items: center; gap: 10px; font-size: 18px; color: var(--ms-text); font-weight: 800; margin-bottom: 12px; }
+    .card-title { display: flex; align-items: center; gap: 10px; font-size: 16px; color: #1A2E29; font-weight: 600; margin-bottom: 12px; }
     .info-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; }
-    .info-row:not(:last-child) { border-bottom: 1px dashed #edf0ef; }
-    .label { color: var(--ms-text-muted); font-size: 14px; }
-    .val { color: var(--ms-text); font-size: 15px; font-weight: 700; text-align: right; }
+    .info-row:not(:last-child) { border-bottom: 0.5px solid #A0B6C2; }
+    .label { color: #1A2E29; font-size: 14px; font-weight: 400; }
+    .val { color: #1A2E29; font-size: 14px; font-weight: 700; text-align: right; }
     .quantity-edit-row { align-items: center; }
     .quantity-edit-controls { display: inline-flex; gap: 8px; align-items: center; }
-    .quantity-select { border: 1px solid var(--ms-divider); border-radius: 10px; background: var(--ms-surface); color: var(--ms-text); font-size: 14px; font-weight: 700; padding: 6px 10px; }
-    .quantity-save-btn { border: none; border-radius: 10px; background: #1f7a60; color: #fff; font-size: 13px; font-weight: 700; padding: 7px 10px; }
+    .quantity-select { border: 1px solid var(--ms-divider); border-radius: 10px; background: var(--ms-surface); color: #1A2E29; font-size: 12px; font-weight: 700; padding: 6px 10px; }
+    .quantity-save-btn { border: none; border-radius: 10px; background: #277863; color: #fff; font-size: 13px; font-weight: 600; padding: 7px 10px; }
     .quantity-save-btn:disabled { opacity: 0.6; }
-    .warnings-card { background: #fffbef; border: 1px solid #fde68a; border-radius: 16px; padding: 16px; }
-    .warning-title { color: #b45309; }
+    .warnings-card { background: #fffbef; border: 1px solid #E8BD4F; border-radius: 16px; padding: 16px; }
+    .warning-title { color: #b45502; font-size: 16px; font-weight: 600; }
     .warning-list { display: grid; gap: 8px; }
-    .warning-item { color: #92400e; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-    .warning-icon { color: #d97706; }
-    .section-title { margin: 8px 0; font-size: 16px; color: var(--ms-text); font-weight: 700; }
+    .warning-item { color: #b45502; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 10px 0; }
+    .warning-item:not(:last-child) { border-bottom: 0.5px solid #E8BD4F; }
+    .warning-icon { color: #b45502; }
+    .section-card { background: #ffffff; border-radius: 16px; padding: 16px; border: 1px solid var(--ms-divider); }
+    .section-title { margin: 8px 0; font-size: 14px; color: #1A2E29; font-weight: 600; }
     .schedule-card .section-title { margin-top: 10px; }
     .frequency-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
-    .frequency-btn { border: 1px solid var(--ms-divider); border-radius: 14px; padding: 10px 8px; font-size: 22px; font-weight: 700; background: var(--ms-surface); color: var(--ms-text); }
-    .frequency-btn.active { background: #1f7a60; color: #fff; border-color: #1f7a60; }
+    .frequency-btn { border: 1px solid var(--ms-divider); border-radius: 14px; padding: 10px 8px; font-size: 14px; font-weight: 600; background: var(--ms-surface); color: #1A2E29; }
+    .frequency-btn.active { background: #277863; color: #fff; border-color: #277863; }
     .frequency-meta { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
     .period-select, .day-select {
         appearance: none;
@@ -314,8 +318,8 @@ else
         background-repeat: no-repeat;
         background-position: right 12px center;
         background-size: 12px 8px;
-        color: var(--ms-text);
-        font-size: 15px;
+        color: #1A2E29;
+        font-size: 14px;
         font-weight: 600;
         text-align: left;
         text-align-last: left;
@@ -339,29 +343,52 @@ else
     .time-controls { display: flex; align-items: center; gap: 8px; }
     .clock-icon { color: var(--ms-text-muted); font-size: 22px; line-height: 1; margin-top: 0; }
     .time-wheel-box { border: 1px solid var(--ms-divider); border-radius: 14px; background: transparent; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
-    .time-wheel-part { width: 52px; height: 36px; border: none; outline: none; background: transparent; color: var(--ms-text); font-size: 22px; font-weight: 700; text-align: center; padding: 0; line-height: 1; }
-    .time-wheel-part option { font-size: 20px; }
-    .time-separator { color: var(--ms-text); font-size: 22px; font-weight: 700; line-height: 1; }
-    .toggle-row { margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: var(--ms-text); font-size: 16px; font-weight: 600; }
-    .notes-area { width: 100%; min-height: 90px; border: 1px solid var(--ms-divider); border-radius: 12px; padding: 10px 12px; font-size: 16px; color: var(--ms-text); background: var(--ms-surface); resize: vertical; }
+    .time-wheel-part { width: 52px; height: 36px; border: none; outline: none; background: transparent; color: #1A2E29; font-size: 16px; font-weight: 600; text-align: center; padding: 0; line-height: 1; }
+    .time-wheel-part option { font-size: 16px; }
+    .time-separator { color: #1A2E29; font-size: 16px; font-weight: 600; line-height: 1; }
+    .toggle-row { margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: #1A2E29; font-size: 14px; font-weight: 600; }
+    .notes-area { width: 100%; min-height: 90px; border: 1px solid var(--ms-divider); border-radius: 12px; padding: 10px 12px; font-size: 14px; color: #1A2E29; background: var(--ms-surface); resize: vertical; }
     .switch { position: relative; display: inline-block; width: 48px; height: 28px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; inset: 0; background-color: #d3d9db; transition: .2s; border-radius: 999px; }
     .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; top: 4px; background-color: #fff; transition: .2s; border-radius: 50%; }
-    .switch input:checked + .slider { background-color: #1f7a60; }
+    .switch input:checked + .slider { background-color: #277863; }
     .switch input:checked + .slider:before { transform: translateX(20px); }
-    .save-schedule-btn,.add-schedule-btn { margin-top: 14px; border: 0; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #1f7a60; color: #fff; }
-    .end-schedule-btn { margin-top: 10px; border: 1px solid #f3b7be; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #fde9eb; color: #ab3f4c; }
-    .delete-med-btn { margin-top: 4px; border: 1px solid #f3b7be; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: #fde9eb; color: #ab3f4c; }
+    .save-schedule-btn,.add-schedule-btn { margin-top: 14px; border: 0; width: 100%; border-radius: 14px; padding: 12px; font-size: 16px; font-weight: 600; background: #277863; color: #fff; }
+    .end-schedule-btn { margin-top: 10px; border: 1px solid #f3b7be; width: 100%; border-radius: 14px; padding: 12px; font-size: 16px; font-weight: 600; background: #fde9eb; color: #ab3f4c; }
+    .delete-med-btn { margin-top: 4px; border: 1px solid #f3b7be; width: 100%; border-radius: 14px; padding: 12px; font-size: 16px; font-weight: 600; background: #fde9eb; color: #ab3f4c; }
     .one-time-in-card-btn { margin-top: 10px; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 2000; }
     .take-once-modal { width: min(420px, 100%); background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 16px; padding: 16px; box-shadow: 0 20px 60px rgba(15, 23, 42, 0.28); }
     .take-once-modal h3 { margin: 0 0 8px; color: var(--ms-text); font-size: 20px; font-weight: 800; }
     .take-once-modal p { margin: 0; color: var(--ms-text); font-size: 16px; line-height: 1.45; }
     .take-once-actions { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .confirm-btn { border: none; border-radius: 12px; padding: 10px 12px; font-size: 16px; font-weight: 700; background: #0f766e; color: #fff; }
-    .cancel-btn { border: 1px solid var(--ms-divider); border-radius: 12px; padding: 10px 12px; font-size: 16px; font-weight: 700; background: var(--ms-surface); color: var(--ms-text); }
-    .action-pdf { margin-top: 10px; border: 2px solid #267863; width: 100%; border-radius: 14px; padding: 12px; font-size: 18px; font-weight: 700; background: transparent; color: #267863; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+    .confirm-btn { border: none; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: 600; background: #277863; color: #fff; }
+    .cancel-btn { border: 2px solid #277863; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: 600; background: #ffffff; color: #277863; }
+    .action-pdf {
+        background-color: #ffffff;
+        color: #277863;
+        border: 2px solid #277863;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: all 0.1s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .action-pdf:active {
+        transform: scale(0.98);
+        background-color: #f0f7f5;
+    }
+    .action-pdf:disabled {
+        opacity: 0.7;
+        transform: none;
+    }
     .error-box,.success-box { border-radius: 14px; padding: 12px; font-size: 15px; margin: 12px 16px 0; }
     .error-box { background: #fde9eb; color: #ab3f4c; }
     .success-box { background: #e7f4ed; color: #1f7a60; }
