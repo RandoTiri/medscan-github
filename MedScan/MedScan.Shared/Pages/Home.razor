@@ -228,7 +228,7 @@ else
                 @if (_showLastUnitConfirmation)
                 {
                     <div class="confirm-box">
-                        See on skännitud karbi viimane ravim. Kui märgid annuse võetuks, on kogus 0tk ning ravim kustutatakse.
+                        <strong>See viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.</strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
                         <div class="confirm-box-actions">
                             <button type="button" class="confirm-yes" disabled="@_isUpdatingDose" @onclick="ConfirmLastUnitDoneAsync">Jah</button>
                             <button type="button" class="confirm-no" disabled="@_isUpdatingDose" @onclick="CancelLastUnitConfirmation">Ei</button>
@@ -1252,8 +1252,7 @@ else
             _showEarlyDoneConfirmation = false;
             _showLastUnitConfirmation = false;
             _earlyDoneMinutesRemaining = 0;
-            var medicationRemovedFromStock = result.RemainingQuantity.HasValue && result.RemainingQuantity.Value <= 0;
-            if (medicationRemovedFromStock || string.IsNullOrWhiteSpace(result.StockWarning))
+            if (string.IsNullOrWhiteSpace(result.StockWarning))
             {
                 CloseDoseModal();
             }

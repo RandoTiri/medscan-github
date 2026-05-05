@@ -251,6 +251,7 @@ public sealed class MedicationsController(
 
         var stockWarning = string.Empty;
         int? remainingQuantity = null;
+        var removedFromEverywhere = false;
         var shouldDecreaseStock = dto.Status == DoseStatusEnum.Done && previousStatus != DoseStatusEnum.Done;
         if (shouldDecreaseStock)
         {
@@ -266,6 +267,7 @@ public sealed class MedicationsController(
                     // Quantity constraint is > 0, so remove last pack row directly.
                     dbContext.HomePharmacyItems.Remove(stockItem);
                     remainingQuantity = 0;
+                    removedFromEverywhere = true;
                 }
                 else
                 {
@@ -273,15 +275,51 @@ public sealed class MedicationsController(
                     remainingQuantity = stockItem.Quantity;
                 }
 
-                if (remainingQuantity <= 3)
+                if (remainingQuantity <= 5)
                 {
                     var medName = userMedication.Medication?.Name ?? "Ravim";
-                    stockWarning = $"{medName}: alles on {remainingQuantity} tk. Vajadusel osta juurde, kui jätkad võtmist.";
+                    if (remainingQuantity == 0)
+                    {
+                        stockWarning = $"SEE OLI VIIMANE TABLETT. Pärast märkimist kustub ravim raviskeemist ja ravimite nimekirjast. Kui jätkad ravimi võtmist, skänni uus karp ja lisa ravim uuesti enda raviskeemi.";
+                    }
+                    else
+                    {
+                        stockWarning = $"NB seda ravimit on alles vaid {remainingQuantity} tk. Kui jätkad sama raviskeemi, osta uus karp.";
+                    }
                 }
             }
         }
 
+        if (removedFromEverywhere)
+        {
+            var allActiveSchedules = await dbContext.UserMedications
+                .Where(um =>
+                    um.ProfileId == userMedication.ProfileId &&
+                    um.MedicationId == userMedication.MedicationId &&
+                    um.IsActive)
+                .ToListAsync();
+
+            if (allActiveSchedules.Count > 0)
+            {
+                dbContext.UserMedications.RemoveRange(allActiveSchedules);
+            }
+        }
+
         await dbContext.SaveChangesAsync();
+
+        if (removedFromEverywhere)
+        {
+            return Ok(new UserMedicationDto
+            {
+                Id = id,
+                ProfileId = userMedication.ProfileId,
+                MedicationId = userMedication.MedicationId,
+                MedicationName = userMedication.Medication?.Name ?? string.Empty,
+                IsActive = false,
+                RemainingQuantity = 0,
+                StockWarning = string.IsNullOrWhiteSpace(stockWarning) ? null : stockWarning
+            });
+        }
 
         var updated = await medicationService.GetByIdAsync(id);
         if (updated is null)
