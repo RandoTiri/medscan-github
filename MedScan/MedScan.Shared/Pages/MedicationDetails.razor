@@ -280,7 +280,8 @@ else
     .back-link { display: inline-flex; align-items: center; border: none; background: transparent; color: #277863; font-size: 16px; font-weight: 700; cursor: pointer; padding: 10px 0; }
     .back-link svg { margin-right: 8px; width: 24px; height: 24px; }
     .content-scroll { background: var(--ms-bg); padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-    .header-card,.info-card,.schedule-card { background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 16px; padding: 16px; }
+    .header-card,.info-card { background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 16px; padding: 16px; }
+    .schedule-card { background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 14px; padding: 14px; }
     .header-card { display: flex; gap: 14px; align-items: center; }
     .pill-icon { width: 62px; height: 62px; border-radius: 14px; background: #e6f2ee; color: #267863; display: grid; place-items: center; font-size: 28px; font-weight: 700; }
     .header-info h2 { margin: 0 0 4px; font-size: 22px; color: var(--ms-text); font-weight: 800; }
@@ -302,11 +303,18 @@ else
     .warning-item:not(:last-child) { border-bottom: 0.5px solid #E8BD4F; }
     .warning-icon { color: #b45502; }
     .section-card { background: #ffffff; border-radius: 16px; padding: 16px; border: 1px solid var(--ms-divider); }
-    .section-title { margin: 8px 0; font-size: 14px; color: #1A2E29; font-weight: 600; }
-    .schedule-card .section-title { margin-top: 10px; }
+    .section-title {
+        margin: 0 0 8px 0;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 16px;
+        color: #1A2E29;
+        font-weight: 700;
+        letter-spacing: 0;
+    }
+    .schedule-card .section-title { margin-top: 0; }
     .frequency-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
-    .frequency-btn { border: 1px solid var(--ms-divider); border-radius: 14px; padding: 10px 8px; font-size: 14px; font-weight: 600; background: var(--ms-surface); color: #1A2E29; }
-    .frequency-btn.active { background: #277863; color: #fff; border-color: #277863; }
+    .frequency-btn { border: 1px solid var(--ms-divider); border-radius: 14px; padding: 12px 8px; font-size: 22px; font-weight: 700; background: var(--ms-surface); color: #1A2E29; }
+    .frequency-btn.active { background: #1f7a60; color: #fff; border-color: #1f7a60; }
     .frequency-meta { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
     .period-select, .day-select {
         appearance: none;
@@ -319,14 +327,14 @@ else
         background-position: right 12px center;
         background-size: 12px 8px;
         color: #1A2E29;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
         text-align: left;
         text-align-last: left;
         padding: 10px 36px 10px 12px;
     }
     .day-select { min-width: 124px; }
-    .time-title { margin-top: 10px; }
+    .time-title { margin-top: 12px; }
     .time-row {
         border: 1px solid var(--ms-divider);
         border-radius: 14px;
@@ -335,7 +343,7 @@ else
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         flex-wrap: wrap;
     }
     .time-row.without-day { justify-content: flex-start; width: fit-content; max-width: 100%; }
@@ -343,10 +351,10 @@ else
     .time-controls { display: flex; align-items: center; gap: 8px; }
     .clock-icon { color: var(--ms-text-muted); font-size: 22px; line-height: 1; margin-top: 0; }
     .time-wheel-box { border: 1px solid var(--ms-divider); border-radius: 14px; background: transparent; display: flex; align-items: center; justify-content: center; padding: 8px 10px; }
-    .time-wheel-part { width: 52px; height: 36px; border: none; outline: none; background: transparent; color: #1A2E29; font-size: 16px; font-weight: 600; text-align: center; padding: 0; line-height: 1; }
-    .time-wheel-part option { font-size: 16px; }
-    .time-separator { color: #1A2E29; font-size: 16px; font-weight: 600; line-height: 1; }
-    .toggle-row { margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: #1A2E29; font-size: 14px; font-weight: 600; }
+    .time-wheel-part { width: 52px; height: 36px; border: none; outline: none; background: transparent; color: #1A2E29; font-size: 22px; font-weight: 700; text-align: center; padding: 0; line-height: 1; }
+    .time-wheel-part option { font-size: 20px; color: #1A2E29; }
+    .time-separator { color: #1A2E29; font-size: 22px; font-weight: 700; line-height: 1; }
+    .toggle-row { margin-top: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; color: #1A2E29; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 16px; font-weight: 700; }
     .notes-area { width: 100%; min-height: 90px; border: 1px solid var(--ms-divider); border-radius: 12px; padding: 10px 12px; font-size: 14px; color: #1A2E29; background: var(--ms-surface); resize: vertical; }
     .switch { position: relative; display: inline-block; width: 48px; height: 28px; }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -398,7 +406,7 @@ else
     .time-wheel-part option,
     .quantity-select option {
         background: var(--ms-surface);
-        color: var(--ms-text);
+        color: #1A2E29;
     }
 </style>
 
