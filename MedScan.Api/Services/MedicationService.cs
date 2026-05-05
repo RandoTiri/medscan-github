@@ -46,6 +46,13 @@ public sealed class MedicationService : IMedicationService
         var normalizedWeeklyDays = NormalizeWeeklyDays(dto.ScheduleUnit, dto.FrequencyPerDay, dto.WeeklyDays);
         var startDate = dto.StartDate ?? DateOnly.FromDateTime(DateTime.Now);
 
+        var existingActiveSchedules = await _userMedicationRepository
+            .GetTrackedActiveByProfileAndMedicationAsync(dto.ProfileId, dto.MedicationId);
+        foreach (var existing in existingActiveSchedules)
+        {
+            existing.IsActive = false;
+        }
+
         var userMedication = new UserMedication
         {
             ProfileId = dto.ProfileId,
@@ -65,7 +72,7 @@ public sealed class MedicationService : IMedicationService
         await _userMedicationRepository.AddAsync(userMedication);
         await _userMedicationRepository.SaveChangesAsync();
 
-        var created = await _userMedicationRepository.GetByIdAsync(userMedication.Id)
+        var created = await _userMedicationRepository.GetByIdRawAsync(userMedication.Id)
             ?? throw new InvalidOperationException("Created medication could not be reloaded.");
 
         return MapToDto(created);
@@ -97,7 +104,7 @@ public sealed class MedicationService : IMedicationService
 
         await _userMedicationRepository.SaveChangesAsync();
 
-        var updated = await _userMedicationRepository.GetByIdAsync(userMedicationId)
+        var updated = await _userMedicationRepository.GetByIdRawAsync(userMedicationId)
             ?? throw new InvalidOperationException("Updated medication could not be reloaded.");
 
         return MapToDto(updated);
@@ -111,7 +118,7 @@ public sealed class MedicationService : IMedicationService
             return false;
         }
 
-        _userMedicationRepository.Remove(userMedication);
+        userMedication.IsActive = false;
         await _userMedicationRepository.SaveChangesAsync();
 
         return true;

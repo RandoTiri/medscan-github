@@ -280,11 +280,11 @@ public sealed class MedicationsController(
                     var medName = userMedication.Medication?.Name ?? "Ravim";
                     if (remainingQuantity == 0)
                     {
-                        stockWarning = $"SEE OLI VIIMANE TABLETT. Pärast märkimist kustub ravim raviskeemist ja ravimite nimekirjast. Kui jätkad ravimi võtmist, skänni uus karp ja lisa ravim uuesti enda raviskeemi.";
+                        stockWarning = $"PAKI VIIMANE RAVIM. Pärast märkimist kustub see raviskeemist ja ravimite nimekirjast. Kui jätkad  võtmist, skänni uus karp ja lisa ravim uuesti enda raviskeemi.";
                     }
                     else
                     {
-                        stockWarning = $"NB seda ravimit on alles vaid {remainingQuantity} tk. Kui jätkad sama raviskeemi, osta uus karp.";
+                        stockWarning = $"NB seda ravimit on alles vaid {remainingQuantity} ühikut. Kui jätkad sama raviskeemi, osta uus karp.";
                     }
                 }
             }
@@ -301,7 +301,10 @@ public sealed class MedicationsController(
 
             if (allActiveSchedules.Count > 0)
             {
-                dbContext.UserMedications.RemoveRange(allActiveSchedules);
+                foreach (var schedule in allActiveSchedules)
+                {
+                    schedule.IsActive = false;
+                }
             }
         }
 
