@@ -1,0 +1,52 @@
+.saved-screen {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        background: var(--ms-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        box-sizing: border-box;
+    }
+
+    .saved-card {
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
+        border-radius: 18px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 10px 24px rgba(30, 55, 45, 0.08);
+        max-width: 420px;
+        width: 100%;
+    }
+
+    .checkmark {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #1f7a60;
+        color: #fff;
+        font-size: 34px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 14px;
+    }
+
+    .saved-card h1 {
+        margin: 0 0 10px;
+        color: var(--ms-text);
+        font-size: 26px;
+        font-weight: 800;
+    }
+
+    .saved-card p {
+        margin: 0;
+        color: var(--ms-text-muted);
+        font-size: 17px;
+    }
