@@ -19,7 +19,7 @@
                 </svg>
             </div>
             <div class="success-message">Olete edukalt kasutaja loonud!</div>
-            <button class="btn-primary" @onclick="GoToLogin">Logi sisse</button>
+            <div class="redirect-message">Suuname avalehele...</div>
         </div>
     }
     else
@@ -199,6 +199,9 @@
 
             if (result.Success) {
                 RegistrationSuccessful = true;
+                StateHasChanged();
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/");
                 return;
             }
 
