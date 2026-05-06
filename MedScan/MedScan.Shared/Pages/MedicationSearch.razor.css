@@ -1,0 +1,209 @@
+.medicine-screen {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: var(--ms-bg);
+        min-height: 100vh;
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        margin-left: -50vw;
+        margin-top: -1.1rem;
+        box-sizing: border-box;
+        padding: 20px;
+        padding-top: calc(max(20px, env(safe-area-inset-top)) + 20px);
+        padding-bottom: calc(max(24px, env(safe-area-inset-bottom)) + 170px);
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    .medicine-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 6px 14px 6px;
+        border-bottom: 1px solid var(--ms-divider);
+    }
+
+    .medicine-header h1 {
+        margin: 0;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+        color: #1A2E29;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .header-spacer {
+        width: 56px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        border: none;
+        background: transparent;
+        color: #277863;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        padding: 10px 0;
+    }
+
+    .back-link svg {
+        margin-right: 8px;
+        width: 24px;
+        height: 24px;
+    }
+
+    .search-card {
+        background: var(--ms-surface);
+        border: 1px solid var(--ms-divider);
+        border-radius: 16px;
+        box-shadow: 0 8px 18px rgba(30, 55, 45, 0.08);
+        padding: 14px;
+        margin-top: 12px;
+    }
+
+    .manual-search-bar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+    }
+
+    .manual-search-bar input::placeholder {
+        color: #1A2E29;
+    }
+
+    .manual-search-bar input {
+        color: #1A2E29;
+    }
+
+    .search-btn {
+        border: 0;
+        border-radius: 12px;
+        background: #2f6f58;
+        color: #fff;
+        padding: 10px 14px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .manual-results {
+        margin-top: 12px;
+        display: grid;
+        gap: 8px;
+    }
+
+    .manual-result-item {
+        border: 1px solid var(--ms-divider);
+        border-radius: 12px;
+        background: var(--ms-surface-soft);
+        padding: 10px 14px;
+        text-align: left;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .manual-result-text {
+        display: grid;
+        gap: 2px;
+    }
+
+    .manual-result-text strong {
+        color: #1A2E29;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .manual-result-text span {
+        color: #1A2E29;
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    .add-indicator {
+        color: #277863;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding-right: 2px;
+        flex-shrink: 0;
+    }
+
+    .edit-card h3 {
+        margin: 0 0 6px 0;
+        font-size: 22px;
+        color: #132340;
+        font-weight: 800;
+    }
+
+    .meta-line {
+        margin: 0 0 10px 0;
+        color: #5e7072;
+        font-size: 15px;
+    }
+
+    .field-label {
+        display: block;
+        margin-top: 8px;
+        margin-bottom: 6px;
+        color: #132340;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .field-input {
+        width: 100%;
+        border: 1px solid var(--ms-divider);
+        border-radius: 12px;
+        background: var(--ms-surface-soft);
+        padding: 10px 12px;
+        font-size: 16px;
+        color: var(--ms-text);
+        box-sizing: border-box;
+    }
+
+    .field-input:focus {
+        outline: none;
+        border-color: #277863;
+    }
+
+    .field-textarea {
+        min-height: 92px;
+        resize: vertical;
+    }
+
+    .action-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(max(12px, env(safe-area-inset-bottom)) + 76px);
+        padding: 0 16px;
+        z-index: 40;
+    }
+
+    .action-save {
+        border: 0;
+        width: 100%;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-size: 16px;
+        font-weight: 700;
+        background: #2f6f58;
+        color: #fff;
+    }
+
+    .error-box {
+        border-radius: 14px;
+        padding: 12px;
+        font-size: 15px;
+        margin-top: 12px;
+        background: var(--ms-danger-bg);
+        color: var(--ms-danger-text);
+    }
