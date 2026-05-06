@@ -143,7 +143,7 @@ else
             }
 
             <div class="section-header">
-                <h2>Hooldatavad</h2>
+                <h2>Hooldatavate tänane raviskeem</h2>
             </div>
 
             @if (_familyMedicationCards.Count == 0)
@@ -228,7 +228,7 @@ else
                 @if (_showLastUnitConfirmation)
                 {
                     <div class="confirm-box">
-                        <strong>See viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.</strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
+                        <strong>See on viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.</strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
                         <div class="confirm-box-actions">
                             <button type="button" class="confirm-yes" disabled="@_isUpdatingDose" @onclick="ConfirmLastUnitDoneAsync">Jah</button>
                             <button type="button" class="confirm-no" disabled="@_isUpdatingDose" @onclick="CancelLastUnitConfirmation">Ei</button>
