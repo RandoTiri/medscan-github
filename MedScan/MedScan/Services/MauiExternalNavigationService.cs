@@ -31,6 +31,25 @@ public sealed class MauiExternalNavigationService : IExternalNavigationService
             Body = body ?? string.Empty
         };
 
-        await Email.Default.ComposeAsync(message);
+        try
+        {
+            await Email.Default.ComposeAsync(message);
+        }
+        catch
+        {
+            var query = new List<string>();
+            if (!string.IsNullOrWhiteSpace(subject))
+            {
+                query.Add($"subject={Uri.EscapeDataString(subject)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(body))
+            {
+                query.Add($"body={Uri.EscapeDataString(body)}");
+            }
+
+            var queryString = query.Count > 0 ? "?" + string.Join("&", query) : string.Empty;
+            await Launcher.Default.OpenAsync(new Uri($"mailto:{emailAddress}{queryString}"));
+        }
     }
 }
