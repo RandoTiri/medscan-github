@@ -38,13 +38,30 @@ else
             <div class="manual-search-bar">
                 <input class="field-input"
                        placeholder="Otsi ravimit nime järgi"
-                       @bind="_query" />
+                       value="@_query"
+                       @oninput="OnQueryInputAsync" />
                 <button class="search-btn"
                         @onclick="SearchAsync"
                         disabled="@_isBusy">
                     Otsi
                 </button>
             </div>
+
+            @if (_suggestions.Count > 0)
+            {
+                <div class="search-suggestions">
+                    @foreach (var item in _suggestions)
+                    {
+                        <button class="manual-result-item" @onclick="() => SelectMedication(item)">
+                            <div class="manual-result-text">
+                                <strong>@item.Name</strong>
+                                <span>@item.ActiveIngredient</span>
+                            </div>
+                            <span class="add-indicator" aria-hidden="true">+</span>
+                        </button>
+                    }
+                </div>
+            }
 
             @if (_results.Count > 0)
             {
@@ -65,8 +82,6 @@ else
     </div>
 }
 
-
-
 @code {
     [SupplyParameterFromQuery] public int? ProfileId { get; set; }
 
@@ -75,6 +90,8 @@ else
     private int _targetProfileId;
     private string _query = string.Empty;
     private string? _message;
+    private int _suggestionRequestId;
+    private IReadOnlyList<MedicationLookupResult> _suggestions = [];
     private IReadOnlyList<MedicationLookupResult> _results = [];
 
     protected override async Task OnInitializedAsync()
@@ -115,12 +132,14 @@ else
         if (string.IsNullOrWhiteSpace(_query))
         {
             _message = "Sisesta ravimi nimi.";
+            _suggestions = [];
             _results = [];
             return;
         }
 
         _isBusy = true;
         _message = null;
+        _suggestions = [];
         _results = [];
 
         try
@@ -141,8 +160,40 @@ else
         }
     }
 
+    private async Task OnQueryInputAsync(ChangeEventArgs args)
+    {
+        _query = args.Value?.ToString() ?? string.Empty;
+        _message = null;
+
+        if (_query.Trim().Length < 3)
+        {
+            _suggestions = [];
+            return;
+        }
+
+        var requestId = ++_suggestionRequestId;
+        try
+        {
+            var lookupResults = await ScannerFlowService.SearchByNameAsync(_query, 8);
+            if (requestId != _suggestionRequestId)
+            {
+                return;
+            }
+
+            _suggestions = lookupResults;
+        }
+        catch
+        {
+            if (requestId == _suggestionRequestId)
+            {
+                _suggestions = [];
+            }
+        }
+    }
+
     private void SelectMedication(MedicationLookupResult medication)
     {
+        _suggestions = [];
         Navigation.NavigateTo($"/home-pharmacy/save-medication/{Uri.EscapeDataString(medication.Barcode)}?ProfileId={_targetProfileId}");
     }
 

@@ -95,6 +95,19 @@
         gap: 8px;
     }
 
+    .search-suggestions {
+        margin-top: 8px;
+        max-height: 320px;
+        overflow-y: auto;
+        display: grid;
+        gap: 8px;
+        border: 1px solid var(--ms-divider);
+        border-radius: 12px;
+        background: var(--ms-surface);
+        box-shadow: 0 8px 16px rgba(26, 46, 41, 0.14);
+        padding: 8px;
+    }
+
     .manual-result-item {
         border: 1px solid var(--ms-divider);
         border-radius: 12px;
