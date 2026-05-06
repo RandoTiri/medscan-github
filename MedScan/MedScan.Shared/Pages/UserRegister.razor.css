@@ -121,6 +121,12 @@
         color: #a0b6c2;
         display: flex;
         flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+    }
+    .input-icon svg {
+        width: 20px;
+        height: 20px;
     }
     .input-action {
         color: #a0b6c2;
