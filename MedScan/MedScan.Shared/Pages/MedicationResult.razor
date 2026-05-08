@@ -1,4 +1,4 @@
-@page "/home-pharmacy/save-medication/{Barcode}"
+﻿@page "/home-pharmacy/save-medication/{Barcode}"
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject NavigationManager Navigation
@@ -100,11 +100,11 @@ else
                         Hoiatused
                     </div>
                     <div class="warning-list">
-                        @foreach (var warning in _medication.Warnings.Split(new[] { '\n', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        @foreach (var warning in SplitWarnings(_medication.Warnings))
                         {
                             <div class="warning-item">
-                                <span class="warning-icon">⚠</span>
-                                <span>@warning.Trim()</span>
+                                <span class="warning-icon">&#9888;</span>
+                                <span>@warning</span>
                             </div>
                         }
                     </div>
@@ -146,7 +146,7 @@ else
     private string? _message;
     private DateOnly? _expirationDate;
     private string? _batchNumber;
-    private string ShelfLifeDisplay => (_expirationDate ?? DateOnly.FromDateTime(DateTime.Now.AddYears(2))).ToString("dd.MM.yyyy");
+    private string ShelfLifeDisplay => _expirationDate?.ToString("dd.MM.yyyy") ?? "Puudub";
 
     protected override async Task OnInitializedAsync()
     {
@@ -281,4 +281,21 @@ else
         var digits = new string(packSize.Where(char.IsDigit).ToArray());
         return string.IsNullOrWhiteSpace(digits) ? packSize.Trim() : digits;
     }
+
+    private static IEnumerable<string> SplitWarnings(string? warnings)
+    {
+        if (string.IsNullOrWhiteSpace(warnings))
+        {
+            return [];
+        }
+
+        return warnings
+            .Split(['\n', ';', '.'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => x.EndsWith('.') ? x : $"{x}.")
+            .Where(x => !string.IsNullOrWhiteSpace(x));
+    }
 }
+
+
+
+

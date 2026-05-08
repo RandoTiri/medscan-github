@@ -1,4 +1,4 @@
-@page "/home-pharmacy/details/{Id:int}"
+﻿@page "/home-pharmacy/details/{Id:int}"
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Models.Enums
@@ -126,11 +126,11 @@ else
                         Hoiatused
                     </div>
                     <div class="warning-list">
-                        @foreach (var warning in _item.Warnings.Split(new[] { '\n', ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        @foreach (var warning in SplitWarnings(_item.Warnings))
                         {
                             <div class="warning-item">
-                                <span class="warning-icon">⚠</span>
-                                <span>@warning.Trim()</span>
+                                <span class="warning-icon">&#9888;</span>
+                                <span>@warning</span>
                             </div>
                         }
                     </div>
@@ -994,5 +994,24 @@ else
     {
         return string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
     }
+
+    
+    private static IEnumerable<string> SplitWarnings(string? warnings)
+    {
+        if (string.IsNullOrWhiteSpace(warnings))
+        {
+            return [];
+        }
+
+        return warnings
+            .Split(['\n', ';', '.'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => x.EndsWith('.') ? x : $"{x}.")
+            .Where(x => !string.IsNullOrWhiteSpace(x));
+    }
 }
+
+
+
+
+
 

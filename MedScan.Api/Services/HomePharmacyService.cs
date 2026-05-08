@@ -11,6 +11,23 @@ public sealed class HomePharmacyService(
     IMedicationRepository medicationRepository,
     AppDbContext dbContext) : IHomePharmacyService
 {
+    // Prototüübi jaoks: vaikimisi aegumiskuupäevad barcode alusel.
+    private static readonly IReadOnlyDictionary<string, DateOnly> SeededExpiryByBarcode =
+        new Dictionary<string, DateOnly>(StringComparer.Ordinal)
+        {
+            ["3800010640916"] = new(2030, 7, 31),
+            ["3800010646529"] = new(2030, 3, 31),
+            ["5055565732748"] = new(2030, 3, 31),
+            ["5010123729189"] = new(2027, 6, 30),
+            ["4013054029832"] = new(2028, 11, 30),
+            ["04030855234233"] = new(2030, 2, 28),
+            ["05290931027022"] = new(2029, 10, 31),
+            ["07613421029043"] = new(2027, 6, 30),
+            ["03582910055372"] = new(2027, 12, 31),
+            ["4742041002907"] = new(2026, 7, 31),
+            ["5000158104273"] = new(2027, 1, 31)
+        };
+
     public async Task<IEnumerable<HomePharmacyItemDto>> GetByProfileIdAsync(int profileId)
     {
         var items = await homePharmacyRepository.GetByProfileIdAsync(profileId);
@@ -42,6 +59,27 @@ public sealed class HomePharmacyService(
             Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
             AddedAt = DateTime.UtcNow
         };
+
+        // Kui skannist aegumiskuupäeva ei tulnud:
+        // 1) kasuta prototüübi seeditud barcode->expiry kaarti,
+        // 2) muidu kasuta sama ravimi olemasolevat kuupäeva.
+        if (item.ExpiresOn is null)
+        {
+            if (!string.IsNullOrWhiteSpace(medication.Barcode) &&
+                SeededExpiryByBarcode.TryGetValue(medication.Barcode, out var seededExpiry))
+            {
+                item.ExpiresOn = seededExpiry;
+            }
+            else
+            {
+                item.ExpiresOn = await dbContext.HomePharmacyItems
+                    .AsNoTracking()
+                    .Where(x => x.MedicationId == dto.MedicationId && x.ExpiresOn != null)
+                    .OrderBy(x => x.ExpiresOn)
+                    .Select(x => x.ExpiresOn)
+                    .FirstOrDefaultAsync();
+            }
+        }
 
         await homePharmacyRepository.AddAsync(item);
         await homePharmacyRepository.SaveChangesAsync();
