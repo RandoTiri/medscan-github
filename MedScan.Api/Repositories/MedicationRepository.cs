@@ -52,14 +52,6 @@ public sealed class MedicationRepository : IMedicationRepository {
             .ToListAsync();
     }
 
-    public async Task AddAsync(Medication medication) {
-        await _db.Medications.AddAsync(medication);
-    }
-
-    public Task SaveChangesAsync() {
-        return _db.SaveChangesAsync();
-    }
-
     private static HashSet<string> BuildBarcodeVariants(string barcode)
     {
         var variants = new HashSet<string>(StringComparer.Ordinal);

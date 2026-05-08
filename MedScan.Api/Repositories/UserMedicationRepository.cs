@@ -178,10 +178,6 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
         await _dbContext.UserMedications.AddAsync(userMedication);
     }
 
-    public void Remove(UserMedication userMedication) {
-        _dbContext.UserMedications.Remove(userMedication);
-    }
-
     public Task SaveChangesAsync() {
         return _dbContext.SaveChangesAsync();
     }

@@ -1,9 +1,11 @@
 using System.Text.Json;
+using MedScan.Api.Data;
 using MedScan.Api.Repositories;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedScan.Api.Services;
 
@@ -11,13 +13,16 @@ public sealed class MedicationService : IMedicationService
 {
     private readonly IUserMedicationRepository _userMedicationRepository;
     private readonly IMedicationRepository _medicationRepository;
+    private readonly AppDbContext _dbContext;
 
     public MedicationService(
         IUserMedicationRepository userMedicationRepository,
-        IMedicationRepository medicationRepository)
+        IMedicationRepository medicationRepository,
+        AppDbContext dbContext)
     {
         _userMedicationRepository = userMedicationRepository;
         _medicationRepository = medicationRepository;
+        _dbContext = dbContext;
     }
 
     public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId, DateOnly? forDate = null)
@@ -124,19 +129,264 @@ public sealed class MedicationService : IMedicationService
         return true;
     }
 
-    public Task<UserMedicationDto?> UpdateStatusAsync(int userMedicationId, UpdateMedicationStatusDto dto)
+    public async Task<UserMedicationDto?> UpdateStatusAsync(int userMedicationId, UpdateMedicationStatusDto dto)
     {
-        throw new NotSupportedException("Status updates are handled by MedicationsController.");
+        var userMedication = await _dbContext.UserMedications
+            .Include(um => um.Medication)
+            .Include(um => um.DoseLogs)
+            .FirstOrDefaultAsync(um => um.Id == userMedicationId);
+
+        if (userMedication is null)
+        {
+            return null;
+        }
+
+        var nowLocal = DateTime.Now;
+        var localDate = nowLocal.Date;
+        var resolvedTime = dto.ScheduledTime ?? TimeOnly.FromDateTime(nowLocal);
+        var scheduledUtc = DateTime.SpecifyKind(localDate.Add(resolvedTime.ToTimeSpan()), DateTimeKind.Local)
+            .ToUniversalTime();
+
+        var existingLog = userMedication.DoseLogs
+            .Where(log => log.ScheduledTime == scheduledUtc)
+            .OrderByDescending(log => log.Id)
+            .FirstOrDefault();
+
+        var previousStatus = existingLog?.DoseStatus;
+        if (existingLog is null)
+        {
+            existingLog = new DoseLog
+            {
+                UserMedicationId = userMedication.Id,
+                ScheduledTime = scheduledUtc,
+                DoseStatus = dto.Status,
+                TakenAt = dto.Status == DoseStatusEnum.Done ? DateTime.UtcNow : null
+            };
+            _dbContext.DoseLogs.Add(existingLog);
+        }
+        else
+        {
+            existingLog.DoseStatus = dto.Status;
+            existingLog.TakenAt = dto.Status == DoseStatusEnum.Done ? DateTime.UtcNow : null;
+        }
+
+        var stockWarning = string.Empty;
+        int? remainingQuantity = null;
+        var removedFromEverywhere = false;
+        var shouldDecreaseStock = dto.Status == DoseStatusEnum.Done && previousStatus != DoseStatusEnum.Done;
+        if (shouldDecreaseStock)
+        {
+            var stockItem = await _dbContext.HomePharmacyItems
+                .Where(item => item.ProfileId == userMedication.ProfileId && item.MedicationId == userMedication.MedicationId)
+                .OrderByDescending(item => item.AddedAt)
+                .FirstOrDefaultAsync();
+
+            if (stockItem is not null && stockItem.Quantity > 0)
+            {
+                if (stockItem.Quantity == 1)
+                {
+                    _dbContext.HomePharmacyItems.Remove(stockItem);
+                    remainingQuantity = 0;
+                    removedFromEverywhere = true;
+                }
+                else
+                {
+                    stockItem.Quantity -= 1;
+                    remainingQuantity = stockItem.Quantity;
+                }
+
+                if (remainingQuantity <= 5)
+                {
+                    stockWarning = remainingQuantity == 0
+                        ? "PAKI VIIMANE RAVIM. Pärast märkimist kustub see raviskeemist ja ravimite nimekirjast. Kui jätkad  võtmist, skänni uus karp ja lisa ravim uuesti enda raviskeemi."
+                        : $"NB seda ravimit on alles vaid {remainingQuantity} tk. Kui jätkad sama raviskeemi, osta uus karp.";
+                }
+            }
+        }
+
+        if (removedFromEverywhere)
+        {
+            var allActiveSchedules = await _dbContext.UserMedications
+                .Where(um =>
+                    um.ProfileId == userMedication.ProfileId &&
+                    um.MedicationId == userMedication.MedicationId &&
+                    um.IsActive)
+                .ToListAsync();
+
+            foreach (var schedule in allActiveSchedules)
+            {
+                schedule.IsActive = false;
+            }
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        if (removedFromEverywhere)
+        {
+            return new UserMedicationDto
+            {
+                Id = userMedicationId,
+                ProfileId = userMedication.ProfileId,
+                MedicationId = userMedication.MedicationId,
+                MedicationName = userMedication.Medication?.Name ?? string.Empty,
+                IsActive = false,
+                RemainingQuantity = 0,
+                StockWarning = string.IsNullOrWhiteSpace(stockWarning) ? null : stockWarning
+            };
+        }
+
+        var updated = await GetByIdAsync(userMedicationId);
+        if (updated is null)
+        {
+            return null;
+        }
+
+        updated.RemainingQuantity = remainingQuantity;
+        updated.StockWarning = string.IsNullOrWhiteSpace(stockWarning) ? null : stockWarning;
+        return updated;
     }
 
-    public Task<IEnumerable<DoseHistoryItemDto>> GetHistoryAsync(int profileId, DateOnly date)
+    public async Task<IEnumerable<DoseHistoryItemDto>> GetHistoryAsync(int profileId, DateOnly date)
     {
-        throw new NotSupportedException("History is handled by MedicationsController.");
+        var localStart = DateTime.SpecifyKind(date.ToDateTime(TimeOnly.MinValue), DateTimeKind.Local);
+        var localEnd = localStart.AddDays(1);
+        var utcStart = localStart.ToUniversalTime();
+        var utcEnd = localEnd.ToUniversalTime();
+
+        return await _dbContext.DoseLogs
+            .AsNoTracking()
+            .Include(log => log.UserMedication)
+                .ThenInclude(um => um.Medication)
+            .Where(log =>
+                log.UserMedication.ProfileId == profileId &&
+                log.ScheduledTime >= utcStart &&
+                log.ScheduledTime < utcEnd)
+            .OrderBy(log => log.ScheduledTime)
+            .Select(log => new DoseHistoryItemDto
+            {
+                MedicationName = log.UserMedication.Medication.Name,
+                Strength = log.UserMedication.Medication.StrengthMg,
+                ScheduledTime = log.ScheduledTime,
+                Status = log.DoseStatus
+            })
+            .ToListAsync();
     }
 
-    public Task<TakeMedicationOnceResultDto> TakeOnceAsync(int medicationId, TakeMedicationOnceDto dto)
+    public async Task<TakeMedicationOnceResultDto> TakeOnceAsync(int medicationId, TakeMedicationOnceDto dto)
     {
-        throw new NotSupportedException("One-time take is handled by MedicationsController.");
+        if (dto.ProfileId <= 0)
+        {
+            return new TakeMedicationOnceResultDto
+            {
+                Success = false,
+                Message = "Profiil puudub."
+            };
+        }
+
+        var quantityToTake = dto.Quantity <= 0 ? 1 : dto.Quantity;
+        var medication = await _dbContext.Medications
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.Id == medicationId);
+
+        if (medication is null)
+        {
+            return new TakeMedicationOnceResultDto
+            {
+                Success = false,
+                Message = "Ravimit ei leitud."
+            };
+        }
+
+        var stockItem = await _dbContext.HomePharmacyItems
+            .Where(item => item.ProfileId == dto.ProfileId && item.MedicationId == medicationId)
+            .OrderByDescending(item => item.AddedAt)
+            .FirstOrDefaultAsync();
+
+        if (stockItem is null || stockItem.Quantity <= 0)
+        {
+            return new TakeMedicationOnceResultDto
+            {
+                Success = false,
+                Message = "Ravimit ei ole koduses varus."
+            };
+        }
+
+        if (stockItem.Quantity == 1 && !dto.ConfirmLastUnit)
+        {
+            return new TakeMedicationOnceResultDto
+            {
+                Success = false,
+                RequiresLastUnitConfirmation = true,
+                RemainingQuantity = 1,
+                Message = "See on viimane ühik. Võtmisega jätkates pead uue paki ostma."
+            };
+        }
+
+        if (stockItem.Quantity < quantityToTake)
+        {
+            return new TakeMedicationOnceResultDto
+            {
+                Success = false,
+                Message = $"Kodus on alles {stockItem.Quantity} tk. Vähenda võetavat kogust."
+            };
+        }
+
+        var takenAt = DateTime.UtcNow;
+        var activeMedication = await _dbContext.UserMedications
+            .Where(um => um.ProfileId == dto.ProfileId && um.MedicationId == medicationId && um.IsActive)
+            .OrderByDescending(um => um.Id)
+            .FirstOrDefaultAsync();
+
+        var medicationForLog = activeMedication;
+        if (medicationForLog is null)
+        {
+            medicationForLog = new UserMedication
+            {
+                ProfileId = dto.ProfileId,
+                MedicationId = medicationId,
+                Frequency = 1,
+                ScheduleUnit = MedicationScheduleUnit.Day,
+                ScheduledTimesJson = "[\"08:00:00\"]",
+                WeeklyDaysJson = "[]",
+                StartDate = DateOnly.FromDateTime(DateTime.Now),
+                RemindersEnabled = false,
+                Notes = string.IsNullOrWhiteSpace(dto.Notes) ? "Ühekordne võtmine" : dto.Notes.Trim(),
+                IsActive = false,
+                AddedAt = DateTime.UtcNow
+            };
+
+            _dbContext.UserMedications.Add(medicationForLog);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        _dbContext.DoseLogs.Add(new DoseLog
+        {
+            UserMedicationId = medicationForLog.Id,
+            ScheduledTime = takenAt,
+            TakenAt = takenAt,
+            DoseStatus = DoseStatusEnum.Done
+        });
+
+        var remaining = stockItem.Quantity - quantityToTake;
+        var removed = remaining <= 0;
+        if (removed)
+        {
+            _dbContext.HomePharmacyItems.Remove(stockItem);
+        }
+        else
+        {
+            stockItem.Quantity = remaining;
+        }
+
+        await _dbContext.SaveChangesAsync();
+
+        return new TakeMedicationOnceResultDto
+        {
+            Success = true,
+            RemainingQuantity = removed ? 0 : remaining,
+            RemovedFromHomePharmacy = removed,
+            Message = "Salvestatud logisse, meeldetuletust ei looda."
+        };
     }
 
     private static UserMedicationDto MapToDto(UserMedication userMedication, DateOnly? forDate = null)
