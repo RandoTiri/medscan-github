@@ -67,7 +67,6 @@ public sealed class MedicationService : IMedicationService
             ScheduledTimesJson = SerializeTimes(normalizedTimes),
             WeeklyDaysJson = SerializeWeeklyDays(normalizedWeeklyDays),
             StartDate = startDate,
-            ExpiresOn = dto.ExpiresOn,
             RemindersEnabled = dto.RemindersEnabled,
             Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
             IsActive = true,
@@ -103,7 +102,6 @@ public sealed class MedicationService : IMedicationService
         userMedication.ScheduledTimesJson = SerializeTimes(normalizedTimes);
         userMedication.WeeklyDaysJson = SerializeWeeklyDays(normalizedWeeklyDays);
         userMedication.StartDate = dto.StartDate ?? userMedication.StartDate;
-        userMedication.ExpiresOn = dto.ExpiresOn;
         userMedication.RemindersEnabled = dto.RemindersEnabled;
         userMedication.Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim();
 

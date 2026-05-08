@@ -32,7 +32,12 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 ScheduledTimesJson = x.ScheduledTimesJson,
                 WeeklyDaysJson = x.WeeklyDaysJson,
                 StartDate = x.StartDate,
-                ExpiresOn = x.ExpiresOn,
+                ExpiresOn = _dbContext.HomePharmacyItems
+                    .Where(item =>
+                        item.ProfileId == x.ProfileId &&
+                        item.MedicationId == x.MedicationId &&
+                        item.Quantity > 0)
+                    .Min(item => item.ExpiresOn),
                 RemindersEnabled = x.RemindersEnabled,
                 Notes = x.Notes,
                 AddedAt = x.AddedAt,
@@ -83,7 +88,12 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 ScheduledTimesJson = x.ScheduledTimesJson,
                 WeeklyDaysJson = x.WeeklyDaysJson,
                 StartDate = x.StartDate,
-                ExpiresOn = x.ExpiresOn,
+                ExpiresOn = _dbContext.HomePharmacyItems
+                    .Where(item =>
+                        item.ProfileId == x.ProfileId &&
+                        item.MedicationId == x.MedicationId &&
+                        item.Quantity > 0)
+                    .Min(item => item.ExpiresOn),
                 RemindersEnabled = x.RemindersEnabled,
                 Notes = x.Notes,
                 AddedAt = x.AddedAt,
@@ -128,7 +138,12 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 ScheduledTimesJson = x.ScheduledTimesJson,
                 WeeklyDaysJson = x.WeeklyDaysJson,
                 StartDate = x.StartDate,
-                ExpiresOn = x.ExpiresOn,
+                ExpiresOn = _dbContext.HomePharmacyItems
+                    .Where(item =>
+                        item.ProfileId == x.ProfileId &&
+                        item.MedicationId == x.MedicationId &&
+                        item.Quantity > 0)
+                    .Min(item => item.ExpiresOn),
                 RemindersEnabled = x.RemindersEnabled,
                 Notes = x.Notes,
                 AddedAt = x.AddedAt,
@@ -182,3 +197,4 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
         return _dbContext.SaveChangesAsync();
     }
 }
+

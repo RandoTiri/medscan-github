@@ -121,6 +121,7 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await dbContext.SeedMedicationsAsync();
+    await dbContext.SeedHomePharmacyItemsAsync();
 }
 
 app.Run();
