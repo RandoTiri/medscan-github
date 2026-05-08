@@ -150,6 +150,15 @@
         border-color: #267863;
         box-shadow: 0 0 0 4px rgba(38, 120, 99, 0.1);
     }
+    .input-wrapper-error {
+        border-color: #d94d84;
+        box-shadow: 0 0 0 2px rgba(217, 77, 132, 0.12);
+    }
+
+    .input-wrapper-error:focus-within {
+        border-color: #d94d84;
+        box-shadow: 0 0 0 4px rgba(217, 77, 132, 0.16);
+    }
 
     .input-wrapper input,
     .input-wrapper select {
@@ -182,6 +191,16 @@
     .input-icon svg {
         width: 20px;
         height: 20px;
+    }
+    .input-wrapper-error .input-icon {
+        color: #d94d84;
+    }
+    .input-error-message {
+        margin-top: 8px;
+        color: #d94d84;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
     }
 
     .birth-grid {

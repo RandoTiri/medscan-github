@@ -1,4 +1,4 @@
-using MedScan.Api.Data;
+﻿using MedScan.Api.Data;
 using MedScan.Api.Models;
 using MedScan.Api.Repositories;
 using MedScan.Api.Services;
@@ -13,6 +13,7 @@ using ApiHomePharmacyService = MedScan.Api.Services.IHomePharmacyService;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -24,6 +25,7 @@ builder.Services
 builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<IUserMedicationRepository, UserMedicationRepository>();
 builder.Services.AddScoped<IHomePharmacyRepository, HomePharmacyRepository>();
+builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IMedicationCatalogService, MedicationCatalogService>();
 builder.Services.AddScoped<ApiHomePharmacyService, HomePharmacyService>();
@@ -122,3 +124,5 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+

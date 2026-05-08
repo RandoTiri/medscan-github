@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -58,7 +58,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
                 string.IsNullOrWhiteSpace(gender) ||
                 birthDate is null)
             {
-                return (false, "Koik valjad on kohustuslikud.");
+                return (false, "Kõik väljad on kohustuslikud.");
             }
 
             var response = await httpClient.PostAsJsonAsync("/api/auth/register", new RegisterUserRequest
@@ -110,7 +110,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
 
             if (loginResponse is null || string.IsNullOrWhiteSpace(loginResponse.AccessToken))
             {
-                return (false, "Sisselogimine ebaonnestus.");
+                return (false, "Sisselogimine ebaõnnestus.");
             }
 
             await tokenStore.SaveTokenAsync(loginResponse.AccessToken);
@@ -125,7 +125,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
             {
                 await tokenStore.RemoveTokenAsync();
                 SetAccessToken(null);
-                return (false, "Kasutaja andmete laadimine ebaonnestus.");
+                return (false, "Kasutaja andmete laadimine ebaõnnestus.");
             }
 
             return (true, string.Empty);
@@ -206,7 +206,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(newPassword))
             {
-                return (false, "KÃµik vÃ¤ljad on kohustuslikud.");
+                return (false, "Kõik väljad on kohustuslikud.");
             }
 
             var response = await httpClient.PostAsJsonAsync("/api/auth/reset-password", new ResetPasswordRequest
@@ -238,7 +238,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
         {
             if (string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
             {
-                return (false, "KÃµik vÃ¤ljad on kohustuslikud.");
+                return (false, "Kõik väljad on kohustuslikud.");
             }
 
             var response = await httpClient.PostAsJsonAsync("/api/auth/change-password", new ChangePasswordRequest
@@ -329,7 +329,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
 
         if (string.IsNullOrWhiteSpace(raw))
         {
-            return "Toiming ebaonnestus.";
+            return "Toiming ebaõnnestus.";
         }
 
         try
@@ -342,13 +342,13 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
                 if (root.TryGetProperty("message", out var messageElement) &&
                     messageElement.ValueKind == JsonValueKind.String)
                 {
-                    return messageElement.GetString() ?? "Toiming ebaonnestus.";
+                    return messageElement.GetString() ?? "Toiming ebaõnnestus.";
                 }
 
                 if (root.TryGetProperty("title", out var titleElement) &&
                     titleElement.ValueKind == JsonValueKind.String)
                 {
-                    return titleElement.GetString() ?? "Toiming ebaonnestus.";
+                    return titleElement.GetString() ?? "Toiming ebaõnnestus.";
                 }
             }
 
@@ -370,7 +370,7 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
                     .ToArray();
 
                 var combined = string.Join(" ", messages);
-                return string.IsNullOrWhiteSpace(combined) ? "Toiming ebaonnestus." : combined;
+                return string.IsNullOrWhiteSpace(combined) ? "Toiming ebaõnnestus." : combined;
             }
         }
         catch
@@ -388,16 +388,17 @@ public class AuthService(HttpClient httpClient, ITokenStore tokenStore) : IAuthS
     {
         if (ex is HttpRequestException)
         {
-            return "Serveriga ei saadud Ã¼hendust. Kontrolli, et API tÃ¶Ã¶tab. USB Android testis tee ka adb reverse tcp:5183 tcp:5183.";
+            return "Serveriga ei saadud ühendust. Kontrolli, et API töötab. USB Android testis tee ka adb reverse tcp:5183 tcp:5183.";
         }
 
         if (ex is TaskCanceledException)
         {
-            return "PÃ¤ring aegus. Proovi uuesti.";
+            return "Päring aegus. Proovi uuesti.";
         }
 
-        return $"{operation} ebaÃµnnestus. Proovi uuesti.";
+        return $"{operation} ebaõnnestus. Proovi uuesti.";
     }
 }
+
 
 

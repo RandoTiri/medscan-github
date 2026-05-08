@@ -1,6 +1,7 @@
-using MedScan.Api.Contracts;
+﻿using MedScan.Api.Contracts;
 using MedScan.Api.Data;
 using MedScan.Api.Models;
+using MedScan.Api.Services;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -15,7 +16,8 @@ namespace MedScan.Api.Controllers;
 public sealed class AuthController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    AppDbContext dbContext) : ControllerBase
+    AppDbContext dbContext,
+    IPasswordResetService passwordResetService) : ControllerBase
 {
     [HttpPost("login")]
     public async Task<IResult> Login([FromBody] LoginRequest request)
@@ -28,13 +30,13 @@ public sealed class AuthController(
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
         if (user is null)
         {
-            return Results.BadRequest(new { message = "Vale email vÃµi parool." });
+            return Results.BadRequest(new { message = "Vale email või parool." });
         }
 
         var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (!result.Succeeded)
         {
-            return Results.BadRequest(new { message = "Vale email vÃµi parool." });
+            return Results.BadRequest(new { message = "Vale email või parool." });
         }
 
         var principal = await signInManager.CreateUserPrincipalAsync(user);
@@ -53,12 +55,12 @@ public sealed class AuthController(
             string.IsNullOrWhiteSpace(request.Gender) ||
             request.BirthDate is null)
         {
-            return Results.BadRequest(new { message = "Koik valjad on kohustuslikud." });
+            return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
         }
 
         if (request.BirthDate > DateOnly.FromDateTime(DateTime.Today))
         {
-            return Results.BadRequest(new { message = "Sunnikuupaev ei saa olla tulevikus." });
+            return Results.BadRequest(new { message = "Sünnikuupäev ei saa olla tulevikus." });
         }
 
         var existingUser = await userManager.FindByEmailAsync(request.Email);
@@ -134,8 +136,6 @@ public sealed class AuthController(
         });
     }
 
-    private static readonly Dictionary<string, string> _resetCodes = [];
-
     [HttpPost("forgot-password")]
     public async Task<IResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
@@ -150,30 +150,10 @@ public sealed class AuthController(
             return Results.BadRequest(new { message = "Antud emailiga ei ole selles rakenduses kontot!" });
         }
 
-        var randomCode = new Random().Next(100000, 999999).ToString();
-        _resetCodes[user.Email!] = randomCode;
-
-        try
+        var sent = await passwordResetService.SendResetCodeAsync(user.Email!);
+        if (!sent)
         {
-            using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-            await smtpClient.ConnectAsync("smtp.gmail.com",587,MailKit.Security.SecureSocketOptions.StartTls);
-            await smtpClient.AuthenticateAsync("medscan.loputoo@gmail.com","iktwctxvuultzigq");
-
-            var mailMessage = new MimeKit.MimeMessage();
-            mailMessage.From.Add(new MimeKit.MailboxAddress("MedScan","medscan.loputoo@gmail.com"));
-            mailMessage.To.Add(new MimeKit.MailboxAddress("",user.Email!));
-            mailMessage.Subject = "MedScan kinnituskood";
-            mailMessage.Body = new MimeKit.TextPart("plain") {
-                Text = $"Tere! Teie kinnituskood on {randomCode}"
-            };
-
-            await smtpClient.SendAsync(mailMessage);
-            await smtpClient.DisconnectAsync(true);
-        }
-        catch (Exception)
-        {
-            // E-maili saatmise viga
-            return Results.BadRequest(new { message = "Kinnituskoodi saatmine ebaÃµnnestus. Kontrolli SMTP konfigureerimist." });
+            return Results.BadRequest(new { message = "Kinnituskoodi saatmine ebaõnnestus. Kontrolli SMTP konfigureerimist." });
         }
 
         return Results.Ok(new { message = "Kood saadetud." });
@@ -187,9 +167,9 @@ public sealed class AuthController(
             return Results.BadRequest(new { message = "Email ja kood on kohustuslikud." });
         }
 
-        if (_resetCodes.TryGetValue(request.Email.Trim(), out var code) && code == request.Code.Trim())
+        if (passwordResetService.VerifyCode(request.Email, request.Code))
         {
-            return Results.Ok(new { message = "Kood on Ãµige." });
+            return Results.Ok(new { message = "Kood on õige." });
         }
 
         return Results.BadRequest(new { message = "Sisestatud kinnituskood on vale" });
@@ -200,17 +180,17 @@ public sealed class AuthController(
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
-            return Results.BadRequest(new { message = "KÃµik vÃ¤ljad on kohustuslikud." });
+            return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
         }
 
         if (request.NewPassword.Length < 6)
         {
-            return Results.BadRequest(new { message = "Parool peab olema olema vÃ¤hemalt 6 tÃ¤hemÃ¤rki." });
+            return Results.BadRequest(new { message = "Parool peab olema vähemalt 6 tähemärki." });
         }
 
-        if (!_resetCodes.TryGetValue(request.Email.Trim(), out var code) || code != request.Code.Trim())
+        if (!passwordResetService.VerifyCode(request.Email, request.Code))
         {
-            return Results.BadRequest(new { message = "Kinnituskood on vale vÃµi aegunud." });
+            return Results.BadRequest(new { message = "Kinnituskood on vale või aegunud." });
         }
 
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
@@ -231,8 +211,7 @@ public sealed class AuthController(
             }));
         }
 
-        // Kood edukalt kasutatud, eemalda see
-        _resetCodes.Remove(request.Email.Trim());
+        passwordResetService.ConsumeCode(request.Email, request.Code);
 
         return Results.Ok(new { message = "Parool edukalt uuendatud." });
     }
@@ -243,12 +222,12 @@ public sealed class AuthController(
     {
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
         {
-            return Results.BadRequest(new { message = "KÃµik vÃ¤ljad on kohustuslikud." });
+            return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
         }
 
         if (request.NewPassword.Length < 6)
         {
-            return Results.BadRequest(new { message = "Parool peab olema vÃ¤hemalt 6 tÃ¤hemÃ¤rki pikk." });
+            return Results.BadRequest(new { message = "Parool peab olema vähemalt 6 tähemärki pikk." });
         }
 
         var user = await userManager.GetUserAsync(User);
@@ -307,3 +286,5 @@ public sealed class AuthController(
         return Results.NoContent();
     }
 }
+
+
