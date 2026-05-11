@@ -401,7 +401,7 @@ else
 
         var allTodayDoses = allMedications
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => tuple.Medication.TodayDoses);
+            .SelectMany(tuple => tuple.Medication.TodayDoses ?? []);
 
         _totalCount = allTodayDoses.Count();
         _doneCount = allTodayDoses.Count(dose => dose.Status == DoseStatusEnum.Done);
@@ -435,7 +435,7 @@ else
     private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
     {
         var note = NormalizeNote(medication.Notes);
-        var todayDoses = medication.TodayDoses
+        var todayDoses = (medication.TodayDoses ?? [])
             .OrderBy(d => d.ScheduledTime)
             .ToList();
 
@@ -507,7 +507,7 @@ else
     private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
     {
         var note = NormalizeNote(medication.Notes);
-        var todayDoses = medication.TodayDoses
+        var todayDoses = (medication.TodayDoses ?? [])
             .OrderBy(dose => dose.ScheduledTime)
             .ToList();
 
@@ -702,6 +702,13 @@ else
 
     private void OpenDoseModalCore(SelectedDoseCard doseCard, DateOnly? expiresOn)
     {
+        _selectedDoseCard = null;
+        _modalErrorMessage = null;
+        _modalInfoMessage = null;
+        _showEarlyDoneConfirmation = false;
+        _showLastUnitConfirmation = false;
+        _earlyDoneMinutesRemaining = 0;
+
         if (expiresOn is DateOnly expiryDate && IsExpiredDate(expiryDate))
         {
             _pendingDoseCard = doseCard;
@@ -710,11 +717,6 @@ else
         }
 
         _selectedDoseCard = doseCard;
-        _modalErrorMessage = null;
-        _modalInfoMessage = null;
-        _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
-        _earlyDoneMinutesRemaining = 0;
     }
 
     private void CloseDoseModal()
