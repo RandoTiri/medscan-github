@@ -208,6 +208,91 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
                 MarketingAuthNr = string.Empty,
                 PackSize = "N12",
                 CachedAt = now
+            },
+            new()
+            {
+                Barcode = "09008732010848",
+                Name = "Tramadol Lannacher",
+                ActiveIngredient = "Tramadoli hydrochloridum",
+                StrengthMg = "100 MG",
+                Indication = "Mõõdukas ja tugev valu.",
+                Warnings = "Ei tohi manustada alla 12-aastastele. Vastunäidustatud ülitundlikkuse, ägeda alkoholi/uinutite/analgeetikumide/opioidide/psühhotroopsete ravimite mürgistuse, MAO inhibiitorite samaaegse kasutamise või viimase 14 päeva jooksul kasutamise, ravile allumatu epilepsia ja narkootiliste ainete võõrutusravi korral.",
+                PdfUrl = "https://www.ravimiregister.ee/Data/PIL/PIL_1075665.pdf",
+                MethodOfAdministraion = "Suukaudne",
+                PrescriptionType = "Retseptiravim",
+                MedicationForm = "Tabletid",
+                Manufacturer = "Austria",
+                MarketingAuthNr = string.Empty,
+                PackSize = "N30",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "7612711550243",
+                Name = "Cirrus Prolong",
+                ActiveIngredient = "Pseudoefedriin + tsetirisiin",
+                StrengthMg = "120 MG + 5 MG",
+                Indication = "Allergilise nohu sümptomaatiline lühiajaline ravi, kui samaaegselt on vajalik tsetirisiini antiallergiline ja pseudoefedriini turset alandav toime.",
+                Warnings = "Ei tohi võtta piperasiini/efedriini/allergia korral, raske hüpertensiooni, raske pärgarterihaiguse, raske arütmia, glaukoomi, uriinipeetuse, raske neeruhaiguse, hüpertüreoidismi, feokromotsütoomi, insuldiriski või varasema insuldi korral. Vastunäidustatud alla 12-aastastel ning dihüdroergotamiini või MAOI samaaegsel kasutamisel (kuni 2 nädalat pärast MAOI ravi lõppu).",
+                PdfUrl = "https://www.ravimiregister.ee/Data/PIL/PIL_1141322.pdf",
+                MethodOfAdministraion = "Suukaudne",
+                PrescriptionType = "Retseptiravim",
+                MedicationForm = "Tabletid",
+                Manufacturer = "Itaalia",
+                MarketingAuthNr = string.Empty,
+                PackSize = "N14",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "08436029300173",
+                Name = "Rupafin",
+                ActiveIngredient = "Rupatadinum",
+                StrengthMg = "10 MG",
+                Indication = "Allergilise riniidi sümptomite (aevastamine, nina tilkumine, sügelus) ja urtikaaria sümptomite (sügelus, kublad) leevendamine.",
+                Warnings = "Ei tohi võtta, kui olete rupatadiini või abiainete suhtes allergiline. Neeru- või maksapuudulikkuse korral pidage nõu arstiga; 10 mg tablette ei soovitata halvenenud neeru- või maksafunktsiooniga patsientidele. Ettevaatus madala kaaliumi, QTc pikenemise ja >65 a vanuse korral. Ei ole mõeldud alla 12-aastastele.",
+                PdfUrl = "https://www.ravimiregister.ee/Data/PIL/PIL_1897768.pdf",
+                MethodOfAdministraion = "Suukaudne",
+                PrescriptionType = "Retseptiravim",
+                MedicationForm = "Tabletid",
+                Manufacturer = "Hispaania",
+                MarketingAuthNr = string.Empty,
+                PackSize = "N20",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "05400835010956",
+                Name = "Skudexa",
+                ActiveIngredient = "Tramadoolvesinikkloriid + deksketoprofeen",
+                StrengthMg = "75 MG + 25 MG",
+                Indication = "Mõõduka kuni tugeva ägeda valu lühiajaline sümptomaatiline ravi täiskasvanutel.",
+                Warnings = "Vastunäidustatud allergia korral toimeainete/MSPVA-de suhtes, aktiivse või korduva seedetrakti haavandi/verejooksu korral, raske südame-, neeru- või maksapuudulikkuse korral, veritsushäirete korral, tugeva dehüdratsiooni korral, ägeda alkoholi/uinutite/valuvaigistite mürgistuse korral, MAOI samaaegsel kasutamisel või viimase 14 päeva jooksul, epilepsia/krambihoogude, hingamisraskuste, raseduse ja imetamise ajal.",
+                PdfUrl = "https://www.ravimiregister.ee/Data/PIL/PIL_1740226.pdf",
+                MethodOfAdministraion = "Suukaudne",
+                PrescriptionType = "Retseptiravim",
+                MedicationForm = "Tabletid",
+                Manufacturer = "Hispaania",
+                MarketingAuthNr = string.Empty,
+                PackSize = "N15",
+                CachedAt = now
+            },
+            new()
+            {
+                Barcode = "4013054018279",
+                Name = "Ibustar",
+                ActiveIngredient = "Ibuprofenum",
+                StrengthMg = "400 MG",
+                Indication = "Nõrga kuni mõõduka valu ja palaviku sümptomaatiline ravi.",
+                Warnings = "Ei tohi võtta ibuprofeeni/MSPVA allergia, varasemate raskete MSPVA reaktsioonide, vereloomehäirete, korduvate seedetrakti haavandite/verejooksu, ajuverejooksu või muu ägeda verejooksu, raske neeru-/maksakahjustuse, raske südamepuudulikkuse, raske dehüdratsiooni ning raseduse III trimestri korral. Ei sobi alla 20 kg lastele.",
+                PdfUrl = "https://www.ravimiregister.ee/Data/PIL/PIL_1315987.pdf",
+                MethodOfAdministraion = "Suukaudne",
+                PrescriptionType = "Käsimüügiravim",
+                MedicationForm = "Tabletid",
+                Manufacturer = "Hispaania",
+                MarketingAuthNr = string.Empty,
+                PackSize = "N10",
+                CachedAt = now
             }
         };
 

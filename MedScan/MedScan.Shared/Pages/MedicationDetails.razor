@@ -47,6 +47,16 @@ else
         }
 
         <div class="content-scroll">
+            @if (IsExpired(_item.ExpiresOn))
+            {
+                <div class="expired-alert-card">
+                    <h3>Tähelepanu!</h3>
+                    <p>See ravim aegus @_item.ExpiresOn?.ToString("dd.MM.yyyy").</p>
+                    <p>Selle ravimi manustamine on rangelt mittesoovituslik.</p>
+                    <p>Palun tagasta aegunud ravim apteeki.</p>
+                </div>
+            }
+
             <div class="section-card medication-card">
                 <div class="field-title">Ravim</div>
                 <div class="medication-name-box">
@@ -269,6 +279,19 @@ else
                 </div>
             </div>
         }
+
+        @if (_showExpiredModal && _item is not null && IsExpired(_item.ExpiresOn))
+        {
+            <div class="modal-backdrop" @onclick="CloseExpiredModal">
+                <section class="expired-warning-modal" role="dialog" aria-modal="true" aria-label="Aegunud ravimi hoiatus" @onclick:stopPropagation="true">
+                    <h3>Tähelepanu!</h3>
+                    <p>See ravim aegus @_item.ExpiresOn?.ToString("dd.MM.yyyy").</p>
+                    <p>Selle ravimi manustamine on rangelt mittesoovituslik.</p>
+                    <p>Palun tagasta aegunud ravim apteeki.</p>
+                    <button type="button" class="expired-warning-close" @onclick="CloseExpiredModal">Sulge</button>
+                </section>
+            </div>
+        }
     </div>
 }
 
@@ -276,6 +299,7 @@ else
 
 @code {
     [Parameter] public int Id { get; set; }
+    [SupplyParameterFromQuery(Name = "expiredNotice")] public int? ExpiredNotice { get; set; }
 
     private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
     private static readonly (int Value, string Label)[] _weekdayOptions =
@@ -293,6 +317,7 @@ else
     private bool _isLoading;
     private bool _isSaving;
     private bool _showTakeOnceModal;
+    private bool _showExpiredModal;
     private string? _message;
     private string? _errorMessage;
     private HomePharmacyItemDto? _item;
@@ -353,6 +378,8 @@ else
                 _errorMessage = "Ravimit ei leitud.";
                 return;
             }
+
+            _showExpiredModal = ExpiredNotice == 1 && IsExpired(_item.ExpiresOn);
 
             _editableQuantity = Math.Clamp(_item.Quantity, 1, 100);
             _editableNotes = _item.Notes;
@@ -993,6 +1020,21 @@ else
     private static string? NormalizeNotes(string? notes)
     {
         return string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
+    }
+
+    private static bool IsExpired(DateOnly? expiresOn)
+    {
+        if (expiresOn is not DateOnly expiryDate)
+        {
+            return false;
+        }
+
+        return expiryDate < DateOnly.FromDateTime(DateTime.Today);
+    }
+
+    private void CloseExpiredModal()
+    {
+        _showExpiredModal = false;
     }
 
     

@@ -116,6 +116,10 @@ else
                         </div>
                         <div class="med-info">
                             <h3>@card.Name</h3>
+                            @if (card.ExpiresOn is DateOnly expiresOn && IsExpiredDate(expiresOn))
+                            {
+                                <p class="expired-date">Aegunud: @expiresOn.ToString("dd.MM.yyyy")</p>
+                            }
                             @if (!string.IsNullOrWhiteSpace(card.Note))
                             {
                                 <p class="med-note">💬 @card.Note</p>
@@ -175,6 +179,10 @@ else
                         <div class="family-dose-info">
                             <h3>@card.ProfileName</h3>
                             <p class="family-med-name">@card.Name</p>
+                            @if (card.ExpiresOn is DateOnly expiresOn && IsExpiredDate(expiresOn))
+                            {
+                                <p class="expired-date">Aegunud: @expiresOn.ToString("dd.MM.yyyy")</p>
+                            }
                             @if (!string.IsNullOrWhiteSpace(card.Note))
                             {
                                 <p class="family-note">💬 @card.Note</p>
@@ -201,6 +209,18 @@ else
                 }
             }
         </main>
+
+        @if (_expiredDoseWarning is not null)
+        {
+            <div class="dose-modal-backdrop" @onclick="CloseExpiredDoseWarning"></div>
+            <section class="expired-warning-modal" role="dialog" aria-modal="true" aria-label="Aegunud ravimi hoiatus">
+                <h3>Tähelepanu!</h3>
+                <p>See ravim aegus @_expiredDoseWarning.ExpiryDate.ToString("dd.MM.yyyy").</p>
+                <p>Selle ravimi manustamine on rangelt mittesoovituslik.</p>
+                <p>Palun tagasta aegunud ravim apteeki.</p>
+                <button type="button" class="expired-warning-close" @onclick="CloseExpiredDoseWarning">Sulge</button>
+            </section>
+        }
 
         @if (_selectedDoseCard is not null)
         {
@@ -310,6 +330,8 @@ else
     private string? _modalErrorMessage;
     private string? _modalInfoMessage;
     private SelectedDoseCard? _selectedDoseCard;
+    private SelectedDoseCard? _pendingDoseCard;
+    private ExpiredDoseWarning? _expiredDoseWarning;
     private bool _showEarlyDoneConfirmation;
     private bool _showLastUnitConfirmation;
     private int _earlyDoneMinutesRemaining;
@@ -343,7 +365,7 @@ else
         var profiles = await ProfileService.GetMyProfilesAsync();
         var mainProfile = ResolveMainProfile(profiles);
 
-        var allMedications = new List<(ProfileSummary Profile, UserMedicationDto Medication, int RemainingQuantity)>();
+        var allMedications = new List<(ProfileSummary Profile, UserMedicationDto Medication, int RemainingQuantity, DateOnly? ExpiresOn)>();
 
         foreach (var profile in profiles)
         {
@@ -352,6 +374,17 @@ else
             var quantitiesByMedicationId = homePharmacyItems
                 .GroupBy(item => item.MedicationId)
                 .ToDictionary(group => group.Key, group => group.Sum(item => item.Quantity));
+            var expiryByMedicationId = homePharmacyItems
+                .Where(item => item.Quantity > 0)
+                .GroupBy(item => item.MedicationId)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group
+                        .Where(item => item.ExpiresOn is not null)
+                        .Select(item => item.ExpiresOn!.Value)
+                        .OrderBy(date => date)
+                        .Cast<DateOnly?>()
+                        .FirstOrDefault());
             var allowedMedicationIds = homePharmacyItems
                 .Where(item => item.Quantity > 0)
                 .Select(item => item.MedicationId)
@@ -359,7 +392,11 @@ else
 
             allMedications.AddRange(schedule
                 .Where(medication => allowedMedicationIds.Contains(medication.MedicationId))
-                .Select(medication => (profile, medication, quantitiesByMedicationId.TryGetValue(medication.MedicationId, out var quantity) ? quantity : 0)));
+                .Select(medication => (
+                    profile,
+                    medication,
+                    quantitiesByMedicationId.TryGetValue(medication.MedicationId, out var quantity) ? quantity : 0,
+                    expiryByMedicationId.TryGetValue(medication.MedicationId, out var expiry) ? expiry : null)));
         }
 
         var allTodayDoses = allMedications
@@ -374,7 +411,7 @@ else
         _myMedicationCards.AddRange(allMedications
             .Where(tuple => mainProfile is not null && tuple.Profile.Id == mainProfile.Id)
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => BuildHomeMedicationCards(tuple.Medication, tuple.RemainingQuantity))
+            .SelectMany(tuple => BuildHomeMedicationCards(tuple.Medication, tuple.RemainingQuantity, tuple.ExpiresOn))
             .OrderBy(card => card.NextTimeSortKey)
             .ThenBy(card => card.Name));
 
@@ -382,7 +419,7 @@ else
         _familyMedicationCards.AddRange(allMedications
             .Where(tuple => tuple.Profile.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase))
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile, tuple.Medication, tuple.RemainingQuantity))
+            .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile, tuple.Medication, tuple.RemainingQuantity, tuple.ExpiresOn))
             .OrderBy(card => card.NextTimeSortKey)
             .ThenBy(card => card.ProfileName)
             .ThenBy(card => card.Name)
@@ -395,7 +432,7 @@ else
                ?? profiles.FirstOrDefault();
     }
 
-    private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication, int remainingQuantity)
+    private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
     {
         var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
@@ -410,6 +447,7 @@ else
                     UserMedicationId: medication.Id,
                     Name: BuildMedicationDisplayName(medication),
                     Note: note,
+                    ExpiresOn: expiresOn,
                     ScheduledTime: dose.ScheduledTime,
                     TimeSlots: [dose.ScheduledTime],
                     RemainingQuantity: remainingQuantity,
@@ -453,6 +491,7 @@ else
                 UserMedicationId: medication.Id,
                 Name: BuildMedicationDisplayName(medication),
                 Note: note,
+                ExpiresOn: expiresOn,
                 ScheduledTime: fallbackTime,
                 TimeSlots: [fallbackTime],
                 RemainingQuantity: remainingQuantity,
@@ -465,7 +504,7 @@ else
         }
     }
 
-    private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication, int remainingQuantity)
+    private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
     {
         var note = NormalizeNote(medication.Notes);
         var todayDoses = medication.TodayDoses
@@ -481,6 +520,7 @@ else
                     ProfileName: profile.Name,
                     Name: BuildMedicationDisplayName(medication),
                     Note: note,
+                    ExpiresOn: expiresOn,
                     ScheduledTime: dose.ScheduledTime,
                     TimeSlots: [dose.ScheduledTime],
                     RemainingQuantity: remainingQuantity,
@@ -525,6 +565,7 @@ else
                 ProfileName: profile.Name,
                 Name: BuildMedicationDisplayName(medication),
                 Note: note,
+                ExpiresOn: expiresOn,
                 ScheduledTime: fallbackTime,
                 TimeSlots: [fallbackTime],
                 RemainingQuantity: remainingQuantity,
@@ -645,19 +686,30 @@ else
             : string.Empty;
     }
 
-    private void OpenDoseModal(HomeMedicationCard card)
+        private void OpenDoseModal(HomeMedicationCard card)
     {
-        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, card.Name, card.ScheduledTime, card.Status, card.RemainingQuantity);
-        _modalErrorMessage = null;
-        _modalInfoMessage = null;
-        _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
-        _earlyDoneMinutesRemaining = 0;
+        OpenDoseModalCore(
+            new SelectedDoseCard(card.UserMedicationId, card.Name, card.ScheduledTime, card.Status, card.RemainingQuantity),
+            card.ExpiresOn);
     }
 
     private void OpenDoseModal(FamilyMedicationCard card)
     {
-        _selectedDoseCard = new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} · {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity);
+        OpenDoseModalCore(
+            new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} � {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity),
+            card.ExpiresOn);
+    }
+
+    private void OpenDoseModalCore(SelectedDoseCard doseCard, DateOnly? expiresOn)
+    {
+        if (expiresOn is DateOnly expiryDate && IsExpiredDate(expiryDate))
+        {
+            _pendingDoseCard = doseCard;
+            _expiredDoseWarning = new ExpiredDoseWarning(doseCard.Name, expiryDate);
+            return;
+        }
+
+        _selectedDoseCard = doseCard;
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
@@ -668,6 +720,24 @@ else
     private void CloseDoseModal()
     {
         _selectedDoseCard = null;
+        _pendingDoseCard = null;
+        _modalErrorMessage = null;
+        _modalInfoMessage = null;
+        _showEarlyDoneConfirmation = false;
+        _showLastUnitConfirmation = false;
+        _earlyDoneMinutesRemaining = 0;
+    }
+
+    private void CloseExpiredDoseWarning()
+    {
+        _expiredDoseWarning = null;
+        if (_pendingDoseCard is null)
+        {
+            return;
+        }
+
+        _selectedDoseCard = _pendingDoseCard;
+        _pendingDoseCard = null;
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
@@ -859,6 +929,11 @@ else
         return $"{hours}h ja {remainderMinutes} min";
     }
 
+
+    private static bool IsExpiredDate(DateOnly date)
+    {
+        return date < DateOnly.FromDateTime(DateTime.Today);
+    }
     public void Dispose()
     {
         MedicationStatusEvents.Changed -= OnMedicationStatusChanged;
@@ -869,6 +944,7 @@ else
         int UserMedicationId,
         string Name,
         string? Note,
+        DateOnly? ExpiresOn,
         TimeOnly ScheduledTime,
         IReadOnlyList<TimeOnly> TimeSlots,
         int RemainingQuantity,
@@ -883,6 +959,7 @@ else
         string ProfileName,
         string Name,
         string? Note,
+        DateOnly? ExpiresOn,
         TimeOnly ScheduledTime,
         IReadOnlyList<TimeOnly> TimeSlots,
         int RemainingQuantity,
@@ -898,4 +975,9 @@ else
         TimeOnly ScheduledTime,
         DoseStatusEnum Status,
         int RemainingQuantity = 0);
+
+    private sealed record ExpiredDoseWarning(string MedicationName, DateOnly ExpiryDate);
 }
+
+
+

@@ -119,8 +119,8 @@ else
             <div class="medicine-cards">
                 @foreach (var item in _selectedItems)
                 {
-                    <button class="medicine-card" @onclick="() => OpenDetails(item.Id)">
-                        <div class="left-icon">
+                    <button class="medicine-card" @onclick="() => OpenDetails(item)">
+                        <div class="left-icon @(IsExpired(item.ExpiresOn) ? "expired" : null)">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path>
                                 <path d="m8.5 8.5 7 7"></path>
@@ -176,7 +176,7 @@ else
     private bool _showSchedule;
     private string? _errorMessage;
     private int _selectedProfileId;
-
+    
     private readonly List<ProfileSummary> _profiles = [];
     private readonly Dictionary<int, List<HomePharmacyItemDto>> _itemsByProfile = [];
     private readonly Dictionary<int, List<UserMedicationDto>> _medicationsByProfile = [];
@@ -390,9 +390,15 @@ else
         }
     }
 
-    private void OpenDetails(int itemId)
+    private void OpenDetails(HomePharmacyItemDto item)
     {
-        Navigation.NavigateTo($"/home-pharmacy/details/{itemId}");
+        if (IsExpired(item.ExpiresOn))
+        {
+            Navigation.NavigateTo($"/home-pharmacy/details/{item.Id}?expiredNotice=1");
+            return;
+        }
+
+        Navigation.NavigateTo($"/home-pharmacy/details/{item.Id}");
     }
 
     private void OpenScheduledMedicationDetails(UserMedicationDto medication)
@@ -405,7 +411,7 @@ else
         var matchingItem = items.FirstOrDefault(item => item.MedicationId == medication.MedicationId);
         if (matchingItem is not null)
         {
-            OpenDetails(matchingItem.Id);
+            OpenDetails(matchingItem);
         }
     }
 
@@ -446,4 +452,15 @@ else
             ? "R"
             : char.ToUpperInvariant(firstLetter).ToString();
     }
+
+    private static bool IsExpired(DateOnly? expiresOn)
+    {
+        if (expiresOn is not DateOnly expiryDate)
+        {
+            return false;
+        }
+
+        return expiryDate < DateOnly.FromDateTime(DateTime.Today);
+    }
 }
+

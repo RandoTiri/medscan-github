@@ -25,7 +25,13 @@ public sealed class HomePharmacyService(
             ["07613421029043"] = new(2027, 6, 30),
             ["03582910055372"] = new(2027, 12, 31),
             ["4742041002907"] = new(2026, 7, 31),
-            ["5000158104273"] = new(2027, 1, 31)
+            ["5000158104273"] = new(2027, 1, 31),
+            ["09008732010848"] = new(2025,9,30),
+            ["7612711550243"] = new(2027,5,31),
+            ["08436029300173"] = new(2026,6,30),
+            ["05400835010956"] = new(2026,6,30),
+            ["4013054018279"] = new(2027,11,30),
+
         };
 
     public async Task<IEnumerable<HomePharmacyItemDto>> GetByProfileIdAsync(int profileId)
@@ -55,7 +61,7 @@ public sealed class HomePharmacyService(
             PackageNumber = dto.PackageNumber,
             BatchNumber = string.IsNullOrWhiteSpace(dto.BatchNumber) ? null : dto.BatchNumber.Trim(),
             ExpiresOn = dto.ExpiresOn,
-            Quantity = Math.Max(1, dto.Quantity),
+            Quantity = ResolveInitialQuantity(dto.Quantity, medication.PackSize),
             Notes = string.IsNullOrWhiteSpace(dto.Notes) ? null : dto.Notes.Trim(),
             AddedAt = DateTime.UtcNow
         };
@@ -163,5 +169,27 @@ public sealed class HomePharmacyService(
             MarketingAuthNumber = item.Medication?.MarketingAuthNr,
             AddedAt = item.AddedAt
         };
+    }
+
+    private static int ResolveInitialQuantity(int requestedQuantity, string? packSize)
+    {
+        if (requestedQuantity > 1)
+        {
+            return requestedQuantity;
+        }
+
+        var parsedPackQuantity = ParsePackSizeQuantity(packSize);
+        return parsedPackQuantity > 0 ? parsedPackQuantity : 1;
+    }
+
+    private static int ParsePackSizeQuantity(string? packSize)
+    {
+        if (string.IsNullOrWhiteSpace(packSize))
+        {
+            return 0;
+        }
+
+        var digits = new string(packSize.Where(char.IsDigit).ToArray());
+        return int.TryParse(digits, out var parsed) && parsed > 0 ? parsed : 0;
     }
 }

@@ -101,6 +101,10 @@
     .take-once-actions { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .confirm-btn { border: none; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: 600; background: #277863; color: #fff; }
     .cancel-btn { border: 2px solid #277863; border-radius: 12px; padding: 12px; font-size: 16px; font-weight: 600; background: #ffffff; color: #277863; }
+    .expired-warning-modal { width: calc(100vw - 32px); max-width: 560px; background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2); padding: 16px; }
+    .expired-warning-modal h3 { margin: 0 0 10px 0; color: #ab3f4c; font-size: 18px; font-weight: 800; }
+    .expired-warning-modal p { margin: 0 0 8px 0; color: #1A2E29; font-size: 14px; line-height: 1.4; }
+    .expired-warning-close { width: 100%; margin-top: 8px; border-radius: 12px; padding: 12px 16px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; background: #1d735c; color: #fff; }
     .action-pdf {
         background-color: #ffffff;
         color: #277863;
@@ -128,6 +132,9 @@
     .error-box,.success-box { border-radius: 14px; padding: 12px; font-size: 15px; margin: 12px 16px 0; }
     .error-box { background: #fde9eb; color: #ab3f4c; }
     .success-box { background: #e7f4ed; color: #1f7a60; }
+    .expired-alert-card { background: #fde9eb; border: 1px solid #f3b7be; border-radius: 16px; padding: 14px; color: #1A2E29; }
+    .expired-alert-card h3 { margin: 0 0 8px 0; color: #ab3f4c; font-size: 18px; font-weight: 800; }
+    .expired-alert-card p { margin: 0 0 6px 0; font-size: 14px; line-height: 1.4; }
 
     .period-select option,
     .day-select option,
