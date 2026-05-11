@@ -24,7 +24,14 @@
     .warnings-card { background: #fffbef; border: 1px solid #E8BD4F; border-radius: 16px; padding: 16px; }
     .warning-title { color: #b45502; font-size: 16px; font-weight: 600; }
     .warning-list { display: grid; gap: 8px; }
-    .warning-item { color: #b45502; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: flex-start; gap: 8px; padding: 10px 0; }
+    .warning-item { color: #b45502; font-size: 14px; font-weight: 600; display: flex; align-items: flex-start; justify-content: flex-start; gap: 8px; padding: 10px 0; }
+    .warning-item span:last-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        white-space: normal;
+        line-height: 1.35;
+    }
     .warning-item:not(:last-child) { border-bottom: 0.5px solid #E8BD4F; }
     .warning-icon { color: #b45502; }
     .section-card { background: #ffffff; border-radius: 16px; padding: 16px; border: 1px solid var(--ms-divider); }

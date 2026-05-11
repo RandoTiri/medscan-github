@@ -245,7 +245,7 @@ else
                     </div>
                 }
 
-                @if (_showLastUnitConfirmation)
+                else if (_showLastUnitConfirmation)
                 {
                     <div class="confirm-box">
                         <strong>See on viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.</strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
@@ -706,7 +706,6 @@ else
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
 
         if (expiresOn is DateOnly expiryDate && IsExpiredDate(expiryDate))
@@ -726,7 +725,6 @@ else
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
@@ -743,7 +741,6 @@ else
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
@@ -765,12 +762,14 @@ else
                 if (minutesUntilDose > 0 && !_showEarlyDoneConfirmation)
                 {
                     _showEarlyDoneConfirmation = true;
+                    _showLastUnitConfirmation = false;
                     _earlyDoneMinutesRemaining = minutesUntilDose;
                     return;
                 }
 
                 if (!_showLastUnitConfirmation && _selectedDoseCard.RemainingQuantity == 1)
                 {
+                    _showEarlyDoneConfirmation = false;
                     _showLastUnitConfirmation = true;
                     return;
                 }
@@ -892,7 +891,6 @@ else
     private void CancelEarlyDoneConfirmation()
     {
         _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
