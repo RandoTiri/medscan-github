@@ -92,7 +92,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
             },
             new()
             {
-                Barcode = "4013054029832",
+                Barcode = "4013054029732",
                 Name = "Espumisan Forte",
                 ActiveIngredient = "Simetikoon",
                 StrengthMg = "240 MG",
