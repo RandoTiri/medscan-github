@@ -29,6 +29,21 @@
             </div>
         </section>
     }
+
+    @if (_isExpiredWarningOpen && _expiredWarningDate is DateOnly warningDate)
+    {
+        <div class="alert-backdrop"></div>
+        <section class="expired-warning-modal" role="dialog" aria-modal="true" aria-label="Aegunud ravimi hoiatus">
+            <h3>Tahelepanu!</h3>
+            <p>See ravim aegus @warningDate.ToString("dd.MM.yyyy").</p>
+            <p>Selle ravimi manustamine on rangelt mittesoovituslik.</p>
+            <p>Palun tagasta aegunud ravim apteeki.</p>
+            <div class="expired-warning-actions">
+                <button type="button" class="expired-warning-confirm" disabled="@_isUpdatingFromPopup" @onclick="TakeExpiredAnywayAsync">Võtan ikkagi</button>
+                <button type="button" class="expired-warning-decline" disabled="@_isUpdatingFromPopup" @onclick="DeclineExpiredDoseAsync">Ei võta</button>
+            </div>
+        </section>
+    }
 </div>
 
 <style>
@@ -109,10 +124,70 @@
         background: #1f7a60;
         color: #fff;
     }
+
+    .expired-warning-modal {
+        position: fixed;
+        left: 50%;
+        width: calc(100vw - 32px);
+        max-width: 560px;
+        transform: translateX(-50%);
+        top: 50%;
+        margin-top: -120px;
+        background: #ffffff;
+        border: 1px solid #d5e4dc;
+        border-radius: 14px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+        padding: 16px;
+        z-index: 1100;
+    }
+
+    .expired-warning-modal h3 {
+        margin: 0 0 10px 0;
+        color: #ab3f4c;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .expired-warning-modal p {
+        margin: 0 0 8px 0;
+        color: #1A2E29;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .expired-warning-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+    }
+
+    .expired-warning-confirm,
+    .expired-warning-decline {
+        flex: 1;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .expired-warning-confirm {
+        border: none;
+        background: #1d735c;
+        color: #fff;
+    }
+
+    .expired-warning-decline {
+        border: 2px solid #f9d8db;
+        background: #fdf5f5;
+        color: #d1303b;
+    }
 </style>
 
 @code {
     private bool _isUpdatingFromPopup;
+    private bool _isExpiredWarningOpen;
+    private DateOnly? _expiredWarningDate;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -141,7 +216,23 @@
         InAppDoseAlertService.DismissCurrent();
     }
 
-    private async Task MarkDoneFromAlertAsync()
+    private void CloseExpiredWarning()
+    {
+        _isExpiredWarningOpen = false;
+        _expiredWarningDate = null;
+    }
+
+    private async Task TakeExpiredAnywayAsync()
+    {
+        await UpdateCurrentAlertStatusAsync(MedScan.Shared.Models.Enums.DoseStatusEnum.Done);
+    }
+
+    private async Task DeclineExpiredDoseAsync()
+    {
+        await UpdateCurrentAlertStatusAsync(MedScan.Shared.Models.Enums.DoseStatusEnum.Missed);
+    }
+
+    private async Task UpdateCurrentAlertStatusAsync(MedScan.Shared.Models.Enums.DoseStatusEnum status)
     {
         if (_isUpdatingFromPopup || InAppDoseAlertService.Current is null)
         {
@@ -151,6 +242,45 @@
         _isUpdatingFromPopup = true;
         try
         {
+            await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId, new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto
+            {
+                ScheduledTime = InAppDoseAlertService.Current.ScheduledTime,
+                Status = status
+            });
+
+            InAppDoseAlertService.DismissCurrent();
+            CloseExpiredWarning();
+        }
+        catch
+        {
+            // Popup action is best effort.
+        }
+        finally
+        {
+            _isUpdatingFromPopup = false;
+        }
+    }
+
+    private async Task MarkDoneFromAlertAsync()
+    {
+        if (_isUpdatingFromPopup || InAppDoseAlertService.Current is null)
+        {
+            return;
+        }
+
+        _isUpdatingFromPopup = true;
+        var shouldDismissAlert = true;
+        try
+        {
+            var medication = await MedicationService.GetByIdAsync(InAppDoseAlertService.Current.UserMedicationId);
+            if (medication?.ExpiresOn is DateOnly expiryDate && expiryDate < DateOnly.FromDateTime(DateTime.Today))
+            {
+                _expiredWarningDate = expiryDate;
+                _isExpiredWarningOpen = true;
+                shouldDismissAlert = false;
+                return;
+            }
+
             await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId, new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto
             {
                 ScheduledTime = InAppDoseAlertService.Current.ScheduledTime,
@@ -164,7 +294,10 @@
         finally
         {
             _isUpdatingFromPopup = false;
-            InAppDoseAlertService.DismissCurrent();
+            if (shouldDismissAlert)
+            {
+                InAppDoseAlertService.DismissCurrent();
+            }
         }
     }
 
