@@ -696,7 +696,7 @@ else
     private void OpenDoseModal(FamilyMedicationCard card)
     {
         OpenDoseModalCore(
-            new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} � {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity),
+            new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} - {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity),
             card.ExpiresOn);
     }
 
@@ -978,6 +978,7 @@ else
 
     private sealed record ExpiredDoseWarning(string MedicationName, DateOnly ExpiryDate);
 }
+
 
 
 
