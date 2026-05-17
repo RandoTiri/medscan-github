@@ -245,7 +245,7 @@ else
                     </div>
                 }
 
-                @if (_showLastUnitConfirmation)
+                else if (_showLastUnitConfirmation)
                 {
                     <div class="confirm-box">
                         <strong>See on viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.</strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
@@ -401,7 +401,7 @@ else
 
         var allTodayDoses = allMedications
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => tuple.Medication.TodayDoses);
+            .SelectMany(tuple => tuple.Medication.TodayDoses ?? []);
 
         _totalCount = allTodayDoses.Count();
         _doneCount = allTodayDoses.Count(dose => dose.Status == DoseStatusEnum.Done);
@@ -435,7 +435,7 @@ else
     private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
     {
         var note = NormalizeNote(medication.Notes);
-        var todayDoses = medication.TodayDoses
+        var todayDoses = (medication.TodayDoses ?? [])
             .OrderBy(d => d.ScheduledTime)
             .ToList();
 
@@ -507,7 +507,7 @@ else
     private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
     {
         var note = NormalizeNote(medication.Notes);
-        var todayDoses = medication.TodayDoses
+        var todayDoses = (medication.TodayDoses ?? [])
             .OrderBy(dose => dose.ScheduledTime)
             .ToList();
 
@@ -696,12 +696,18 @@ else
     private void OpenDoseModal(FamilyMedicationCard card)
     {
         OpenDoseModalCore(
-            new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} � {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity),
+            new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} - {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity),
             card.ExpiresOn);
     }
 
     private void OpenDoseModalCore(SelectedDoseCard doseCard, DateOnly? expiresOn)
     {
+        _selectedDoseCard = null;
+        _modalErrorMessage = null;
+        _modalInfoMessage = null;
+        _showEarlyDoneConfirmation = false;
+        _earlyDoneMinutesRemaining = 0;
+
         if (expiresOn is DateOnly expiryDate && IsExpiredDate(expiryDate))
         {
             _pendingDoseCard = doseCard;
@@ -710,11 +716,6 @@ else
         }
 
         _selectedDoseCard = doseCard;
-        _modalErrorMessage = null;
-        _modalInfoMessage = null;
-        _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
-        _earlyDoneMinutesRemaining = 0;
     }
 
     private void CloseDoseModal()
@@ -724,7 +725,6 @@ else
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
@@ -741,7 +741,6 @@ else
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
@@ -763,12 +762,14 @@ else
                 if (minutesUntilDose > 0 && !_showEarlyDoneConfirmation)
                 {
                     _showEarlyDoneConfirmation = true;
+                    _showLastUnitConfirmation = false;
                     _earlyDoneMinutesRemaining = minutesUntilDose;
                     return;
                 }
 
                 if (!_showLastUnitConfirmation && _selectedDoseCard.RemainingQuantity == 1)
                 {
+                    _showEarlyDoneConfirmation = false;
                     _showLastUnitConfirmation = true;
                     return;
                 }
@@ -890,7 +891,6 @@ else
     private void CancelEarlyDoneConfirmation()
     {
         _showEarlyDoneConfirmation = false;
-        _showLastUnitConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
@@ -978,6 +978,7 @@ else
 
     private sealed record ExpiredDoseWarning(string MedicationName, DateOnly ExpiryDate);
 }
+
 
 
 

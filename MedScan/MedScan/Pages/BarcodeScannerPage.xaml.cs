@@ -1,4 +1,4 @@
-Ôªøusing MedScan.Shared.Models;
+using MedScan.Shared.Models;
 using MedScan.Services;
 using ZXing.Net.Maui;
 
@@ -90,7 +90,7 @@ public partial class BarcodeScannerPage : ContentPage
                 return;
             }
 
-            var retry = await TryDisplayAlertAsync("Viga", "Kaamera ei tuvastanud ravimit.", "Skaneeri uuesti", "K√§sitsi otsimine");
+            var retry = await TryDisplayAlertAsync("Viga", "Kaamera ei tuvastanud ravimit.", "Skanneeri uuesti", "Otsi k‰sitsi");
             if (!retry.HasValue)
             {
                 return;
@@ -213,7 +213,7 @@ public partial class BarcodeScannerPage : ContentPage
             }
             catch
             {
-                var retryFromError = await TryDisplayAlertAsync("Viga", "Skannimisel tekkis t√µrge.", "Skaneeri uuesti", "K√§sitsi otsimine");
+                var retryFromError = await TryDisplayAlertAsync("Viga", "Skannimisel tekkis tırge.", "Skanneeri uuesti", "Otsi k‰sitsi");
                 if (retryFromError.GetValueOrDefault())
                 {
                     CameraView.IsDetecting = true;
@@ -233,8 +233,8 @@ public partial class BarcodeScannerPage : ContentPage
                 var retry = await TryDisplayAlertAsync(
                     "Tundmatu triipkood",
                     "Tuvastatud triipkoodi andmeid ei leitud andmebaasist.",
-                    "Skaneeri uuesti",
-                    "K√§sitsi otsimine");
+                    "Skanneeri uuesti",
+                    "Otsi k‰sitsi");
 
                 if (!retry.HasValue)
                 {
@@ -347,4 +347,5 @@ public partial class BarcodeScannerPage : ContentPage
         _alertCompletionSource = null;
     }
 }
+
 
