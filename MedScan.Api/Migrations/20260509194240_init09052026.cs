@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class init2804 : Migration
+    public partial class init09052026 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,16 +61,16 @@ namespace MedScan.Api.Migrations
                     Barcode = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
                     ActiveIngredient = table.Column<string>(type: "text", nullable: false),
-                    StrengthMg = table.Column<int>(type: "integer", nullable: true),
+                    StrengthMg = table.Column<string>(type: "text", nullable: true),
+                    PackSize = table.Column<string>(type: "text", nullable: true),
                     Indication = table.Column<string>(type: "text", nullable: true),
                     Warnings = table.Column<string>(type: "text", nullable: true),
                     PdfUrl = table.Column<string>(type: "text", nullable: true),
-                    MethodOfAdministrion = table.Column<int>(type: "integer", nullable: false),
-                    PrescriptionType = table.Column<int>(type: "integer", nullable: false),
+                    MethodOfAdministrion = table.Column<string>(type: "text", nullable: false),
+                    PrescriptionType = table.Column<string>(type: "text", nullable: false),
                     MedicationForm = table.Column<string>(type: "text", nullable: true),
                     Manufacturer = table.Column<string>(type: "text", nullable: true),
                     MarketingAuthNumber = table.Column<string>(type: "text", nullable: true),
-                    AuthValidUntil = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CachedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -249,7 +249,10 @@ namespace MedScan.Api.Migrations
                     ProfileId = table.Column<int>(type: "integer", nullable: false),
                     MedicationId = table.Column<int>(type: "integer", nullable: false),
                     FrequencyPerDay = table.Column<int>(type: "integer", nullable: false),
+                    ScheduleUnit = table.Column<int>(type: "integer", nullable: false),
                     ScheduledTimesJson = table.Column<string>(type: "text", nullable: false),
+                    WeeklyDaysJson = table.Column<string>(type: "text", nullable: false, defaultValue: "[]"),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
                     ExpiresOn = table.Column<DateOnly>(type: "date", nullable: true),
                     RemindersEnabled = table.Column<bool>(type: "boolean", nullable: false),
                     Notes = table.Column<string>(type: "text", nullable: true),

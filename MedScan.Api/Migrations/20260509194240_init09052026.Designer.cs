@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260508122454_RefactorMedicationSchemaAndSeeding")]
-    partial class RefactorMedicationSchemaAndSeeding
+    [Migration("20260509194240_init09052026")]
+    partial class init09052026
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
