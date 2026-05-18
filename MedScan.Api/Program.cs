@@ -3,12 +3,10 @@ using MedScan.Api.Data.Identity;
 using MedScan.Api.Options;
 using MedScan.Api.Repositories.HomePharmacy;
 using MedScan.Api.Repositories.Medications;
+using MedScan.Api.Services;
 using MedScan.Api.Services.Auth;
 using MedScan.Api.Services.Catalog;
 using MedScan.Api.Services.HomePharmacy;
-using MedScan.Api.Services.Medications;
-using MedScan.Shared.Models;
-using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -136,5 +134,3 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
-
-
