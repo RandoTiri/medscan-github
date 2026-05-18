@@ -1,7 +1,7 @@
-﻿using MedScan.Shared.Services;
+using MedScan.Shared.Services;
 using Microsoft.Maui.Storage;
 
-namespace MedScan.Services.Auth;
+namespace MedScan.MAUI.Services.Auth;
 
 public class MauiTokenStore : ITokenStore
 {

@@ -1,4 +1,4 @@
-﻿namespace MedScan.Services.Notifications;
+namespace MedScan.MAUI.Services.Notifications;
 
 public static class ReminderNotificationIdFactory {
     public static int Create(int userMedicationId,TimeOnly time) {

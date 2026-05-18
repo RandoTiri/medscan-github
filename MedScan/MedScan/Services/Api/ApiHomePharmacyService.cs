@@ -4,7 +4,7 @@ using System.Text.Json;
 using MedScan.Shared.DTOs.HomePharmacy;
 using MedScan.Shared.Services;
 
-namespace MedScan.Services.Api;
+namespace MedScan.MAUI.Services.Api;
 
 public sealed class ApiHomePharmacyService(HttpClient httpClient) : IHomePharmacyService
 {

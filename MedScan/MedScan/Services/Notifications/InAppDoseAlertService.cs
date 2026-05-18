@@ -2,7 +2,7 @@ using MedScan.Shared.Models;
 using MedScan.Shared.Services;
 using System.Linq;
 
-namespace MedScan.Services.Notifications;
+namespace MedScan.MAUI.Services.Notifications;
 
 public sealed class InAppDoseAlertService : IInAppDoseAlertService
 {

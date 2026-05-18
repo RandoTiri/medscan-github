@@ -1,4 +1,4 @@
-using MedScan.Services.Notifications;
+using MedScan.MAUI.Services.Notifications;
 using MedScan.Shared.Services;
 using System.Threading;
 
@@ -81,3 +81,4 @@ public partial class App : Application
         }
     }
 }
+

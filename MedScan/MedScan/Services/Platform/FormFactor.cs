@@ -1,6 +1,6 @@
 using MedScan.Shared.Services;
 
-namespace MedScan.Services.Platform {
+namespace MedScan.MAUI.Services.Platform {
     public class FormFactor : IFormFactor {
         public string GetFormFactor() {
             return DeviceInfo.Idiom.ToString();

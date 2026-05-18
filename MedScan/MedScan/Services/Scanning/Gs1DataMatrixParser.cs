@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace MedScan.Services.Scanning;
+namespace MedScan.MAUI.Services.Scanning;
 
 internal static class Gs1DataMatrixParser
 {

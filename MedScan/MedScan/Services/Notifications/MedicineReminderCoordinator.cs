@@ -3,7 +3,7 @@ using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 
-namespace MedScan.Services.Notifications;
+namespace MedScan.MAUI.Services.Notifications;
 
 public sealed class MedicineReminderCoordinator
 {

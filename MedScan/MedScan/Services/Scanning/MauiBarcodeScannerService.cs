@@ -2,7 +2,7 @@ using MedScan.Pages;
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
 
-namespace MedScan.Services.Scanning;
+namespace MedScan.MAUI.Services.Scanning;
 
 public sealed class MauiBarcodeScannerService : IBarcodeScannerService
 {

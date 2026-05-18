@@ -6,7 +6,7 @@ using Microsoft.Maui.Storage;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
 
-namespace MedScan.Services.Notifications;
+namespace MedScan.MAUI.Services.Notifications;
 
 public sealed class LocalNotificationInboxService(
     IServiceProvider serviceProvider,

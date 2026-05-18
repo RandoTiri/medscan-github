@@ -3,11 +3,11 @@ using Microsoft.Extensions.Logging;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models.AndroidOption;
 using ZXing.Net.Maui.Controls;
-using MedScan.Services.Api;
-using MedScan.Services.Auth;
-using MedScan.Services.Scanning;
-using MedScan.Services.Platform;
-using MedScan.Services.Notifications;
+using MedScan.MAUI.Services.Api;
+using MedScan.MAUI.Services.Auth;
+using MedScan.MAUI.Services.Scanning;
+using MedScan.MAUI.Services.Platform;
+using MedScan.MAUI.Services.Notifications;
 
 
 namespace MedScan
@@ -77,3 +77,4 @@ namespace MedScan
         }
     }
 }
+

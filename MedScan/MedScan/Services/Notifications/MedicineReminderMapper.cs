@@ -1,7 +1,7 @@
-﻿using MedScan.Shared.DTOs.Medication;
+using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 
-namespace MedScan.Services.Notifications;
+namespace MedScan.MAUI.Services.Notifications;
 
 public static class MedicineReminderMapper {
     public static MedicineReminderModel ToReminderModel(UserMedicationDto dto) {

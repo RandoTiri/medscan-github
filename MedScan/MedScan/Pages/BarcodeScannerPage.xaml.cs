@@ -1,6 +1,6 @@
 using MedScan.Shared.Models;
 using ZXing.Net.Maui;
-using MedScan.Services.Scanning;
+using MedScan.MAUI.Services.Scanning;
 
 namespace MedScan.Pages;
 
@@ -347,5 +347,6 @@ public partial class BarcodeScannerPage : ContentPage
         _alertCompletionSource = null;
     }
 }
+
 
 
