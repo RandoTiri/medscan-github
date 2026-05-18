@@ -47,7 +47,6 @@ namespace MedScan.MAUI
                 BaseAddress = new Uri(ApiBaseAddressProvider.GetApiBaseAddress())
             });
 
-
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<IAuthService, AuthService>();
             builder.Services.AddSingleton<IBarcodeScannerService, MauiBarcodeScannerService>();
@@ -65,7 +64,6 @@ namespace MedScan.MAUI
             builder.Services.AddScoped<IMedicationService,ApiMedicationService>();
             builder.Services.AddScoped<IProfileService, ApiProfileService>();
             builder.Services.AddScoped<IHomePharmacyService, ApiHomePharmacyService>();
-
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
