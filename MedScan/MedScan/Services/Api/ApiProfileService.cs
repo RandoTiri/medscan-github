@@ -3,7 +3,7 @@ using System.Net;
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
 
-namespace MedScan.Services;
+namespace MedScan.Services.Api;
 
 public sealed class ApiProfileService(HttpClient httpClient) : IProfileService
 {

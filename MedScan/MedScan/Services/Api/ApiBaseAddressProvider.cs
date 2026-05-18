@@ -1,6 +1,6 @@
 using Microsoft.Maui.Devices;
 
-namespace MedScan.Services;
+namespace MedScan.Services.Api;
 
 public static class ApiBaseAddressProvider {
     private const int ApiPort = 5183;

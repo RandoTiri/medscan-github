@@ -1,5 +1,4 @@
 using System.Text.Json;
-using MedScan.MAUI.Services;
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +6,7 @@ using Microsoft.Maui.Storage;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
 
-namespace MedScan.Services;
+namespace MedScan.Services.Notifications;
 
 public sealed class LocalNotificationInboxService(
     IServiceProvider serviceProvider,

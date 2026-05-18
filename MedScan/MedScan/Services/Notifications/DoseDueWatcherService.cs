@@ -4,7 +4,7 @@ using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 using System.Linq;
 
-namespace MedScan.Services;
+namespace MedScan.Services.Notifications;
 
 public sealed class DoseDueWatcherService(
     IAuthService authService,

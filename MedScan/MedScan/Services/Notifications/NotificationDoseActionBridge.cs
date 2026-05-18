@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
 
-namespace MedScan.MAUI.Services;
+namespace MedScan.Services.Notifications;
 
 public sealed class NotificationDoseActionBridge : IDisposable
 {

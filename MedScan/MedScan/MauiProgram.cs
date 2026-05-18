@@ -1,10 +1,13 @@
-using MedScan.Services;
 using MedScan.Shared.Services;
 using Microsoft.Extensions.Logging;
-using MedScan.MAUI.Services;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models.AndroidOption;
 using ZXing.Net.Maui.Controls;
+using MedScan.Services.Api;
+using MedScan.Services.Auth;
+using MedScan.Services.Scanning;
+using MedScan.Services.Platform;
+using MedScan.Services.Notifications;
 
 
 namespace MedScan

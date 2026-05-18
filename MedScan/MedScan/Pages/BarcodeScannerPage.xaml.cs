@@ -1,6 +1,6 @@
 using MedScan.Shared.Models;
-using MedScan.Services;
 using ZXing.Net.Maui;
+using MedScan.Services.Scanning;
 
 namespace MedScan.Pages;
 

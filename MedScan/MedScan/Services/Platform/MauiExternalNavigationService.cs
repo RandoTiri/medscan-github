@@ -1,6 +1,6 @@
 using MedScan.Shared.Services;
 
-namespace MedScan.Services;
+namespace MedScan.Services.Platform;
 
 public sealed class MauiExternalNavigationService : IExternalNavigationService
 {

@@ -5,7 +5,7 @@ using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
 using Plugin.LocalNotification.Core.Models.AndroidOption;
 
-namespace MedScan.MAUI.Services;
+namespace MedScan.Services.Notifications;
 
 public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler
 {

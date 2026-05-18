@@ -1,11 +1,11 @@
 using System.Net.Http;
 using System.Net.Http.Json;
-using MedScan.MAUI.Services;
+using MedScan.Services.Notifications;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 
-namespace MedScan.Services;
+namespace MedScan.Services.Api;
 
 public sealed class ApiMedicationService(
     HttpClient httpClient,

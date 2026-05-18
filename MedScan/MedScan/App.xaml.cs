@@ -1,5 +1,4 @@
-using MedScan.MAUI.Services;
-using MedScan.Services;
+using MedScan.Services.Notifications;
 using MedScan.Shared.Services;
 using System.Threading;
 

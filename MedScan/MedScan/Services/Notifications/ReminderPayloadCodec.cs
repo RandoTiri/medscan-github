@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace MedScan.MAUI.Services;
+namespace MedScan.Services.Notifications;
 
 public static class ReminderPayloadCodec
 {
