@@ -1,4 +1,4 @@
-using MedScan.Pages;
+using MedScan.MAUI.Pages;
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
 

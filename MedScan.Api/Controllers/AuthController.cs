@@ -1,7 +1,6 @@
 ﻿using MedScan.Api.Data;
 using MedScan.Api.Data.Identity;
 using MedScan.Api.Repositories;
-using MedScan.Api.Services;
 using MedScan.Api.Services.Auth;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;

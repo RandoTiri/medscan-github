@@ -1,8 +1,7 @@
 using MedScan.MAUI.Services.Notifications;
 using MedScan.Shared.Services;
-using System.Threading;
 
-namespace MedScan;
+namespace MedScan.MAUI;
 
 public partial class App : Application
 {
@@ -81,4 +80,5 @@ public partial class App : Application
         }
     }
 }
+
 

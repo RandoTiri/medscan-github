@@ -1,4 +1,4 @@
-﻿namespace MedScan {
+﻿namespace MedScan.MAUI {
     public partial class MainPage : ContentPage {
         public MainPage() {
             InitializeComponent();

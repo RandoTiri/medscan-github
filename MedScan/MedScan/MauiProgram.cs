@@ -9,8 +9,7 @@ using MedScan.MAUI.Services.Scanning;
 using MedScan.MAUI.Services.Platform;
 using MedScan.MAUI.Services.Notifications;
 
-
-namespace MedScan
+namespace MedScan.MAUI
 {
     public static class MauiProgram
     {
@@ -77,4 +76,3 @@ namespace MedScan
         }
     }
 }
-

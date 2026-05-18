@@ -1,4 +1,3 @@
-using System.Net.Http;
 using System.Net.Http.Json;
 using MedScan.MAUI.Services.Notifications;
 using MedScan.Shared.DTOs.Medication;
@@ -192,4 +191,5 @@ public sealed class ApiMedicationService(
         }
     }
 }
+
 
