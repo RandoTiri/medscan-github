@@ -1,33 +1,29 @@
 using System.Security.Claims;
-using MedScan.Api.Data;
+using MedScan.Api.Data.Identity;
+using MedScan.Api.Repositories;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MedScan.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
-{
+public sealed class ProfilesController(
+    IProfileRepository profileRepository,
+    UserManager<ApplicationUser> userManager) : ControllerBase {
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ProfileSummary>> GetById(int id)
-    {
+    public async Task<ActionResult<ProfileSummary>> GetById(int id) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
-        var profile = await dbContext.Profiles
-            .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-
-        if (profile is null)
-        {
+        var profile = await profileRepository.GetForUserAsync(id,userId);
+        if (profile is null) {
             return NotFound();
         }
 
@@ -35,48 +31,28 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpGet("me")]
-    public async Task<ActionResult<IEnumerable<ProfileSummary>>> GetMine()
-    {
+    public async Task<ActionResult<IEnumerable<ProfileSummary>>> GetMine() {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
-        var profiles = await dbContext.Profiles
-            .AsNoTracking()
-            .Where(p => p.UserId == userId)
-            .OrderBy(p => p.ProfileType == ProfileTypeEnum.Ise ? 0 : 1)
-            .ThenBy(p => p.Id)
-            .Select(p => new ProfileSummary
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Gender = p.Gender,
-                Type = p.ProfileType.ToString(),
-                BirthDate = p.BirthDate
-            })
-            .ToListAsync();
-
-        return Ok(profiles);
+        var profiles = await profileRepository.GetAllForUserAsync(userId);
+        return Ok(profiles.Select(ToResponse));
     }
 
     [HttpPost("patient")]
-    public async Task<ActionResult<ProfileSummary>> CreatePatient([FromBody] CreatePatientProfileRequest request)
-    {
+    public async Task<ActionResult<ProfileSummary>> CreatePatient([FromBody] CreatePatientProfileRequest request) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
+        if (string.IsNullOrWhiteSpace(request.Name)) {
             return BadRequest(new { message = "Patsiendi nimi on kohustuslik." });
         }
 
-        var profile = new MedScan.Shared.Models.Profile
-        {
+        var profile = new Profile {
             UserId = userId,
             Name = request.Name.Trim(),
             Gender = string.IsNullOrWhiteSpace(request.Gender) ? "Määramata" : request.Gender.Trim(),
@@ -84,31 +60,25 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
             ProfileType = ProfileTypeEnum.Patsient
         };
 
-        dbContext.Profiles.Add(profile);
-        await dbContext.SaveChangesAsync();
+        await profileRepository.AddAsync(profile);
+        await profileRepository.SaveChangesAsync();
 
         return Ok(ToResponse(profile));
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<ProfileSummary>> UpdatePatient(int id, [FromBody] CreatePatientProfileRequest request)
-    {
+    public async Task<ActionResult<ProfileSummary>> UpdatePatient(int id,[FromBody] CreatePatientProfileRequest request) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
+        if (string.IsNullOrWhiteSpace(request.Name)) {
             return BadRequest(new { message = "Patsiendi nimi on kohustuslik." });
         }
 
-        var profile = await dbContext.Profiles
-            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-
-        if (profile is null)
-        {
+        var profile = await profileRepository.GetTrackedForUserAsync(id,userId);
+        if (profile is null) {
             return NotFound();
         }
 
@@ -116,48 +86,42 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
         profile.Gender = string.IsNullOrWhiteSpace(request.Gender) ? "Määramata" : request.Gender.Trim();
         profile.BirthDate = request.BirthDate;
 
-        if (profile.ProfileType == ProfileTypeEnum.Ise)
-        {
-            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            user?.FullName = profile.Name;
+        if (profile.ProfileType == ProfileTypeEnum.Ise) {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is not null) {
+                user.FullName = profile.Name;
+                await userManager.UpdateAsync(user);
+            }
         }
 
-        await dbContext.SaveChangesAsync();
+        await profileRepository.SaveChangesAsync();
         return Ok(ToResponse(profile));
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeletePatient(int id)
-    {
+    public async Task<IActionResult> DeletePatient(int id) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
-        var profile = await dbContext.Profiles
-            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-
-        if (profile is null)
-        {
+        var profile = await profileRepository.GetTrackedForUserAsync(id,userId);
+        if (profile is null) {
             return NotFound();
         }
 
-        if (profile.ProfileType == ProfileTypeEnum.Ise)
-        {
+        if (profile.ProfileType == ProfileTypeEnum.Ise) {
             return BadRequest(new { message = "Põhiprofiili ei saa kustutada." });
         }
 
-        dbContext.Profiles.Remove(profile);
-        await dbContext.SaveChangesAsync();
+        profileRepository.Remove(profile);
+        await profileRepository.SaveChangesAsync();
 
         return NoContent();
     }
 
-    private static ProfileSummary ToResponse(MedScan.Shared.Models.Profile profile)
-    {
-        return new ProfileSummary
-        {
+    private static ProfileSummary ToResponse(Profile profile) {
+        return new ProfileSummary {
             Id = profile.Id,
             Name = profile.Name,
             Gender = profile.Gender,

@@ -1,17 +1,15 @@
-using MedScan.Api.Data;
 using MedScan.Api.Repositories;
 using MedScan.Api.Repositories.Medications;
 using MedScan.Shared.DTOs.HomePharmacy;
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace MedScan.Api.Services;
 
 public sealed class HomePharmacyService(
     IHomePharmacyRepository homePharmacyRepository,
     IMedicationRepository medicationRepository,
-    AppDbContext dbContext) : IHomePharmacyService {
+    IUserMedicationRepository userMedicationRepository) : IHomePharmacyService {
     private static readonly IReadOnlyDictionary<string,DateOnly> SeededExpiryByBarcode =
         new Dictionary<string,DateOnly>(StringComparer.Ordinal) {
             ["3800010640916"] = new(2030,7,31),
@@ -32,17 +30,17 @@ public sealed class HomePharmacyService(
             ["4013054018279"] = new(2027,11,30),
         };
 
-    public async Task<IReadOnlyList<HomePharmacyItemDto>> GetByProfileIdAsync(int profileId, CancellationToken cancellationToken) {
+    public async Task<IReadOnlyList<HomePharmacyItemDto>> GetByProfileIdAsync(int profileId,CancellationToken cancellationToken = default) {
         var items = await homePharmacyRepository.GetByProfileIdAsync(profileId);
         return items.Select(MapToDto).ToList();
     }
 
-    public async Task<HomePharmacyItemDto?> GetByIdAsync(int id, CancellationToken cancellationToken) {
+    public async Task<HomePharmacyItemDto?> GetByIdAsync(int id,CancellationToken cancellationToken = default) {
         var item = await homePharmacyRepository.GetByIdAsync(id);
         return item is null ? null : MapToDto(item);
     }
 
-    public async Task<HomePharmacyItemDto> AddAsync(AddHomePharmacyItemDto dto, CancellationToken cancellationToken) {
+    public async Task<HomePharmacyItemDto> AddAsync(AddHomePharmacyItemDto dto,CancellationToken cancellationToken = default) {
         var medication = await medicationRepository.FindByIdAsync(dto.MedicationId);
         if (medication is null) {
             throw new ArgumentException($"Medication with id {dto.MedicationId} was not found.");
@@ -60,17 +58,7 @@ public sealed class HomePharmacyService(
         };
 
         if (item.ExpiresOn is null) {
-            if (!string.IsNullOrWhiteSpace(medication.Barcode) &&
-                SeededExpiryByBarcode.TryGetValue(medication.Barcode,out var seededExpiry)) {
-                item.ExpiresOn = seededExpiry;
-            } else {
-                item.ExpiresOn = await dbContext.HomePharmacyItems
-                    .AsNoTracking()
-                    .Where(x => x.MedicationId == dto.MedicationId && x.ExpiresOn != null)
-                    .OrderBy(x => x.ExpiresOn)
-                    .Select(x => x.ExpiresOn)
-                    .FirstOrDefaultAsync(cancellationToken);
-            }
+            item.ExpiresOn = await ResolveFallbackExpiryAsync(medication,dto.MedicationId,cancellationToken);
         }
 
         await homePharmacyRepository.AddAsync(item);
@@ -82,7 +70,7 @@ public sealed class HomePharmacyService(
         return MapToDto(created);
     }
 
-    public async Task<HomePharmacyItemDto?> UpdateAsync(int id,UpdateHomePharmacyItemDto dto, CancellationToken cancellationToken) {
+    public async Task<HomePharmacyItemDto?> UpdateAsync(int id,UpdateHomePharmacyItemDto dto,CancellationToken cancellationToken = default) {
         var existing = await homePharmacyRepository.GetByIdAsync(id);
         if (existing is null) {
             return null;
@@ -102,25 +90,31 @@ public sealed class HomePharmacyService(
         return MapToDto(updated);
     }
 
-    public async Task<bool> RemoveAsync(int id, CancellationToken cancellationToken) {
+    public async Task<bool> RemoveAsync(int id,CancellationToken cancellationToken = default) {
         var existing = await homePharmacyRepository.GetByIdAsync(id);
         if (existing is null) {
             return false;
         }
 
-        var scheduleItems = await dbContext.UserMedications
-            .Where(x => x.ProfileId == existing.ProfileId && x.MedicationId == existing.MedicationId)
-            .ToListAsync(cancellationToken);
+        var activeSchedules = await userMedicationRepository
+            .GetTrackedActiveByProfileAndMedicationAsync(existing.ProfileId,existing.MedicationId);
 
-        if (scheduleItems.Count > 0) {
-            foreach (var scheduleItem in scheduleItems) {
-                scheduleItem.IsActive = false;
-            }
+        foreach (var schedule in activeSchedules) {
+            schedule.IsActive = false;
         }
 
         homePharmacyRepository.Remove(existing);
         await homePharmacyRepository.SaveChangesAsync();
         return true;
+    }
+
+    private async Task<DateOnly?> ResolveFallbackExpiryAsync(Medication medication,int medicationId,CancellationToken cancellationToken) {
+        if (!string.IsNullOrWhiteSpace(medication.Barcode) &&
+            SeededExpiryByBarcode.TryGetValue(medication.Barcode,out var seededExpiry)) {
+            return seededExpiry;
+        }
+
+        return await homePharmacyRepository.FindOldestExpiryForMedicationAsync(medicationId,cancellationToken);
     }
 
     private static HomePharmacyItemDto MapToDto(HomePharmacyItem item) {

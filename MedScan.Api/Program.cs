@@ -27,6 +27,7 @@ builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<IUserMedicationRepository, UserMedicationRepository>();
 builder.Services.AddScoped<IHomePharmacyRepository, HomePharmacyRepository>();
 builder.Services.AddScoped<IDoseLogRepository,DoseLogRepository>();
+builder.Services.AddScoped<IProfileRepository,ProfileRepository>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IMedicationCatalogService, MedicationCatalogService>();

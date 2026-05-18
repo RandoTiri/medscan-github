@@ -1,10 +1,9 @@
 using System.Security.Claims;
-using MedScan.Api.Data;
+using MedScan.Api.Repositories;
 using MedScan.Shared.DTOs.HomePharmacy;
 using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MedScan.Api.Controllers;
 
@@ -13,7 +12,8 @@ namespace MedScan.Api.Controllers;
 [Authorize]
 public sealed class HomePharmacyController(
     IHomePharmacyService homePharmacyService,
-    AppDbContext dbContext) : ControllerBase {
+    IHomePharmacyRepository homePharmacyRepository,
+    IProfileRepository profileRepository) : ControllerBase {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HomePharmacyItemDto>>> GetByProfile([FromQuery] int profileId) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -21,11 +21,7 @@ public sealed class HomePharmacyController(
             return Unauthorized();
         }
 
-        var ownsProfile = await dbContext.Profiles
-            .AsNoTracking()
-            .AnyAsync(p => p.Id == profileId && p.UserId == userId);
-
-        if (!ownsProfile) {
+        if (!await profileRepository.ExistsForUserAsync(profileId,userId)) {
             return Forbid();
         }
 
@@ -40,11 +36,7 @@ public sealed class HomePharmacyController(
             return Unauthorized();
         }
 
-        var ownsItem = await dbContext.HomePharmacyItems
-            .AsNoTracking()
-            .AnyAsync(x => x.Id == id && x.Profile.UserId == userId);
-
-        if (!ownsItem) {
+        if (!await homePharmacyRepository.IsOwnedByUserAsync(id,userId)) {
             return NotFound();
         }
 
@@ -59,11 +51,7 @@ public sealed class HomePharmacyController(
             return Unauthorized();
         }
 
-        var ownsProfile = await dbContext.Profiles
-            .AsNoTracking()
-            .AnyAsync(p => p.Id == dto.ProfileId && p.UserId == userId);
-
-        if (!ownsProfile) {
+        if (!await profileRepository.ExistsForUserAsync(dto.ProfileId,userId)) {
             return Forbid();
         }
 
@@ -84,11 +72,7 @@ public sealed class HomePharmacyController(
             return Unauthorized();
         }
 
-        var ownsItem = await dbContext.HomePharmacyItems
-            .AsNoTracking()
-            .AnyAsync(x => x.Id == id && x.Profile.UserId == userId);
-
-        if (!ownsItem) {
+        if (!await homePharmacyRepository.IsOwnedByUserAsync(id,userId)) {
             return NotFound();
         }
 
@@ -103,11 +87,7 @@ public sealed class HomePharmacyController(
             return Unauthorized();
         }
 
-        var ownsItem = await dbContext.HomePharmacyItems
-            .AsNoTracking()
-            .AnyAsync(x => x.Id == id && x.Profile.UserId == userId);
-
-        if (!ownsItem) {
+        if (!await homePharmacyRepository.IsOwnedByUserAsync(id,userId)) {
             return NotFound();
         }
 

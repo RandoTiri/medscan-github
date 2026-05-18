@@ -181,6 +181,12 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
             .FirstOrDefaultAsync();
     }
 
+    public Task<bool> IsOwnedByUserAsync(int userMedicationId,string userId,CancellationToken cancellationToken = default) {
+        return _dbContext.UserMedications
+            .AsNoTracking()
+            .AnyAsync(m => m.Id == userMedicationId && m.Profile.UserId == userId,cancellationToken);
+    }
+
     public async Task<List<UserMedication>> GetTrackedActiveByProfileAndMedicationAsync(int profileId,int medicationId) {
         return await _dbContext.UserMedications
             .Where(x =>

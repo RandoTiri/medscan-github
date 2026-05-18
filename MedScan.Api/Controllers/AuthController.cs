@@ -1,12 +1,13 @@
 ﻿using MedScan.Api.Data;
 using MedScan.Api.Data.Identity;
+using MedScan.Api.Repositories;
+using MedScan.Api.Services;
 using MedScan.Api.Services.Auth;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace MedScan.Api.Controllers;
 
@@ -15,26 +16,22 @@ namespace MedScan.Api.Controllers;
 public sealed class AuthController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
+    IProfileRepository profileRepository,
     AppDbContext dbContext,
-    IPasswordResetService passwordResetService) : ControllerBase
-{
+    IPasswordResetService passwordResetService) : ControllerBase {
     [HttpPost("login")]
-    public async Task<IResult> Login([FromBody] LoginRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-        {
+    public async Task<IResult> Login([FromBody] LoginRequest request) {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password)) {
             return Results.BadRequest(new { message = "Sisesta email ja parool." });
         }
 
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
-        if (user is null)
-        {
+        if (user is null) {
             return Results.BadRequest(new { message = "Vale email või parool." });
         }
 
-        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
-        if (!result.Succeeded)
-        {
+        var result = await signInManager.CheckPasswordSignInAsync(user,request.Password,lockoutOnFailure: true);
+        if (!result.Succeeded) {
             return Results.BadRequest(new { message = "Vale email või parool." });
         }
 
@@ -46,30 +43,25 @@ public sealed class AuthController(
     }
 
     [HttpPost("register")]
-    public async Task<IResult> Register([FromBody] RegisterUserRequest request)
-    {
+    public async Task<IResult> Register([FromBody] RegisterUserRequest request) {
         if (string.IsNullOrWhiteSpace(request.FullName) ||
             string.IsNullOrWhiteSpace(request.Email) ||
             string.IsNullOrWhiteSpace(request.Password) ||
             string.IsNullOrWhiteSpace(request.Gender) ||
-            request.BirthDate is null)
-        {
+            request.BirthDate is null) {
             return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
         }
 
-        if (request.BirthDate > DateOnly.FromDateTime(DateTime.Today))
-        {
+        if (request.BirthDate > DateOnly.FromDateTime(DateTime.Today)) {
             return Results.BadRequest(new { message = "Sünnikuupäev ei saa olla tulevikus." });
         }
 
         var existingUser = await userManager.FindByEmailAsync(request.Email);
-        if (existingUser is not null)
-        {
+        if (existingUser is not null) {
             return Results.BadRequest(new { message = "Sellise emailiga kasutaja on juba olemas." });
         }
 
-        var user = new ApplicationUser
-        {
+        var user = new ApplicationUser {
             UserName = request.Email,
             Email = request.Email,
             FullName = request.FullName,
@@ -78,18 +70,15 @@ public sealed class AuthController(
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-        var result = await userManager.CreateAsync(user, request.Password);
-        if (!result.Succeeded)
-        {
-            return Results.BadRequest(result.Errors.Select(e => new
-            {
+        var result = await userManager.CreateAsync(user,request.Password);
+        if (!result.Succeeded) {
+            return Results.BadRequest(result.Errors.Select(e => new {
                 e.Code,
                 e.Description
             }));
         }
 
-        var defaultProfile = new Profile
-        {
+        var defaultProfile = new Profile {
             UserId = user.Id,
             Name = user.FullName,
             Gender = request.Gender.Trim(),
@@ -97,12 +86,11 @@ public sealed class AuthController(
             ProfileType = ProfileTypeEnum.Ise
         };
 
-        dbContext.Profiles.Add(defaultProfile);
-        await dbContext.SaveChangesAsync();
+        await profileRepository.AddAsync(defaultProfile);
+        await profileRepository.SaveChangesAsync();
         await transaction.CommitAsync();
 
-        return Results.Ok(new
-        {
+        return Results.Ok(new {
             message = "User created",
             userId = user.Id,
             profileId = defaultProfile.Id
@@ -111,23 +99,15 @@ public sealed class AuthController(
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<IResult> Me()
-    {
+    public async Task<IResult> Me() {
         var user = await userManager.GetUserAsync(User);
-        if (user is null)
-        {
+        if (user is null) {
             return Results.Unauthorized();
         }
 
-        var defaultProfileId = await dbContext.Profiles
-            .Where(p => p.UserId == user.Id)
-            .OrderBy(p => p.ProfileType == ProfileTypeEnum.Ise ? 0 : 1)
-            .ThenBy(p => p.Id)
-            .Select(p => (int?)p.Id)
-            .FirstOrDefaultAsync();
+        var defaultProfileId = await profileRepository.GetDefaultProfileIdForUserAsync(user.Id);
 
-        return Results.Ok(new
-        {
+        return Results.Ok(new {
             user.Id,
             user.FullName,
             user.Email,
@@ -136,22 +116,18 @@ public sealed class AuthController(
     }
 
     [HttpPost("forgot-password")]
-    public async Task<IResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Email))
-        {
+    public async Task<IResult> ForgotPassword([FromBody] ForgotPasswordRequest request) {
+        if (string.IsNullOrWhiteSpace(request.Email)) {
             return Results.BadRequest(new { message = "Email on kohustuslik!" });
         }
 
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
-        if (user is null)
-        {
+        if (user is null) {
             return Results.BadRequest(new { message = "Antud emailiga ei ole selles rakenduses kontot!" });
         }
 
         var sent = await passwordResetService.SendResetCodeAsync(user.Email!);
-        if (!sent)
-        {
+        if (!sent) {
             return Results.BadRequest(new { message = "Kinnituskoodi saatmine ebaõnnestus. Kontrolli SMTP konfigureerimist." });
         }
 
@@ -159,15 +135,12 @@ public sealed class AuthController(
     }
 
     [HttpPost("verify-code")]
-    public IResult VerifyCode([FromBody] VerifyCodeRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
-        {
+    public IResult VerifyCode([FromBody] VerifyCodeRequest request) {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code)) {
             return Results.BadRequest(new { message = "Email ja kood on kohustuslikud." });
         }
 
-        if (passwordResetService.VerifyCode(request.Email, request.Code))
-        {
+        if (passwordResetService.VerifyCode(request.Email,request.Code)) {
             return Results.Ok(new { message = "Kood on õige." });
         }
 
@@ -175,71 +148,58 @@ public sealed class AuthController(
     }
 
     [HttpPost("reset-password")]
-    public async Task<IResult> ResetPassword([FromBody] ResetPasswordRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.NewPassword))
-        {
+    public async Task<IResult> ResetPassword([FromBody] ResetPasswordRequest request) {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code) || string.IsNullOrWhiteSpace(request.NewPassword)) {
             return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
         }
 
-        if (request.NewPassword.Length < 6)
-        {
+        if (request.NewPassword.Length < 6) {
             return Results.BadRequest(new { message = "Parool peab olema vähemalt 6 tähemärki." });
         }
 
-        if (!passwordResetService.VerifyCode(request.Email, request.Code))
-        {
+        if (!passwordResetService.VerifyCode(request.Email,request.Code)) {
             return Results.BadRequest(new { message = "Kinnituskood on vale või aegunud." });
         }
 
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
-        if (user is null)
-        {
+        if (user is null) {
             return Results.BadRequest(new { message = "Kasutajat ei leitud." });
         }
 
         var token = await userManager.GeneratePasswordResetTokenAsync(user);
-        var result = await userManager.ResetPasswordAsync(user, token, request.NewPassword);
+        var result = await userManager.ResetPasswordAsync(user,token,request.NewPassword);
 
-        if (!result.Succeeded)
-        {
-            return Results.BadRequest(result.Errors.Select(e => new
-            {
+        if (!result.Succeeded) {
+            return Results.BadRequest(result.Errors.Select(e => new {
                 e.Code,
                 e.Description
             }));
         }
 
-        passwordResetService.ConsumeCode(request.Email, request.Code);
+        passwordResetService.ConsumeCode(request.Email,request.Code);
 
         return Results.Ok(new { message = "Parool edukalt uuendatud." });
     }
 
     [Authorize]
     [HttpPost("change-password")]
-    public async Task<IResult> ChangePassword([FromBody] ChangePasswordRequest request)
-    {
-        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
-        {
+    public async Task<IResult> ChangePassword([FromBody] ChangePasswordRequest request) {
+        if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword)) {
             return Results.BadRequest(new { message = "Kõik väljad on kohustuslikud." });
         }
 
-        if (request.NewPassword.Length < 6)
-        {
+        if (request.NewPassword.Length < 6) {
             return Results.BadRequest(new { message = "Parool peab olema vähemalt 6 tähemärki pikk." });
         }
 
         var user = await userManager.GetUserAsync(User);
-        if (user is null)
-        {
+        if (user is null) {
             return Results.Unauthorized();
         }
 
-        var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
-        if (!result.Succeeded)
-        {
-            return Results.BadRequest(result.Errors.Select(e => new
-            {
+        var result = await userManager.ChangePasswordAsync(user,request.CurrentPassword,request.NewPassword);
+        if (!result.Succeeded) {
+            return Results.BadRequest(result.Errors.Select(e => new {
                 e.Code,
                 e.Description
             }));
@@ -250,31 +210,23 @@ public sealed class AuthController(
 
     [Authorize]
     [HttpDelete("me")]
-    public async Task<IResult> DeleteAccount()
-    {
+    public async Task<IResult> DeleteAccount() {
         var user = await userManager.GetUserAsync(User);
-        if (user is null)
-        {
+        if (user is null) {
             return Results.Unauthorized();
         }
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-        var userProfiles = await dbContext.Profiles
-            .Where(p => p.UserId == user.Id)
-            .ToListAsync();
-
-        if (userProfiles.Count > 0)
-        {
-            dbContext.Profiles.RemoveRange(userProfiles);
-            await dbContext.SaveChangesAsync();
+        var userProfiles = await profileRepository.GetTrackedAllForUserAsync(user.Id);
+        if (userProfiles.Count > 0) {
+            profileRepository.RemoveRange(userProfiles);
+            await profileRepository.SaveChangesAsync();
         }
 
         var result = await userManager.DeleteAsync(user);
-        if (!result.Succeeded)
-        {
-            return Results.BadRequest(result.Errors.Select(e => new
-            {
+        if (!result.Succeeded) {
+            return Results.BadRequest(result.Errors.Select(e => new {
                 e.Code,
                 e.Description
             }));
@@ -285,5 +237,3 @@ public sealed class AuthController(
         return Results.NoContent();
     }
 }
-
-

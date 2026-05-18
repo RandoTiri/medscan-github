@@ -29,6 +29,21 @@ public sealed class HomePharmacyRepository(AppDbContext dbContext) : IHomePharma
             .FirstOrDefaultAsync();
     }
 
+    public Task<DateOnly?> FindOldestExpiryForMedicationAsync(int medicationId,CancellationToken cancellationToken = default) {
+        return dbContext.HomePharmacyItems
+            .AsNoTracking()
+            .Where(x => x.MedicationId == medicationId && x.ExpiresOn != null)
+            .OrderBy(x => x.ExpiresOn)
+            .Select(x => x.ExpiresOn)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public Task<bool> IsOwnedByUserAsync(int id,string userId,CancellationToken cancellationToken = default) {
+        return dbContext.HomePharmacyItems
+            .AsNoTracking()
+            .AnyAsync(x => x.Id == id && x.Profile.UserId == userId,cancellationToken);
+    }
+
     public async Task AddAsync(HomePharmacyItem item) {
         await dbContext.HomePharmacyItems.AddAsync(item);
     }

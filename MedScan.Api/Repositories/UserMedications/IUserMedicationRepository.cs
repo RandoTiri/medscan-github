@@ -10,6 +10,7 @@ public interface IUserMedicationRepository {
     Task<UserMedication?> GetTrackedByIdAsync(int userMedicationId);
     Task<UserMedication?> GetTrackedByIdWithLogsAndMedicationAsync(int userMedicationId);
     Task<UserMedication?> GetNewestActiveTrackedByProfileAndMedicationAsync(int profileId,int medicationId);
+    Task<bool> IsOwnedByUserAsync(int userMedicationId,string userId,CancellationToken cancellationToken = default);
     Task AddAsync(UserMedication userMedication);
     Task SaveChangesAsync();
 }
