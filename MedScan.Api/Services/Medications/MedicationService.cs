@@ -1,4 +1,3 @@
-using MedScan.Api.Data;
 using MedScan.Api.Repositories;
 using MedScan.Api.Repositories.Medications;
 using MedScan.Api.Services.Medications;
@@ -6,22 +5,24 @@ using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
-using Microsoft.EntityFrameworkCore;
 
 namespace MedScan.Api.Services;
 
 public sealed class MedicationService : IMedicationService {
     private readonly IUserMedicationRepository _userMedicationRepository;
     private readonly IMedicationRepository _medicationRepository;
-    private readonly AppDbContext _dbContext;
+    private readonly IDoseLogRepository _doseLogRepository;
+    private readonly IHomePharmacyRepository _homePharmacyRepository;
 
     public MedicationService(
         IUserMedicationRepository userMedicationRepository,
         IMedicationRepository medicationRepository,
-        AppDbContext dbContext) {
+        IDoseLogRepository doseLogRepository,
+        IHomePharmacyRepository homePharmacyRepository) {
         _userMedicationRepository = userMedicationRepository;
         _medicationRepository = medicationRepository;
-        _dbContext = dbContext;
+        _doseLogRepository = doseLogRepository;
+        _homePharmacyRepository = homePharmacyRepository;
     }
 
     public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId,DateOnly? forDate = null) {
@@ -41,7 +42,7 @@ public sealed class MedicationService : IMedicationService {
             ?? throw new InvalidOperationException(
                 string.Format(MedicationConstants.Messages.MedicationNotFoundById,dto.MedicationId));
 
-        await DeactivateExistingSchedulesAsync(dto.ProfileId,dto.MedicationId);
+        await DeactivateActiveSchedulesAsync(dto.ProfileId,dto.MedicationId);
 
         var userMedication = BuildUserMedicationFromDto(dto);
         await _userMedicationRepository.AddAsync(userMedication);
@@ -83,7 +84,7 @@ public sealed class MedicationService : IMedicationService {
     }
 
     public async Task<UserMedicationDto?> UpdateStatusAsync(int userMedicationId,UpdateMedicationStatusDto dto) {
-        var userMedication = await LoadUserMedicationWithLogsAsync(userMedicationId);
+        var userMedication = await _userMedicationRepository.GetTrackedByIdWithLogsAndMedicationAsync(userMedicationId);
         if (userMedication is null) {
             return null;
         }
@@ -94,33 +95,24 @@ public sealed class MedicationService : IMedicationService {
         var stockResult = await TryDecrementStockForDoseAsync(userMedication,dto.Status,previousStatus);
 
         if (stockResult.RemovedFromEverywhere) {
-            await DeactivateAllActiveSchedulesAsync(userMedication.ProfileId,userMedication.MedicationId);
+            await DeactivateActiveSchedulesAsync(userMedication.ProfileId,userMedication.MedicationId);
         }
 
-        await _dbContext.SaveChangesAsync();
+        await _userMedicationRepository.SaveChangesAsync();
 
         return await BuildUpdateStatusResultAsync(userMedicationId,userMedication,stockResult);
     }
 
     public async Task<IEnumerable<DoseHistoryItemDto>> GetHistoryAsync(int profileId,DateOnly date) {
         var (utcStart,utcEnd) = GetUtcDateRange(date);
+        var logs = await _doseLogRepository.GetByProfileInRangeAsync(profileId,utcStart,utcEnd);
 
-        return await _dbContext.DoseLogs
-            .AsNoTracking()
-            .Include(log => log.UserMedication)
-                .ThenInclude(um => um.Medication)
-            .Where(log =>
-                log.UserMedication.ProfileId == profileId &&
-                log.ScheduledTime >= utcStart &&
-                log.ScheduledTime < utcEnd)
-            .OrderBy(log => log.ScheduledTime)
-            .Select(log => new DoseHistoryItemDto {
-                MedicationName = log.UserMedication.Medication.Name,
-                Strength = log.UserMedication.Medication.StrengthMg,
-                ScheduledTime = log.ScheduledTime,
-                Status = log.DoseStatus
-            })
-            .ToListAsync();
+        return logs.Select(log => new DoseHistoryItemDto {
+            MedicationName = log.UserMedication.Medication.Name,
+            Strength = log.UserMedication.Medication.StrengthMg,
+            ScheduledTime = log.ScheduledTime,
+            Status = log.DoseStatus
+        });
     }
 
     public async Task<TakeMedicationOnceResultDto> TakeOnceAsync(int medicationId,TakeMedicationOnceDto dto) {
@@ -128,12 +120,13 @@ public sealed class MedicationService : IMedicationService {
             return Failure(MedicationConstants.Messages.ProfileMissing);
         }
 
-        var medication = await _dbContext.Medications.AsNoTracking()
-            .FirstOrDefaultAsync(m => m.Id == medicationId);
+        var medication = await _medicationRepository.FindByIdAsync(medicationId);
         if (medication is null) {
             return Failure(MedicationConstants.Messages.MedicationNotFound);
         }
-        var stockItem = await FindNewestStockItemAsync(dto.ProfileId,medicationId);
+
+        var stockItem = await _homePharmacyRepository
+            .FindNewestTrackedByProfileAndMedicationAsync(dto.ProfileId,medicationId);
         var stockCheck = ValidateStockForTakeOnce(stockItem,dto);
         if (stockCheck is not null) {
             return stockCheck;
@@ -145,7 +138,7 @@ public sealed class MedicationService : IMedicationService {
         var quantityToTake = NormalizeQuantity(dto.Quantity);
         var (remaining,removed) = ConsumeStock(stockItem!,quantityToTake);
 
-        await _dbContext.SaveChangesAsync();
+        await _userMedicationRepository.SaveChangesAsync();
 
         return new TakeMedicationOnceResultDto {
             Success = true,
@@ -155,21 +148,11 @@ public sealed class MedicationService : IMedicationService {
         };
     }
 
-    private async Task DeactivateExistingSchedulesAsync(int profileId,int medicationId) {
-        var existingActiveSchedules = await _userMedicationRepository
+    private async Task DeactivateActiveSchedulesAsync(int profileId,int medicationId) {
+        var activeSchedules = await _userMedicationRepository
             .GetTrackedActiveByProfileAndMedicationAsync(profileId,medicationId);
 
-        foreach (var existing in existingActiveSchedules) {
-            existing.IsActive = false;
-        }
-    }
-
-    private async Task DeactivateAllActiveSchedulesAsync(int profileId,int medicationId) {
-        var allActiveSchedules = await _dbContext.UserMedications
-            .Where(um => um.ProfileId == profileId && um.MedicationId == medicationId && um.IsActive)
-            .ToListAsync();
-
-        foreach (var schedule in allActiveSchedules) {
+        foreach (var schedule in activeSchedules) {
             schedule.IsActive = false;
         }
     }
@@ -208,12 +191,6 @@ public sealed class MedicationService : IMedicationService {
         entity.Notes = TrimNotesOrNull(dto.Notes);
     }
 
-    private Task<UserMedication?> LoadUserMedicationWithLogsAsync(int userMedicationId) =>
-        _dbContext.UserMedications
-            .Include(um => um.Medication)
-            .Include(um => um.DoseLogs)
-            .FirstOrDefaultAsync(um => um.Id == userMedicationId);
-
     private static DateTime ResolveScheduledUtc(TimeOnly? scheduledTime) {
         var nowLocal = DateTime.Now;
         var resolvedTime = scheduledTime ?? TimeOnly.FromDateTime(nowLocal);
@@ -221,6 +198,7 @@ public sealed class MedicationService : IMedicationService {
             .SpecifyKind(nowLocal.Date.Add(resolvedTime.ToTimeSpan()),DateTimeKind.Local)
             .ToUniversalTime();
     }
+
     private DoseStatusEnum? UpsertDoseLog(UserMedication userMedication,DateTime scheduledUtc,DoseStatusEnum status) {
         var existingLog = userMedication.DoseLogs
             .Where(log => log.ScheduledTime == scheduledUtc)
@@ -231,7 +209,7 @@ public sealed class MedicationService : IMedicationService {
         var takenAt = status == DoseStatusEnum.Done ? DateTime.UtcNow : (DateTime?)null;
 
         if (existingLog is null) {
-            _dbContext.DoseLogs.Add(new DoseLog {
+            _doseLogRepository.Add(new DoseLog {
                 UserMedicationId = userMedication.Id,
                 ScheduledTime = scheduledUtc,
                 DoseStatus = status,
@@ -254,13 +232,14 @@ public sealed class MedicationService : IMedicationService {
             return StockDecrementResult.NotApplicable;
         }
 
-        var stockItem = await FindNewestStockItemAsync(userMedication.ProfileId,userMedication.MedicationId);
+        var stockItem = await _homePharmacyRepository
+            .FindNewestTrackedByProfileAndMedicationAsync(userMedication.ProfileId,userMedication.MedicationId);
         if (stockItem is null || stockItem.Quantity <= 0) {
             return StockDecrementResult.NotApplicable;
         }
 
         if (stockItem.Quantity == 1) {
-            _dbContext.HomePharmacyItems.Remove(stockItem);
+            _homePharmacyRepository.Remove(stockItem);
             return new StockDecrementResult(
                 RemainingQuantity: 0,
                 RemovedFromEverywhere: true,
@@ -302,12 +281,6 @@ public sealed class MedicationService : IMedicationService {
         return updated;
     }
 
-    private Task<HomePharmacyItem?> FindNewestStockItemAsync(int profileId,int medicationId) =>
-        _dbContext.HomePharmacyItems
-            .Where(item => item.ProfileId == profileId && item.MedicationId == medicationId)
-            .OrderByDescending(item => item.AddedAt)
-            .FirstOrDefaultAsync();
-
     private static TakeMedicationOnceResultDto? ValidateStockForTakeOnce(HomePharmacyItem? stockItem,TakeMedicationOnceDto dto) {
         if (stockItem is null || stockItem.Quantity <= 0) {
             return Failure(MedicationConstants.Messages.StockEmpty);
@@ -331,13 +304,10 @@ public sealed class MedicationService : IMedicationService {
     }
 
     private async Task<UserMedication> EnsureUserMedicationForLogAsync(int profileId,int medicationId,string? notes) {
-        var activeMedication = await _dbContext.UserMedications
-            .Where(um => um.ProfileId == profileId && um.MedicationId == medicationId && um.IsActive)
-            .OrderByDescending(um => um.Id)
-            .FirstOrDefaultAsync();
-
-        if (activeMedication is not null) {
-            return activeMedication;
+        var existing = await _userMedicationRepository
+            .GetNewestActiveTrackedByProfileAndMedicationAsync(profileId,medicationId);
+        if (existing is not null) {
+            return existing;
         }
 
         var fallback = new UserMedication {
@@ -354,14 +324,14 @@ public sealed class MedicationService : IMedicationService {
             AddedAt = DateTime.UtcNow
         };
 
-        _dbContext.UserMedications.Add(fallback);
-        await _dbContext.SaveChangesAsync();
+        await _userMedicationRepository.AddAsync(fallback);
+        await _userMedicationRepository.SaveChangesAsync();
         return fallback;
     }
 
     private void LogTakenDose(int userMedicationId) {
         var takenAt = DateTime.UtcNow;
-        _dbContext.DoseLogs.Add(new DoseLog {
+        _doseLogRepository.Add(new DoseLog {
             UserMedicationId = userMedicationId,
             ScheduledTime = takenAt,
             TakenAt = takenAt,
@@ -372,7 +342,7 @@ public sealed class MedicationService : IMedicationService {
     private (int remaining,bool removed) ConsumeStock(HomePharmacyItem stockItem,int quantityToTake) {
         var remaining = stockItem.Quantity - quantityToTake;
         if (remaining <= 0) {
-            _dbContext.HomePharmacyItems.Remove(stockItem);
+            _homePharmacyRepository.Remove(stockItem);
             return (0,true);
         }
 

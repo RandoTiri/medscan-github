@@ -2,7 +2,7 @@
 using MedScan.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Repositories.Medications;
+namespace MedScan.Api.Repositories;
 
 public sealed class UserMedicationRepository : IUserMedicationRepository {
     private readonly AppDbContext _dbContext;
@@ -22,8 +22,7 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                     item.MedicationId == x.MedicationId &&
                     item.Quantity > 0))
             .OrderBy(x => x.Id)
-            .Select(x => new UserMedication
-            {
+            .Select(x => new UserMedication {
                 Id = x.Id,
                 ProfileId = x.ProfileId,
                 MedicationId = x.MedicationId,
@@ -42,20 +41,17 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 Notes = x.Notes,
                 AddedAt = x.AddedAt,
                 IsActive = x.IsActive,
-                Profile = new Profile
-                {
+                Profile = new Profile {
                     Id = x.Profile.Id,
                     Name = x.Profile.Name
                 },
-                Medication = new Medication
-                {
+                Medication = new Medication {
                     Id = x.Medication.Id,
                     Name = x.Medication.Name,
                     StrengthMg = x.Medication.StrengthMg
                 },
                 DoseLogs = x.DoseLogs
-                    .Select(log => new DoseLog
-                    {
+                    .Select(log => new DoseLog {
                         Id = log.Id,
                         UserMedicationId = log.UserMedicationId,
                         ScheduledTime = log.ScheduledTime,
@@ -78,8 +74,7 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                     item.ProfileId == x.ProfileId &&
                     item.MedicationId == x.MedicationId &&
                     item.Quantity > 0))
-            .Select(x => new UserMedication
-            {
+            .Select(x => new UserMedication {
                 Id = x.Id,
                 ProfileId = x.ProfileId,
                 MedicationId = x.MedicationId,
@@ -98,20 +93,17 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 Notes = x.Notes,
                 AddedAt = x.AddedAt,
                 IsActive = x.IsActive,
-                Profile = new Profile
-                {
+                Profile = new Profile {
                     Id = x.Profile.Id,
                     Name = x.Profile.Name
                 },
-                Medication = new Medication
-                {
+                Medication = new Medication {
                     Id = x.Medication.Id,
                     Name = x.Medication.Name,
                     StrengthMg = x.Medication.StrengthMg
                 },
                 DoseLogs = x.DoseLogs
-                    .Select(log => new DoseLog
-                    {
+                    .Select(log => new DoseLog {
                         Id = log.Id,
                         UserMedicationId = log.UserMedicationId,
                         ScheduledTime = log.ScheduledTime,
@@ -128,8 +120,7 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
         return await _dbContext.UserMedications
             .AsNoTracking()
             .Where(x => x.Id == userMedicationId)
-            .Select(x => new UserMedication
-            {
+            .Select(x => new UserMedication {
                 Id = x.Id,
                 ProfileId = x.ProfileId,
                 MedicationId = x.MedicationId,
@@ -148,20 +139,17 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
                 Notes = x.Notes,
                 AddedAt = x.AddedAt,
                 IsActive = x.IsActive,
-                Profile = new Profile
-                {
+                Profile = new Profile {
                     Id = x.Profile.Id,
                     Name = x.Profile.Name
                 },
-                Medication = new Medication
-                {
+                Medication = new Medication {
                     Id = x.Medication.Id,
                     Name = x.Medication.Name,
                     StrengthMg = x.Medication.StrengthMg
                 },
                 DoseLogs = x.DoseLogs
-                    .Select(log => new DoseLog
-                    {
+                    .Select(log => new DoseLog {
                         Id = log.Id,
                         UserMedicationId = log.UserMedicationId,
                         ScheduledTime = log.ScheduledTime,
@@ -179,8 +167,21 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
             .FirstOrDefaultAsync(x => x.Id == userMedicationId);
     }
 
-    public async Task<List<UserMedication>> GetTrackedActiveByProfileAndMedicationAsync(int profileId, int medicationId)
-    {
+    public Task<UserMedication?> GetTrackedByIdWithLogsAndMedicationAsync(int userMedicationId) {
+        return _dbContext.UserMedications
+            .Include(um => um.Medication)
+            .Include(um => um.DoseLogs)
+            .FirstOrDefaultAsync(um => um.Id == userMedicationId);
+    }
+
+    public Task<UserMedication?> GetNewestActiveTrackedByProfileAndMedicationAsync(int profileId,int medicationId) {
+        return _dbContext.UserMedications
+            .Where(um => um.ProfileId == profileId && um.MedicationId == medicationId && um.IsActive)
+            .OrderByDescending(um => um.Id)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<List<UserMedication>> GetTrackedActiveByProfileAndMedicationAsync(int profileId,int medicationId) {
         return await _dbContext.UserMedications
             .Where(x =>
                 x.ProfileId == profileId &&
@@ -197,4 +198,3 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
         return _dbContext.SaveChangesAsync();
     }
 }
-

@@ -2,12 +2,10 @@ using MedScan.Api.Data;
 using MedScan.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Repositories.HomePharmacy;
+namespace MedScan.Api.Repositories;
 
-public sealed class HomePharmacyRepository(AppDbContext dbContext) : IHomePharmacyRepository
-{
-    public async Task<List<HomePharmacyItem>> GetByProfileIdAsync(int profileId)
-    {
+public sealed class HomePharmacyRepository(AppDbContext dbContext) : IHomePharmacyRepository {
+    public async Task<List<HomePharmacyItem>> GetByProfileIdAsync(int profileId) {
         return await dbContext.HomePharmacyItems
             .Include(x => x.Profile)
             .Include(x => x.Medication)
@@ -17,26 +15,29 @@ public sealed class HomePharmacyRepository(AppDbContext dbContext) : IHomePharma
             .ToListAsync();
     }
 
-    public async Task<HomePharmacyItem?> GetByIdAsync(int id)
-    {
+    public async Task<HomePharmacyItem?> GetByIdAsync(int id) {
         return await dbContext.HomePharmacyItems
             .Include(x => x.Profile)
             .Include(x => x.Medication)
             .FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task AddAsync(HomePharmacyItem item)
-    {
+    public Task<HomePharmacyItem?> FindNewestTrackedByProfileAndMedicationAsync(int profileId,int medicationId) {
+        return dbContext.HomePharmacyItems
+            .Where(item => item.ProfileId == profileId && item.MedicationId == medicationId)
+            .OrderByDescending(item => item.AddedAt)
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task AddAsync(HomePharmacyItem item) {
         await dbContext.HomePharmacyItems.AddAsync(item);
     }
 
-    public void Remove(HomePharmacyItem item)
-    {
+    public void Remove(HomePharmacyItem item) {
         dbContext.HomePharmacyItems.Remove(item);
     }
 
-    public Task SaveChangesAsync()
-    {
+    public Task SaveChangesAsync() {
         return dbContext.SaveChangesAsync();
     }
 }

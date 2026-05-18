@@ -31,7 +31,6 @@ public sealed class MedicationRepository : IMedicationRepository {
             return null;
         }
 
-        // Prefer exact incoming format first, then any compatible variant.
         return matches
             .OrderByDescending(m => string.Equals(m.Barcode, barcode, StringComparison.Ordinal))
             .ThenByDescending(m => m.Barcode.Length)

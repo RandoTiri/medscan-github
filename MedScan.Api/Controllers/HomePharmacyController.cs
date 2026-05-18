@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using MedScan.Api.Data;
-using MedScan.Api.Services.HomePharmacy;
 using MedScan.Shared.DTOs.HomePharmacy;
+using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,14 +13,11 @@ namespace MedScan.Api.Controllers;
 [Authorize]
 public sealed class HomePharmacyController(
     IHomePharmacyService homePharmacyService,
-    AppDbContext dbContext) : ControllerBase
-{
+    AppDbContext dbContext) : ControllerBase {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<HomePharmacyItemDto>>> GetByProfile([FromQuery] int profileId)
-    {
+    public async Task<ActionResult<IEnumerable<HomePharmacyItemDto>>> GetByProfile([FromQuery] int profileId) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
@@ -28,8 +25,7 @@ public sealed class HomePharmacyController(
             .AsNoTracking()
             .AnyAsync(p => p.Id == profileId && p.UserId == userId);
 
-        if (!ownsProfile)
-        {
+        if (!ownsProfile) {
             return Forbid();
         }
 
@@ -38,11 +34,9 @@ public sealed class HomePharmacyController(
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<HomePharmacyItemDto>> GetById(int id)
-    {
+    public async Task<ActionResult<HomePharmacyItemDto>> GetById(int id) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
@@ -50,8 +44,7 @@ public sealed class HomePharmacyController(
             .AsNoTracking()
             .AnyAsync(x => x.Id == id && x.Profile.UserId == userId);
 
-        if (!ownsItem)
-        {
+        if (!ownsItem) {
             return NotFound();
         }
 
@@ -60,11 +53,9 @@ public sealed class HomePharmacyController(
     }
 
     [HttpPost]
-    public async Task<ActionResult<HomePharmacyItemDto>> Add([FromBody] AddHomePharmacyItemDto dto)
-    {
+    public async Task<ActionResult<HomePharmacyItemDto>> Add([FromBody] AddHomePharmacyItemDto dto) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
@@ -72,18 +63,14 @@ public sealed class HomePharmacyController(
             .AsNoTracking()
             .AnyAsync(p => p.Id == dto.ProfileId && p.UserId == userId);
 
-        if (!ownsProfile)
-        {
+        if (!ownsProfile) {
             return Forbid();
         }
 
         HomePharmacyItemDto created;
-        try
-        {
+        try {
             created = await homePharmacyService.AddAsync(dto);
-        }
-        catch (ArgumentException ex)
-        {
+        } catch (ArgumentException ex) {
             return BadRequest(new { message = ex.Message });
         }
 
@@ -91,11 +78,9 @@ public sealed class HomePharmacyController(
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<HomePharmacyItemDto>> Update(int id, [FromBody] UpdateHomePharmacyItemDto dto)
-    {
+    public async Task<ActionResult<HomePharmacyItemDto>> Update(int id,[FromBody] UpdateHomePharmacyItemDto dto) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
@@ -103,21 +88,18 @@ public sealed class HomePharmacyController(
             .AsNoTracking()
             .AnyAsync(x => x.Id == id && x.Profile.UserId == userId);
 
-        if (!ownsItem)
-        {
+        if (!ownsItem) {
             return NotFound();
         }
 
-        var updated = await homePharmacyService.UpdateAsync(id, dto);
+        var updated = await homePharmacyService.UpdateAsync(id,dto);
         return updated is null ? NotFound() : Ok(updated);
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Remove(int id)
-    {
+    public async Task<IActionResult> Remove(int id) {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userId))
-        {
+        if (string.IsNullOrWhiteSpace(userId)) {
             return Unauthorized();
         }
 
@@ -125,8 +107,7 @@ public sealed class HomePharmacyController(
             .AsNoTracking()
             .AnyAsync(x => x.Id == id && x.Profile.UserId == userId);
 
-        if (!ownsItem)
-        {
+        if (!ownsItem) {
             return NotFound();
         }
 

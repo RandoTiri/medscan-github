@@ -1,17 +1,15 @@
 ﻿using MedScan.Api.Data;
 using MedScan.Api.Data.Identity;
 using MedScan.Api.Options;
-using MedScan.Api.Repositories.HomePharmacy;
+using MedScan.Api.Repositories;
 using MedScan.Api.Repositories.Medications;
 using MedScan.Api.Services;
 using MedScan.Api.Services.Auth;
 using MedScan.Api.Services.Catalog;
-using MedScan.Api.Services.HomePharmacy;
 using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
-using ApiHomePharmacyService = MedScan.Api.Services.HomePharmacy.IHomePharmacyService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,10 +26,11 @@ builder.Services
 builder.Services.AddScoped<IMedicationRepository, MedicationRepository>();
 builder.Services.AddScoped<IUserMedicationRepository, UserMedicationRepository>();
 builder.Services.AddScoped<IHomePharmacyRepository, HomePharmacyRepository>();
+builder.Services.AddScoped<IDoseLogRepository,DoseLogRepository>();
 builder.Services.AddScoped<IPasswordResetService, PasswordResetService>();
 builder.Services.AddScoped<IMedicationService, MedicationService>();
 builder.Services.AddScoped<IMedicationCatalogService, MedicationCatalogService>();
-builder.Services.AddScoped<ApiHomePharmacyService, HomePharmacyService>();
+builder.Services.AddScoped<IHomePharmacyService, HomePharmacyService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
