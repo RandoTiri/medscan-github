@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class init09052026 : Migration
+    public partial class init18052026 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

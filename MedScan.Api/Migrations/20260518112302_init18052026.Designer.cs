@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260509194240_init09052026")]
-    partial class init09052026
+    [Migration("20260518112302_init18052026")]
+    partial class init18052026
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace MedScan.Api.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("MedScan.Api.Models.ApplicationUser", b =>
+            modelBuilder.Entity("MedScan.Api.Data.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -491,7 +491,7 @@ namespace MedScan.Api.Migrations
 
             modelBuilder.Entity("MedScan.Shared.Models.Profile", b =>
                 {
-                    b.HasOne("MedScan.Api.Models.ApplicationUser", null)
+                    b.HasOne("MedScan.Api.Data.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -528,7 +528,7 @@ namespace MedScan.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("MedScan.Api.Models.ApplicationUser", null)
+                    b.HasOne("MedScan.Api.Data.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -537,7 +537,7 @@ namespace MedScan.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("MedScan.Api.Models.ApplicationUser", null)
+                    b.HasOne("MedScan.Api.Data.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -552,7 +552,7 @@ namespace MedScan.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MedScan.Api.Models.ApplicationUser", null)
+                    b.HasOne("MedScan.Api.Data.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -561,7 +561,7 @@ namespace MedScan.Api.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("MedScan.Api.Models.ApplicationUser", null)
+                    b.HasOne("MedScan.Api.Data.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
