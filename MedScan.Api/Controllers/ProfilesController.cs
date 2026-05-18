@@ -1,6 +1,6 @@
 using System.Security.Claims;
-using MedScan.Api.Contracts;
 using MedScan.Api.Data;
+using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,7 +14,7 @@ namespace MedScan.Api.Controllers;
 public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
 {
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<ProfileSummaryResponse>> GetById(int id)
+    public async Task<ActionResult<ProfileSummary>> GetById(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -35,7 +35,7 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpGet("me")]
-    public async Task<ActionResult<IEnumerable<ProfileSummaryResponse>>> GetMine()
+    public async Task<ActionResult<IEnumerable<ProfileSummary>>> GetMine()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -48,7 +48,7 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
             .Where(p => p.UserId == userId)
             .OrderBy(p => p.ProfileType == ProfileTypeEnum.Ise ? 0 : 1)
             .ThenBy(p => p.Id)
-            .Select(p => new ProfileSummaryResponse
+            .Select(p => new ProfileSummary
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -62,7 +62,7 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpPost("patient")]
-    public async Task<ActionResult<ProfileSummaryResponse>> CreatePatient([FromBody] CreatePatientProfileRequest request)
+    public async Task<ActionResult<ProfileSummary>> CreatePatient([FromBody] CreatePatientProfileRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -91,7 +91,7 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<ProfileSummaryResponse>> UpdatePatient(int id, [FromBody] CreatePatientProfileRequest request)
+    public async Task<ActionResult<ProfileSummary>> UpdatePatient(int id, [FromBody] CreatePatientProfileRequest request)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrWhiteSpace(userId))
@@ -154,9 +154,9 @@ public sealed class ProfilesController(AppDbContext dbContext) : ControllerBase
         return NoContent();
     }
 
-    private static ProfileSummaryResponse ToResponse(MedScan.Shared.Models.Profile profile)
+    private static ProfileSummary ToResponse(MedScan.Shared.Models.Profile profile)
     {
-        return new ProfileSummaryResponse
+        return new ProfileSummary
         {
             Id = profile.Id,
             Name = profile.Name,

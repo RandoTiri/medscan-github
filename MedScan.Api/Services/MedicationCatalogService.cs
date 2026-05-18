@@ -1,4 +1,3 @@
-using MedScan.Api.Contracts;
 using MedScan.Api.Repositories;
 using MedScan.Shared.Models;
 
@@ -6,7 +5,7 @@ namespace MedScan.Api.Services;
 
 public sealed class MedicationCatalogService(IMedicationRepository medicationRepository) : IMedicationCatalogService
 {
-    public async Task<MedicationLookupResponse?> FindByBarcodeAsync(string barcode)
+    public async Task<MedicationLookupResult?> FindByBarcodeAsync(string barcode)
     {
         var normalized = NormalizeBarcode(barcode);
         if (string.IsNullOrWhiteSpace(normalized))
@@ -18,7 +17,7 @@ public sealed class MedicationCatalogService(IMedicationRepository medicationRep
         return medication is null ? null : MapToLookup(medication);
     }
 
-    public async Task<IReadOnlyList<MedicationLookupResponse>> SearchByNameAsync(string query, int limit = 20)
+    public async Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query, int limit = 20)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -33,7 +32,7 @@ public sealed class MedicationCatalogService(IMedicationRepository medicationRep
             .ToList();
     }
 
-    private static MedicationLookupResponse MapToLookup(Medication medication) => new MedicationLookupResponse {
+    private static MedicationLookupResult MapToLookup(Medication medication) => new MedicationLookupResult {
         Id = medication.Id,
         Barcode = medication.Barcode,
         Name = medication.Name,

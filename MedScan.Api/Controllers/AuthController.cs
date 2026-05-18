@@ -1,5 +1,4 @@
-﻿using MedScan.Api.Contracts;
-using MedScan.Api.Data;
+﻿using MedScan.Api.Data;
 using MedScan.Api.Models;
 using MedScan.Api.Services;
 using MedScan.Shared.Models;
@@ -47,7 +46,7 @@ public sealed class AuthController(
     }
 
     [HttpPost("register")]
-    public async Task<IResult> Register([FromBody] AppRegisterRequest request)
+    public async Task<IResult> Register([FromBody] RegisterUserRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.FullName) ||
             string.IsNullOrWhiteSpace(request.Email) ||
@@ -218,7 +217,7 @@ public sealed class AuthController(
 
     [Authorize]
     [HttpPost("change-password")]
-    public async Task<IResult> ChangePassword([FromBody] MedScan.Api.Contracts.ChangePasswordRequest request)
+    public async Task<IResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.CurrentPassword) || string.IsNullOrWhiteSpace(request.NewPassword))
         {

@@ -1,9 +1,9 @@
-using MedScan.Api.Contracts;
+using MedScan.Shared.Models;
 
 namespace MedScan.Api.Services;
 
 public interface IMedicationCatalogService
 {
-    Task<MedicationLookupResponse?> FindByBarcodeAsync(string barcode);
-    Task<IReadOnlyList<MedicationLookupResponse>> SearchByNameAsync(string query, int limit = 20);
+    Task<MedicationLookupResult?> FindByBarcodeAsync(string barcode);
+    Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query, int limit = 20);
 }
