@@ -1,14 +1,19 @@
 ﻿using MedScan.Api.Data;
-using MedScan.Api.Models;
-using MedScan.Api.Repositories;
-using MedScan.Api.Services;
+using MedScan.Api.Data.Identity;
+using MedScan.Api.Options;
+using MedScan.Api.Repositories.HomePharmacy;
+using MedScan.Api.Repositories.Medications;
+using MedScan.Api.Services.Auth;
+using MedScan.Api.Services.Catalog;
+using MedScan.Api.Services.HomePharmacy;
+using MedScan.Api.Services.Medications;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
-using ApiHomePharmacyService = MedScan.Api.Services.IHomePharmacyService;
+using ApiHomePharmacyService = MedScan.Api.Services.HomePharmacy.IHomePharmacyService;
 
 var builder = WebApplication.CreateBuilder(args);
 

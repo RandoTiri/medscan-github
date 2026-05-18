@@ -1,13 +1,13 @@
 using System.Text.Json;
 using MedScan.Api.Data;
-using MedScan.Api.Repositories;
+using MedScan.Api.Repositories.Medications;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Services.Medications;
 
 public sealed class MedicationService : IMedicationService
 {

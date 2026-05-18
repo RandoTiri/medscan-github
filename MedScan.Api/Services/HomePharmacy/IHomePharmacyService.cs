@@ -1,6 +1,6 @@
 using MedScan.Shared.DTOs.HomePharmacy;
 
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Services.HomePharmacy;
 
 public interface IHomePharmacyService
 {

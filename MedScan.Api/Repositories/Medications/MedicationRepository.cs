@@ -2,7 +2,7 @@
 using MedScan.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.Medications;
 
 public sealed class MedicationRepository : IMedicationRepository {
     private readonly AppDbContext _db;

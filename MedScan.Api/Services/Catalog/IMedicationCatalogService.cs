@@ -1,6 +1,6 @@
 using MedScan.Shared.Models;
 
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Services.Catalog;
 
 public interface IMedicationCatalogService
 {

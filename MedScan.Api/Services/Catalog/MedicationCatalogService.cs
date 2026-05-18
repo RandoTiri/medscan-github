@@ -1,7 +1,7 @@
-using MedScan.Api.Repositories;
+using MedScan.Api.Repositories.Medications;
 using MedScan.Shared.Models;
 
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Services.Catalog;
 
 public sealed class MedicationCatalogService(IMedicationRepository medicationRepository) : IMedicationCatalogService
 {

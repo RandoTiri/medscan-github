@@ -1,4 +1,4 @@
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Options;
 
 public sealed class SmtpOptions
 {

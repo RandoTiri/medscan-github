@@ -1,4 +1,4 @@
-using MedScan.Api.Services;
+using MedScan.Api.Services.Catalog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

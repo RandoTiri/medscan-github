@@ -1,6 +1,6 @@
 using MedScan.Shared.Models;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.HomePharmacy;
 
 public interface IHomePharmacyRepository
 {

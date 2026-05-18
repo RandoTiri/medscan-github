@@ -1,4 +1,4 @@
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Services.Auth;
 
 public interface IPasswordResetService
 {

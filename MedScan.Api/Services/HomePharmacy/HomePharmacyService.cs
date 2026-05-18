@@ -1,17 +1,17 @@
-using MedScan.Api.Repositories;
 using MedScan.Api.Data;
 using MedScan.Shared.DTOs.HomePharmacy;
 using MedScan.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using MedScan.Api.Repositories.Medications;
+using MedScan.Api.Repositories.HomePharmacy;
 
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Services.HomePharmacy;
 
 public sealed class HomePharmacyService(
     IHomePharmacyRepository homePharmacyRepository,
     IMedicationRepository medicationRepository,
     AppDbContext dbContext) : IHomePharmacyService
 {
-    // Prototüübi jaoks: vaikimisi aegumiskuupäevad barcode alusel.
     private static readonly IReadOnlyDictionary<string, DateOnly> SeededExpiryByBarcode =
         new Dictionary<string, DateOnly>(StringComparer.Ordinal)
         {
@@ -66,9 +66,6 @@ public sealed class HomePharmacyService(
             AddedAt = DateTime.UtcNow
         };
 
-        // Kui skannist aegumiskuupäeva ei tulnud:
-        // 1) kasuta prototüübi seeditud barcode->expiry kaarti,
-        // 2) muidu kasuta sama ravimi olemasolevat kuupäeva.
         if (item.ExpiresOn is null)
         {
             if (!string.IsNullOrWhiteSpace(medication.Barcode) &&

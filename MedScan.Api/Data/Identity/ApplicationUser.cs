@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace MedScan.Api.Models;
+namespace MedScan.Api.Data.Identity;
 
 public class ApplicationUser : IdentityUser
 {

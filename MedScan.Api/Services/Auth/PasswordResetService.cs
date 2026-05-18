@@ -1,7 +1,8 @@
 using System.Collections.Concurrent;
+using MedScan.Api.Options;
 using Microsoft.Extensions.Options;
 
-namespace MedScan.Api.Services;
+namespace MedScan.Api.Services.Auth;
 
 public sealed class PasswordResetService(IOptions<SmtpOptions> smtpOptions) : IPasswordResetService
 {

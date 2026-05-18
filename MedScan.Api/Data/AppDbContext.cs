@@ -1,4 +1,4 @@
-﻿using MedScan.Api.Models;
+﻿using MedScan.Api.Data.Identity;
 using MedScan.Shared.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

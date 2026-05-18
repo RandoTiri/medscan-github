@@ -2,7 +2,7 @@ using MedScan.Api.Data;
 using MedScan.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.HomePharmacy;
 
 public sealed class HomePharmacyRepository(AppDbContext dbContext) : IHomePharmacyRepository
 {
