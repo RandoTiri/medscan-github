@@ -1,109 +1,70 @@
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
-using System.Linq;
 
 namespace MedScan.MAUI.Services.Notifications;
 
-public sealed class InAppDoseAlertService : IInAppDoseAlertService
-{
+public sealed class InAppDoseAlertService : IInAppDoseAlertService {
     private readonly Queue<InAppDoseAlert> _queue = new();
     private readonly object _sync = new();
 
     public event Action? Changed;
     public InAppDoseAlert? Current { get; private set; }
 
-    public void Enqueue(InAppDoseAlert alert)
-    {
-        lock (_sync)
-        {
-            if (Current is not null &&
-                Current.UserMedicationId == alert.UserMedicationId &&
-                Current.ScheduledTime == alert.ScheduledTime)
-            {
+    public void Enqueue(InAppDoseAlert alert) {
+        lock (_sync) {
+            if (Current is not null && Matches(Current,alert.UserMedicationId,alert.ScheduledTime)) 
                 return;
-            }
 
-            if (_queue.Any(item =>
-                    item.UserMedicationId == alert.UserMedicationId &&
-                    item.ScheduledTime == alert.ScheduledTime))
-            {
+            if (_queue.Any(item => Matches(item,alert.UserMedicationId,alert.ScheduledTime))) 
                 return;
-            }
 
-            if (Current is null)
-            {
+            if (Current is null) {
                 Current = alert;
-            }
-            else
-            {
+            } else {
                 _queue.Enqueue(alert);
             }
         }
-
         Changed?.Invoke();
     }
 
-    public void DismissCurrent()
-    {
-        lock (_sync)
-        {
-            if (_queue.Count > 0)
-            {
-                Current = _queue.Dequeue();
-            }
-            else
-            {
-                Current = null;
-            }
+    public void DismissCurrent() {
+        lock (_sync) {
+            AdvanceCurrent();
         }
-
         Changed?.Invoke();
     }
 
-    public void DismissByDose(int userMedicationId, TimeOnly scheduledTime)
-    {
+    public void DismissByDose(int userMedicationId,TimeOnly scheduledTime) {
         var changed = false;
 
-        lock (_sync)
-        {
-            if (Current is not null &&
-                Current.UserMedicationId == userMedicationId &&
-                Current.ScheduledTime == scheduledTime)
-            {
-                if (_queue.Count > 0)
-                {
-                    Current = _queue.Dequeue();
-                }
-                else
-                {
-                    Current = null;
-                }
-
+        lock (_sync) {
+            if (Current is not null && Matches(Current,userMedicationId,scheduledTime)) {
+                AdvanceCurrent();
                 changed = true;
             }
 
-            if (_queue.Count > 0)
-            {
+            if (_queue.Count > 0) {
                 var kept = _queue
-                    .Where(item => item.UserMedicationId != userMedicationId || item.ScheduledTime != scheduledTime)
+                    .Where(item => !Matches(item,userMedicationId,scheduledTime))
                     .ToList();
 
-                if (kept.Count != _queue.Count)
-                {
+                if (kept.Count != _queue.Count) {
                     _queue.Clear();
-                    foreach (var item in kept)
-                    {
+                    foreach (var item in kept) {
                         _queue.Enqueue(item);
                     }
-
                     changed = true;
                 }
             }
         }
 
-        if (changed)
-        {
+        if (changed) 
             Changed?.Invoke();
-        }
     }
+
+    private void AdvanceCurrent() =>
+        Current = _queue.Count > 0 ? _queue.Dequeue() : null;
+
+    private static bool Matches(InAppDoseAlert alert,int userMedicationId,TimeOnly scheduledTime) =>
+        alert.UserMedicationId == userMedicationId && alert.ScheduledTime == scheduledTime;
 }
