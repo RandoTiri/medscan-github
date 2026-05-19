@@ -136,7 +136,7 @@
                           ColumnSpacing="10">
                         <Button x:Name="AlertPrimaryButton"
                                 Grid.Column="0"
-                                Text="Skanneeri uuesti"
+                                Text="Skaneeri uuesti"
                                 Clicked="AlertPrimaryClicked"
                                 BackgroundColor="#1F7A60"
                                 TextColor="White"
@@ -146,7 +146,7 @@
                                 Padding="12,10" />
                         <Button x:Name="AlertSecondaryButton"
                                 Grid.Column="1"
-                                Text="Otsi k�sitsi"
+                                Text="Otsi käsitsi"
                                 Clicked="AlertSecondaryClicked"
                                 BackgroundColor="White"
                                 TextColor="#258D6B"
@@ -162,4 +162,3 @@
         </Grid>
     </Grid>
 </ContentPage>
-

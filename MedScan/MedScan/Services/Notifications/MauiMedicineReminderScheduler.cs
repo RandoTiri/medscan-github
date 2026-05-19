@@ -30,13 +30,14 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler {
 
         if (medicine.ScheduleUnit == MedicationScheduleUnit.Day) {
             foreach (var time in medicine.ReminderTimes) {
-                await ScheduleSingleCoreAsync(medicine,time,GetNextDailyOccurrence(time),NotificationRepeat.Daily);
+                var notifyTime = ReminderOccurrenceCalculator.GetNextDailyOccurrence(time,DateTime.Now);
+                await ScheduleSingleCoreAsync(medicine,time,notifyTime,NotificationRepeat.Daily);
             }
             return;
         }
 
         foreach (var time in medicine.ReminderTimes) {
-            var notifyTime = GetNextScheduledOccurrence(medicine,time);
+            var notifyTime = ReminderOccurrenceCalculator.GetNextScheduledOccurrence(medicine,time,DateTime.Now);
             if (notifyTime is null) 
                 continue;
 
@@ -138,38 +139,4 @@ public sealed class MauiMedicineReminderScheduler : IMedicineReminderScheduler {
         return string.Join(" - ",parts);
     }
 
-    private static DateTime? GetNextScheduledOccurrence(MedicineReminderModel medicine,TimeOnly reminderTime) {
-        var timeIndex = FindTimeIndex(medicine.ReminderTimes,reminderTime);
-        if (timeIndex < 0)
-            return null;
-
-        var weeklyDaysForOccurrence = medicine.ScheduleUnit == MedicationScheduleUnit.Week && medicine.WeeklyDays.Count > timeIndex
-            ? new List<int> { medicine.WeeklyDays[timeIndex] }
-            : [];
-
-        return MedicationScheduleCalculator.GetNextOccurrenceDateTime(
-            medicine.ScheduleUnit,
-            medicine.Frequency,
-            medicine.StartDate,
-            [reminderTime],
-            weeklyDaysForOccurrence,
-            DateTime.Now);
-    }
-
-    private static int FindTimeIndex(IReadOnlyList<TimeOnly> times,TimeOnly target) {
-        for (var i = 0; i < times.Count; i++) {
-            if (times[i] == target)
-                return i;
-        }
-        return -1;
-    }
-
-    private static DateTime GetNextDailyOccurrence(TimeOnly time) {
-        var now = DateTime.Now;
-        var scheduled = DateTime.Today.Add(time.ToTimeSpan());
-
-        return scheduled > now
-            ? scheduled
-            : scheduled.AddDays(1);
-    }
 }
