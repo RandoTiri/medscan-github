@@ -4,7 +4,7 @@ using MedScan.Shared.Services;
 
 namespace MedScan.MAUI.Services.Scanning;
 
-public sealed class MauiBarcodeScannerService : IBarcodeScannerService {
+public sealed class MauiBarcodeScannerService(BarcodeScanFlowHandler scanFlowHandler) : IBarcodeScannerService {
     public async Task<BarcodeScanResult> ScanAsync(CancellationToken cancellationToken = default) {
         var permissionStatus = await EnsureCameraPermissionAsync();
         if (permissionStatus != PermissionStatus.Granted) {
@@ -15,7 +15,7 @@ public sealed class MauiBarcodeScannerService : IBarcodeScannerService {
             };
         }
 
-        var scannerPage = new BarcodeScannerPage();
+        var scannerPage = new BarcodeScannerPage(scanFlowHandler);
 
         await PushModalOnMainThreadAsync(scannerPage);
 

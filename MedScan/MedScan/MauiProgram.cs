@@ -4,22 +4,16 @@ using Plugin.LocalNotification.Core.Models.AndroidOption;
 using ZXing.Net.Maui.Controls;
 using MedScan.MAUI.Services.Notifications;
 
-namespace MedScan.MAUI
-{
-    public static class MauiProgram
-    {
-        public static MauiApp CreateMauiApp()
-        {
+namespace MedScan.MAUI {
+    public static class MauiProgram {
+        public static MauiApp CreateMauiApp() {
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
                 .UseBarcodeReader()
-                .UseLocalNotification(config =>
-                {
-                    config.AddAndroid(android =>
-                    {
-                        android.AddChannel(new AndroidNotificationChannelRequest
-                        {
+                .UseLocalNotification(config => {
+                    config.AddAndroid(android => {
+                        android.AddChannel(new AndroidNotificationChannelRequest {
                             Id = MauiMedicineReminderScheduler.MedicationChannelId,
                             Name = "Ravimi meeldetuletused",
                             Description = "Meeldetuletused ravimi võtmise kellaaegadel.",
@@ -31,7 +25,7 @@ namespace MedScan.MAUI
                     });
                 })
                 .ConfigureFonts(fonts => {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Regular.ttf","OpenSansRegular");
                 });
 
             builder.Services.AddMedScanServices();

@@ -5,12 +5,14 @@ using ZXing.Net.Maui;
 namespace MedScan.MAUI.Pages;
 
 public partial class BarcodeScannerPage : ContentPage {
+    private readonly BarcodeScanFlowHandler _scanFlowHandler;
     private readonly TaskCompletionSource<BarcodeScanResult> _completionSource = new();
     private readonly CancellationTokenSource _timeoutSource = new();
     private TaskCompletionSource<bool?>? _alertCompletionSource;
     private int _isCompleted;
 
-    public BarcodeScannerPage() {
+    public BarcodeScannerPage(BarcodeScanFlowHandler scanFlowHandler) {
+        _scanFlowHandler = scanFlowHandler;
         InitializeComponent();
 
         CameraView.Options = new BarcodeReaderOptions {
@@ -145,82 +147,45 @@ public partial class BarcodeScannerPage : ContentPage {
             return;
         }
 
-        var barcodeValue = firstDetected.Value.Trim();
-        if (string.IsNullOrWhiteSpace(barcodeValue)) {
+        CameraView.IsDetecting = false;
+
+        var scanResult = await _scanFlowHandler.HandleDetectedAsync(firstDetected.Value,firstDetected.Format);
+        if (scanResult.Kind == BarcodeScanFlowResultKind.Ignore) {
+            CameraView.IsDetecting = true;
             return;
         }
 
-        var lookupBarcode = barcodeValue;
-        DateOnly? expirationDate = null;
-        string? batchNumber = null;
-        if (firstDetected.Format == BarcodeFormat.DataMatrix &&
-            Gs1DataMatrixParser.TryExtract(barcodeValue,out var parsed)) {
-            lookupBarcode = parsed.LookupBarcode;
-            expirationDate = parsed.ExpirationDate;
-            batchNumber = parsed.BatchNumber;
+        if (scanResult.Kind == BarcodeScanFlowResultKind.NeedsPrompt && scanResult.Prompt is not null) {
+            await HandleScanPromptAsync(scanResult.Prompt);
+            return;
         }
 
-        CameraView.IsDetecting = false;
+        if (scanResult.Result is not null) {
+            Complete(scanResult.Result);
+        }
 
-#if WINDOWS || ANDROID || IOS || MACCATALYST
-        var services = IPlatformApplication.Current?.Services;
-#else
-        var services = this.Handler?.MauiContext?.Services;
-#endif
-        var scannerFlowService = services?.GetService<MedScan.Shared.Services.IScannerFlowService>();
-        if (scannerFlowService != null) {
-            MedicationLookupResult? medication;
-            try {
-                medication = await scannerFlowService.FindByBarcodeAsync(lookupBarcode);
-            } catch {
-                var retryFromError = await TryDisplayAlertAsync(
-                    "Viga",
-                    "Skaneerimisel tekkis tõrge.",
-                    "Skaneeri uuesti",
-                    "Otsi käsitsi");
-                if (retryFromError.GetValueOrDefault()) {
-                    CameraView.IsDetecting = true;
-                    return;
-                }
+        await CloseAsync();
+    }
 
-                Complete(new BarcodeScanResult {
-                    Status = BarcodeScanStatus.ManualSearch
-                });
-                await CloseAsync();
-                return;
-            }
+    private async Task HandleScanPromptAsync(BarcodeScanPrompt prompt) {
+        var retry = await TryDisplayAlertAsync(
+            prompt.Title,
+            prompt.Message,
+            prompt.Accept,
+            prompt.Cancel);
 
-            if (medication == null) {
-                var retry = await TryDisplayAlertAsync(
-                    "Tundmatu triipkood",
-                    "Tuvastatud triipkoodi andmeid ei leitud andmebaasist.",
-                    "Skaneeri uuesti",
-                    "Otsi käsitsi");
+        if (!retry.HasValue) {
+            return;
+        }
 
-                if (!retry.HasValue) {
-                    return;
-                }
-
-                if (retry.Value) {
-                    CameraView.IsDetecting = true;
-                    return;
-                }
-
-                Complete(new BarcodeScanResult {
-                    Status = BarcodeScanStatus.ManualSearch
-                });
-                await CloseAsync();
-                return;
-            }
+        if (retry.Value) {
+            CameraView.IsDetecting = true;
+            return;
         }
 
         Complete(new BarcodeScanResult {
-            Status = BarcodeScanStatus.Success,
-            Barcode = lookupBarcode,
-            ExpirationDate = expirationDate,
-            BatchNumber = batchNumber
+            Status = BarcodeScanStatus.ManualSearch
         });
-
         await CloseAsync();
     }
 

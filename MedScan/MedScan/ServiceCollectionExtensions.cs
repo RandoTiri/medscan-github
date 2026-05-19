@@ -47,6 +47,7 @@ internal static class ServiceCollectionExtensions {
     }
 
     private static IServiceCollection AddMedScanScanningServices(this IServiceCollection services) {
+        services.AddSingleton<BarcodeScanFlowHandler>();
         services.AddSingleton<IBarcodeScannerService,MauiBarcodeScannerService>();
         services.AddSingleton<IScannerFlowService,ScannerFlowService>();
 
