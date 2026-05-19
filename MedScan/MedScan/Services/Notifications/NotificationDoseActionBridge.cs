@@ -1,91 +1,71 @@
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
+using Plugin.LocalNotification.EventArgs;
 
 namespace MedScan.MAUI.Services.Notifications;
 
-public sealed class NotificationDoseActionBridge : IDisposable
-{
+public sealed class NotificationDoseActionBridge : IDisposable {
     private readonly IServiceProvider _serviceProvider;
     private readonly IInAppDoseAlertService _inAppDoseAlertService;
 
     public NotificationDoseActionBridge(
         IServiceProvider serviceProvider,
-        IInAppDoseAlertService inAppDoseAlertService)
-    {
+        IInAppDoseAlertService inAppDoseAlertService) {
         _serviceProvider = serviceProvider;
         _inAppDoseAlertService = inAppDoseAlertService;
         LocalNotificationCenter.Current.NotificationActionTapped += OnNotificationActionTapped;
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         LocalNotificationCenter.Current.NotificationActionTapped -= OnNotificationActionTapped;
     }
 
-    private void OnNotificationActionTapped(Plugin.LocalNotification.EventArgs.NotificationActionEventArgs e)
-    {
+    private void OnNotificationActionTapped(NotificationActionEventArgs e) {
         _ = HandleActionAsync(e);
     }
 
-    private async Task HandleActionAsync(Plugin.LocalNotification.EventArgs.NotificationActionEventArgs e)
-    {
-        if (!TryResolveStatus(e.ActionId, out var newStatus))
-        {
+    private async Task HandleActionAsync(NotificationActionEventArgs e) {
+        if (!TryResolveStatus(e.ActionId,out var newStatus)) 
             return;
-        }
 
         var request = GetRequestFromEvent(e);
-        if (request is null)
-        {
+        if (request is null) 
             return;
-        }
 
-        if (!ReminderPayloadCodec.TryDecode(request.ReturningData, out var userMedicationId, out var scheduledTime))
-        {
+        if (!ReminderPayloadCodec.TryDecode(request.ReturningData,out var userMedicationId,out var scheduledTime)) 
             return;
-        }
 
-        try
-        {
+        try {
             using var scope = _serviceProvider.CreateScope();
             var medicationService = scope.ServiceProvider.GetRequiredService<IMedicationService>();
 
-            await medicationService.UpdateStatusAsync(userMedicationId, new UpdateMedicationStatusDto
-            {
+            await medicationService.UpdateStatusAsync(userMedicationId,new UpdateMedicationStatusDto {
                 ScheduledTime = scheduledTime,
                 Status = newStatus
             });
 
-            _inAppDoseAlertService.DismissByDose(userMedicationId, scheduledTime);
+            _inAppDoseAlertService.DismissByDose(userMedicationId,scheduledTime);
 
-            // Remove handled notification from system notification center immediately.
             LocalNotificationCenter.Current.Clear([request.NotificationId]);
             LocalNotificationCenter.Current.Cancel([request.NotificationId]);
-        }
-        catch
-        {
-            // Best effort: notification actions must never crash the app process.
-        }
+        } catch (Exception) { }
     }
 
-    private static NotificationRequest? GetRequestFromEvent(Plugin.LocalNotification.EventArgs.NotificationActionEventArgs e)
-    {
+    private static NotificationRequest? GetRequestFromEvent(NotificationActionEventArgs e) {
         var prop = e.GetType().GetProperty("Request");
         return prop?.GetValue(e) as NotificationRequest;
     }
 
-    private static bool TryResolveStatus(int actionId, out DoseStatusEnum status)
-    {
-        status = actionId switch
-        {
-            MauiMedicineReminderScheduler.DoneActionId => DoseStatusEnum.Done,
-            _ => default
-        };
+    private static bool TryResolveStatus(int actionId,out DoseStatusEnum status) {
+        if (actionId == MauiMedicineReminderScheduler.DoneActionId) {
+            status = DoseStatusEnum.Done;
+            return true;
+        }
 
-        return actionId == MauiMedicineReminderScheduler.DoneActionId;
+        status = default;
+        return false;
     }
 }
