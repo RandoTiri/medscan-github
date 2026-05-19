@@ -4,7 +4,9 @@ using Microsoft.Extensions.Options;
 
 namespace MedScan.Api.Services.Auth;
 
-public sealed class PasswordResetService(IOptions<SmtpOptions> smtpOptions) : IPasswordResetService
+public sealed class PasswordResetService(
+    IOptions<SmtpOptions> smtpOptions,
+    ILogger<PasswordResetService> logger) : IPasswordResetService
 {
     private static readonly ConcurrentDictionary<string, (string Code, DateTime ExpiresAtUtc)> ResetCodes = new(StringComparer.OrdinalIgnoreCase);
     private static readonly TimeSpan CodeTtl = TimeSpan.FromMinutes(15);
@@ -39,8 +41,9 @@ public sealed class PasswordResetService(IOptions<SmtpOptions> smtpOptions) : IP
             await smtpClient.DisconnectAsync(true);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogWarning(ex,"Failed to send password reset code to {Email}.",normalizedEmail);
             return false;
         }
     }
