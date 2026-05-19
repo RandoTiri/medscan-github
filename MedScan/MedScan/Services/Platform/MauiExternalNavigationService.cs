@@ -1,8 +1,9 @@
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Platform;
 
-public sealed class MauiExternalNavigationService : IExternalNavigationService {
+public sealed class MauiExternalNavigationService(ILogger<MauiExternalNavigationService> logger) : IExternalNavigationService {
     public async Task OpenUrlAsync(string url) {
         if (string.IsNullOrWhiteSpace(url)) return;
 
@@ -22,7 +23,8 @@ public sealed class MauiExternalNavigationService : IExternalNavigationService {
         try {
             await Email.Default.ComposeAsync(message);
         }
-        catch (Exception){
+        catch (Exception ex){
+            logger.LogWarning(ex,"Native email composer failed. Falling back to mailto link for {EmailAddress}.",emailAddress);
             await Launcher.Default.OpenAsync(BuildMailtoUri(emailAddress,subject,body));
         }
     }

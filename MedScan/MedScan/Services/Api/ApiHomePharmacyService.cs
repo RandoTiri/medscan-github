@@ -3,10 +3,15 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using MedScan.Shared.DTOs.HomePharmacy;
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Api;
 
-public sealed class ApiHomePharmacyService(HttpClient httpClient) : IHomePharmacyService {
+public sealed class ApiHomePharmacyService(
+    HttpClient httpClient,
+    ILogger<ApiHomePharmacyService> logger) : IHomePharmacyService {
+    private readonly ILogger<ApiHomePharmacyService> _logger = logger;
+
     public async Task<IReadOnlyList<HomePharmacyItemDto>> GetByProfileIdAsync(int profileId, CancellationToken cancellationToken = default) {
         var items = await httpClient.GetFromJsonAsync<List<HomePharmacyItemDto>>(
             $"api/home-pharmacy?profileId={profileId}",
@@ -50,7 +55,7 @@ public sealed class ApiHomePharmacyService(HttpClient httpClient) : IHomePharmac
         return true;
     }
 
-    private static async Task<string> ReadErrorMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken) {
+    private async Task<string> ReadErrorMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken) {
         var raw = await response.Content.ReadAsStringAsync(cancellationToken);
         if (string.IsNullOrWhiteSpace(raw)) return "Toiming ebaõnnestus.";
 
@@ -65,8 +70,10 @@ public sealed class ApiHomePharmacyService(HttpClient httpClient) : IHomePharmac
                 return messageElement.GetString() ?? "Toiming ebaõnnestus.";
             }
         }
-        catch(JsonException)
-        { }
+        catch(JsonException ex)
+        {
+            _logger.LogWarning(ex,"Failed to parse home pharmacy API error response.");
+        }
         return raw;
     }
 }

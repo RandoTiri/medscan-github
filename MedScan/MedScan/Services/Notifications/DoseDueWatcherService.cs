@@ -2,6 +2,7 @@ using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Notifications;
 
@@ -9,7 +10,8 @@ public sealed class DoseDueWatcherService(
     IAuthService authService,
     IProfileService profileService,
     IMedicationService medicationService,
-    IInAppDoseAlertService inAppDoseAlertService) {
+    IInAppDoseAlertService inAppDoseAlertService,
+    ILogger<DoseDueWatcherService> logger) {
     private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan DoseGracePeriod = TimeSpan.FromMinutes(5);
 
@@ -34,7 +36,9 @@ public sealed class DoseDueWatcherService(
                 }
 
                 await CheckDueDosesAsync();
-            } catch (Exception) { }
+            } catch (Exception ex) {
+                logger.LogWarning(ex,"Dose due watcher poll failed.");
+            }
         }
     }
 

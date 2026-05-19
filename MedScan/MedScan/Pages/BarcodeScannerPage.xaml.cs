@@ -1,18 +1,21 @@
 ﻿using MedScan.MAUI.Services.Scanning;
 using MedScan.Shared.Models;
+using Microsoft.Extensions.Logging;
 using ZXing.Net.Maui;
 
 namespace MedScan.MAUI.Pages;
 
 public partial class BarcodeScannerPage : ContentPage {
     private readonly BarcodeScanFlowHandler _scanFlowHandler;
+    private readonly ILogger<BarcodeScannerPage> _logger;
     private readonly TaskCompletionSource<BarcodeScanResult> _completionSource = new();
     private readonly CancellationTokenSource _timeoutSource = new();
     private TaskCompletionSource<bool?>? _alertCompletionSource;
     private int _isCompleted;
 
-    public BarcodeScannerPage(BarcodeScanFlowHandler scanFlowHandler) {
+    public BarcodeScannerPage(BarcodeScanFlowHandler scanFlowHandler,ILogger<BarcodeScannerPage> logger) {
         _scanFlowHandler = scanFlowHandler;
+        _logger = logger;
         InitializeComponent();
 
         CameraView.Options = new BarcodeReaderOptions {
@@ -97,8 +100,10 @@ public partial class BarcodeScannerPage : ContentPage {
                 });
                 await CloseAsync();
             }
-        } catch (TaskCanceledException) {
-        } catch (ObjectDisposedException) {
+        } catch (TaskCanceledException ex) {
+            _logger.LogDebug(ex,"Barcode scanner timeout was canceled.");
+        } catch (ObjectDisposedException ex) {
+            _logger.LogDebug(ex,"Barcode scanner timeout stopped because the scanner page was disposed.");
         }
     }
 
@@ -233,7 +238,8 @@ public partial class BarcodeScannerPage : ContentPage {
                 AlertOverlay.IsVisible = true;
                 return _alertCompletionSource.Task;
             });
-        } catch {
+        } catch (Exception ex) {
+            _logger.LogWarning(ex,"Failed to display barcode scanner alert.");
             return null;
         }
     }

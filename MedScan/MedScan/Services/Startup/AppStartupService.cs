@@ -1,5 +1,6 @@
 using MedScan.MAUI.Services.Notifications;
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Startup;
 
@@ -9,7 +10,8 @@ public sealed class AppStartupService(
     MedicineReminderCoordinator reminderCoordinator,
     NotificationDoseActionBridge notificationDoseActionBridge,
     INotificationInboxService notificationInboxService,
-    DoseDueWatcherService doseDueWatcherService) {
+    DoseDueWatcherService doseDueWatcherService,
+    ILogger<AppStartupService> logger) {
     private readonly SemaphoreSlim _reminderSync = new(1,1);
     private bool _isStarted;
 
@@ -28,7 +30,9 @@ public sealed class AppStartupService(
         try {
             await notificationInboxService.InitializeAsync();
             await EnsureRemindersSyncedAsync();
-        } catch { }
+        } catch (Exception ex) {
+            logger.LogWarning(ex,"App startup initialization failed.");
+        }
     }
 
     private void OnAuthStateChanged() {
@@ -47,7 +51,8 @@ public sealed class AppStartupService(
 
             var medications = await medicationService.GetScheduleAsync(profileId.Value);
             await reminderCoordinator.RebuildAsync(medications);
-        } catch {
+        } catch (Exception ex) {
+            logger.LogWarning(ex,"Reminder synchronization failed.");
         } finally {
             _reminderSync.Release();
         }

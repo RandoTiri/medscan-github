@@ -1,10 +1,13 @@
 using MedScan.MAUI.Pages;
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Scanning;
 
-public sealed class MauiBarcodeScannerService(BarcodeScanFlowHandler scanFlowHandler) : IBarcodeScannerService {
+public sealed class MauiBarcodeScannerService(
+    BarcodeScanFlowHandler scanFlowHandler,
+    ILogger<BarcodeScannerPage> scannerPageLogger) : IBarcodeScannerService {
     public async Task<BarcodeScanResult> ScanAsync(CancellationToken cancellationToken = default) {
         var permissionStatus = await EnsureCameraPermissionAsync();
         if (permissionStatus != PermissionStatus.Granted) {
@@ -15,7 +18,7 @@ public sealed class MauiBarcodeScannerService(BarcodeScanFlowHandler scanFlowHan
             };
         }
 
-        var scannerPage = new BarcodeScannerPage(scanFlowHandler);
+        var scannerPage = new BarcodeScannerPage(scanFlowHandler,scannerPageLogger);
 
         await PushModalOnMainThreadAsync(scannerPage);
 

@@ -1,10 +1,13 @@
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 using ZXing.Net.Maui;
 
 namespace MedScan.MAUI.Services.Scanning;
 
-public sealed class BarcodeScanFlowHandler(IMedicationCatalogClient medicationCatalogClient) {
+public sealed class BarcodeScanFlowHandler(
+    IMedicationCatalogClient medicationCatalogClient,
+    ILogger<BarcodeScanFlowHandler> logger) {
     public async Task<BarcodeScanFlowResult> HandleDetectedAsync(
         string rawValue,
         BarcodeFormat format,
@@ -34,7 +37,8 @@ public sealed class BarcodeScanFlowHandler(IMedicationCatalogClient medicationCa
                     "Skaneeri uuesti",
                     "Otsi käsitsi"));
             }
-        } catch {
+        } catch (Exception ex) {
+            logger.LogWarning(ex,"Medication lookup failed for barcode {Barcode}.",lookupBarcode);
             return BarcodeScanFlowResult.NeedsPrompt(new BarcodeScanPrompt(
                 "Viga",
                 "Skaneerimisel tekkis tõrge.",

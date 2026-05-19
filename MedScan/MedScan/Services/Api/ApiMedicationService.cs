@@ -2,6 +2,7 @@ using MedScan.MAUI.Services.Notifications;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models.Enums;
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -10,7 +11,8 @@ namespace MedScan.MAUI.Services.Api;
 public sealed class ApiMedicationService(
     HttpClient httpClient,
     MedicineReminderCoordinator reminderCoordinator,
-    IMedicationStatusEvents medicationStatusEvents) : IMedicationService {
+    IMedicationStatusEvents medicationStatusEvents,
+    ILogger<ApiMedicationService> logger) : IMedicationService {
     public async Task<IEnumerable<UserMedicationDto>> GetScheduleAsync(int profileId,DateOnly? forDate = null) {
         var route = $"api/medications?profileId={profileId}";
         if (forDate is DateOnly selectedDate) {
@@ -113,16 +115,16 @@ public sealed class ApiMedicationService(
     private async Task TryScheduleAsync(UserMedicationDto medication) {
         try {
             await reminderCoordinator.ScheduleForMedicineAsync(medication);
-        } catch {
-            // Medication save should not fail due to local notification issues.
+        } catch (Exception ex) {
+            logger.LogWarning(ex,"Failed to schedule reminders for medication {UserMedicationId}.",medication.Id);
         }
     }
 
     private async Task TryCancelAsync(UserMedicationDto medication) {
         try {
             await reminderCoordinator.CancelForMedicineAsync(medication);
-        } catch {
-            // Medication update/delete should not fail due to local notification issues.
+        } catch (Exception ex) {
+            logger.LogWarning(ex,"Failed to cancel reminders for medication {UserMedicationId}.",medication.Id);
         }
     }
 
@@ -138,8 +140,8 @@ public sealed class ApiMedicationService(
             if (status == DoseStatusEnum.Pending && scheduledTime > now) {
                 await reminderCoordinator.EnsureDoseFromNowAsync(medication,scheduledTime);
             }
-        } catch {
-            // Dose status update should not fail due to local notification issues.
+        } catch (Exception ex) {
+            logger.LogWarning(ex,"Failed to adjust reminder after status change for medication {UserMedicationId}.",medication.Id);
         }
     }
 }

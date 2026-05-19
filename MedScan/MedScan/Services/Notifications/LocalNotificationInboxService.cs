@@ -1,5 +1,6 @@
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;
+using Microsoft.Extensions.Logging;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
 using Plugin.LocalNotification.EventArgs;
@@ -9,7 +10,8 @@ namespace MedScan.MAUI.Services.Notifications;
 
 public sealed class LocalNotificationInboxService(
     IServiceProvider serviceProvider,
-    IInAppDoseAlertService inAppDoseAlertService) : INotificationInboxService {
+    IInAppDoseAlertService inAppDoseAlertService,
+    ILogger<LocalNotificationInboxService> logger) : INotificationInboxService {
     private const string StorageKey = "medscan.notification.inbox.v1";
     private const int HistoryLimit = 100;
     private const int RecordRetentionLimit = 200;
@@ -225,7 +227,9 @@ public sealed class LocalNotificationInboxService(
                 Note = string.IsNullOrWhiteSpace(medication.Notes) ? null : medication.Notes.Trim(),
                 TriggeredAt = DateTime.Now
             });
-        } catch (Exception) { }
+        } catch (Exception ex) {
+            logger.LogWarning(ex,"Failed to enqueue in-app alert from notification payload.");
+        }
     }
 
     private List<NotificationInboxRecord> LoadRecords() {
@@ -236,7 +240,8 @@ public sealed class LocalNotificationInboxService(
 
             var records = JsonSerializer.Deserialize<List<NotificationInboxRecord>>(raw,_jsonOptions);
             return records ?? [];
-        } catch (JsonException) {
+        } catch (JsonException ex) {
+            logger.LogWarning(ex,"Failed to read notification inbox records from local preferences.");
             return [];
         }
     }
