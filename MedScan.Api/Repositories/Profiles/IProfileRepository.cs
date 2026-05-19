@@ -1,6 +1,6 @@
 ﻿using MedScan.Shared.Models;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.Profiles;
 
 public interface IProfileRepository {
     Task<bool> ExistsForUserAsync(int profileId,string userId,CancellationToken cancellationToken = default);

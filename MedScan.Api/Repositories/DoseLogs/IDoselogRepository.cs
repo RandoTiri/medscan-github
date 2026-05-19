@@ -1,6 +1,6 @@
 ﻿using MedScan.Shared.Models;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.DoseLogs;
 
 public interface IDoseLogRepository {
     void Add(DoseLog log);

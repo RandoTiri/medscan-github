@@ -1,5 +1,7 @@
 ﻿using System.Security.Claims;
 using MedScan.Api.Repositories;
+using MedScan.Api.Repositories.Profiles;
+using MedScan.Api.Repositories.UserMedications;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Services;
 using Microsoft.AspNetCore.Authorization;

@@ -1,5 +1,6 @@
 using MedScan.Api.Repositories;
 using MedScan.Api.Repositories.Medications;
+using MedScan.Api.Repositories.UserMedications;
 using MedScan.Shared.DTOs.HomePharmacy;
 using MedScan.Shared.Models;
 using MedScan.Shared.Services;

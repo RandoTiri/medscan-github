@@ -1,4 +1,4 @@
-using MedScan.Api.Repositories;
+using MedScan.Api.Repositories.DoseLogs;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 

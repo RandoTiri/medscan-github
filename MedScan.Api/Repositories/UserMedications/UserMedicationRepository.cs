@@ -2,163 +2,31 @@
 using MedScan.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.UserMedications;
 
-public sealed class UserMedicationRepository : IUserMedicationRepository {
-    private readonly AppDbContext _dbContext;
-
-    public UserMedicationRepository(AppDbContext dbContext) {
-        _dbContext = dbContext;
-    }
+public sealed class UserMedicationRepository(AppDbContext dbContext) : IUserMedicationRepository {
+    private readonly AppDbContext _dbContext = dbContext;
 
     public async Task<List<UserMedication>> GetByProfileIdAsync(int profileId) {
-        return await _dbContext.UserMedications
-            .AsNoTracking()
+        return await ProjectScheduleView(WithAvailableStock(_dbContext.UserMedications))
             .Where(x =>
                 x.ProfileId == profileId &&
-                x.IsActive &&
-                _dbContext.HomePharmacyItems.Any(item =>
-                    item.ProfileId == x.ProfileId &&
-                    item.MedicationId == x.MedicationId &&
-                    item.Quantity > 0))
+                x.IsActive)
             .OrderBy(x => x.Id)
-            .Select(x => new UserMedication {
-                Id = x.Id,
-                ProfileId = x.ProfileId,
-                MedicationId = x.MedicationId,
-                Frequency = x.Frequency,
-                ScheduleUnit = x.ScheduleUnit,
-                ScheduledTimesJson = x.ScheduledTimesJson,
-                WeeklyDaysJson = x.WeeklyDaysJson,
-                StartDate = x.StartDate,
-                ExpiresOn = _dbContext.HomePharmacyItems
-                    .Where(item =>
-                        item.ProfileId == x.ProfileId &&
-                        item.MedicationId == x.MedicationId &&
-                        item.Quantity > 0)
-                    .Min(item => item.ExpiresOn),
-                RemindersEnabled = x.RemindersEnabled,
-                Notes = x.Notes,
-                AddedAt = x.AddedAt,
-                IsActive = x.IsActive,
-                Profile = new Profile {
-                    Id = x.Profile.Id,
-                    Name = x.Profile.Name
-                },
-                Medication = new Medication {
-                    Id = x.Medication.Id,
-                    Name = x.Medication.Name,
-                    StrengthMg = x.Medication.StrengthMg
-                },
-                DoseLogs = x.DoseLogs
-                    .Select(log => new DoseLog {
-                        Id = log.Id,
-                        UserMedicationId = log.UserMedicationId,
-                        ScheduledTime = log.ScheduledTime,
-                        TakenAt = log.TakenAt,
-                        DoseStatus = log.DoseStatus,
-                        ConfirmedByUserId = log.ConfirmedByUserId
-                    })
-                    .ToList()
-            })
             .ToListAsync();
     }
 
     public async Task<UserMedication?> GetByIdAsync(int userMedicationId) {
-        return await _dbContext.UserMedications
-            .AsNoTracking()
+        return await ProjectScheduleView(WithAvailableStock(_dbContext.UserMedications))
             .Where(x =>
                 x.Id == userMedicationId &&
-                x.IsActive &&
-                _dbContext.HomePharmacyItems.Any(item =>
-                    item.ProfileId == x.ProfileId &&
-                    item.MedicationId == x.MedicationId &&
-                    item.Quantity > 0))
-            .Select(x => new UserMedication {
-                Id = x.Id,
-                ProfileId = x.ProfileId,
-                MedicationId = x.MedicationId,
-                Frequency = x.Frequency,
-                ScheduleUnit = x.ScheduleUnit,
-                ScheduledTimesJson = x.ScheduledTimesJson,
-                WeeklyDaysJson = x.WeeklyDaysJson,
-                StartDate = x.StartDate,
-                ExpiresOn = _dbContext.HomePharmacyItems
-                    .Where(item =>
-                        item.ProfileId == x.ProfileId &&
-                        item.MedicationId == x.MedicationId &&
-                        item.Quantity > 0)
-                    .Min(item => item.ExpiresOn),
-                RemindersEnabled = x.RemindersEnabled,
-                Notes = x.Notes,
-                AddedAt = x.AddedAt,
-                IsActive = x.IsActive,
-                Profile = new Profile {
-                    Id = x.Profile.Id,
-                    Name = x.Profile.Name
-                },
-                Medication = new Medication {
-                    Id = x.Medication.Id,
-                    Name = x.Medication.Name,
-                    StrengthMg = x.Medication.StrengthMg
-                },
-                DoseLogs = x.DoseLogs
-                    .Select(log => new DoseLog {
-                        Id = log.Id,
-                        UserMedicationId = log.UserMedicationId,
-                        ScheduledTime = log.ScheduledTime,
-                        TakenAt = log.TakenAt,
-                        DoseStatus = log.DoseStatus,
-                        ConfirmedByUserId = log.ConfirmedByUserId
-                    })
-                    .ToList()
-            })
+                x.IsActive)
             .FirstOrDefaultAsync();
     }
 
     public async Task<UserMedication?> GetByIdRawAsync(int userMedicationId) {
-        return await _dbContext.UserMedications
-            .AsNoTracking()
+        return await ProjectScheduleView(_dbContext.UserMedications)
             .Where(x => x.Id == userMedicationId)
-            .Select(x => new UserMedication {
-                Id = x.Id,
-                ProfileId = x.ProfileId,
-                MedicationId = x.MedicationId,
-                Frequency = x.Frequency,
-                ScheduleUnit = x.ScheduleUnit,
-                ScheduledTimesJson = x.ScheduledTimesJson,
-                WeeklyDaysJson = x.WeeklyDaysJson,
-                StartDate = x.StartDate,
-                ExpiresOn = _dbContext.HomePharmacyItems
-                    .Where(item =>
-                        item.ProfileId == x.ProfileId &&
-                        item.MedicationId == x.MedicationId &&
-                        item.Quantity > 0)
-                    .Min(item => item.ExpiresOn),
-                RemindersEnabled = x.RemindersEnabled,
-                Notes = x.Notes,
-                AddedAt = x.AddedAt,
-                IsActive = x.IsActive,
-                Profile = new Profile {
-                    Id = x.Profile.Id,
-                    Name = x.Profile.Name
-                },
-                Medication = new Medication {
-                    Id = x.Medication.Id,
-                    Name = x.Medication.Name,
-                    StrengthMg = x.Medication.StrengthMg
-                },
-                DoseLogs = x.DoseLogs
-                    .Select(log => new DoseLog {
-                        Id = log.Id,
-                        UserMedicationId = log.UserMedicationId,
-                        ScheduledTime = log.ScheduledTime,
-                        TakenAt = log.TakenAt,
-                        DoseStatus = log.DoseStatus,
-                        ConfirmedByUserId = log.ConfirmedByUserId
-                    })
-                    .ToList()
-            })
             .FirstOrDefaultAsync();
     }
 
@@ -203,4 +71,55 @@ public sealed class UserMedicationRepository : IUserMedicationRepository {
     public Task SaveChangesAsync() {
         return _dbContext.SaveChangesAsync();
     }
+
+    private IQueryable<UserMedication> ProjectScheduleView(IQueryable<UserMedication> query) {
+        return query
+            .AsNoTracking()
+            .Select(x => new UserMedication {
+                Id = x.Id,
+                ProfileId = x.ProfileId,
+                MedicationId = x.MedicationId,
+                Frequency = x.Frequency,
+                ScheduleUnit = x.ScheduleUnit,
+                ScheduledTimesJson = x.ScheduledTimesJson,
+                WeeklyDaysJson = x.WeeklyDaysJson,
+                StartDate = x.StartDate,
+                ExpiresOn = _dbContext.HomePharmacyItems
+                    .Where(item =>
+                        item.ProfileId == x.ProfileId &&
+                        item.MedicationId == x.MedicationId &&
+                        item.Quantity > 0)
+                    .Min(item => item.ExpiresOn),
+                RemindersEnabled = x.RemindersEnabled,
+                Notes = x.Notes,
+                AddedAt = x.AddedAt,
+                IsActive = x.IsActive,
+                Profile = new Profile {
+                    Id = x.Profile.Id,
+                    Name = x.Profile.Name
+                },
+                Medication = new Medication {
+                    Id = x.Medication.Id,
+                    Name = x.Medication.Name,
+                    StrengthMg = x.Medication.StrengthMg
+                },
+                DoseLogs = x.DoseLogs
+                    .Select(log => new DoseLog {
+                        Id = log.Id,
+                        UserMedicationId = log.UserMedicationId,
+                        ScheduledTime = log.ScheduledTime,
+                        TakenAt = log.TakenAt,
+                        DoseStatus = log.DoseStatus,
+                        ConfirmedByUserId = log.ConfirmedByUserId
+                    })
+                    .ToList()
+            });
+    }
+
+    private IQueryable<UserMedication> WithAvailableStock(IQueryable<UserMedication> query) =>
+        query.Where(userMedication =>
+            _dbContext.HomePharmacyItems.Any(item =>
+                item.ProfileId == userMedication.ProfileId &&
+                item.MedicationId == userMedication.MedicationId &&
+                item.Quantity > 0));
 }

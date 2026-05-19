@@ -3,10 +3,10 @@ using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.Profiles;
 
 public sealed class ProfileRepository(AppDbContext dbContext) : IProfileRepository {
-    public Task<bool> ExistsForUserAsync(int profileId, string userId, CancellationToken cancellationToken) {
+    public Task<bool> ExistsForUserAsync(int profileId,string userId,CancellationToken cancellationToken) {
         return dbContext.Profiles
             .AsNoTracking()
             .AnyAsync(p => p.Id == profileId && p.UserId == userId,cancellationToken);

@@ -2,15 +2,16 @@
 using MedScan.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.DoseLogs;
 
 public sealed class DoseLogRepository(AppDbContext dbContext) : IDoseLogRepository {
+    private readonly AppDbContext _dbContext = dbContext;
     public void Add(DoseLog log) {
-        dbContext.DoseLogs.Add(log);
+        _dbContext.DoseLogs.Add(log);
     }
 
     public Task<List<DoseLog>> GetByProfileInRangeAsync(int profileId,DateTime utcStart,DateTime utcEnd) {
-        return dbContext.DoseLogs
+        return _dbContext.DoseLogs
             .AsNoTracking()
             .Include(log => log.UserMedication)
                 .ThenInclude(um => um.Medication)

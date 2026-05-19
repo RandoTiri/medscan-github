@@ -1,6 +1,6 @@
 ﻿using MedScan.Shared.Models;
 
-namespace MedScan.Api.Repositories;
+namespace MedScan.Api.Repositories.UserMedications;
 
 public interface IUserMedicationRepository {
     Task<List<UserMedication>> GetByProfileIdAsync(int profileId);
