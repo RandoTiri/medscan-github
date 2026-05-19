@@ -5,106 +5,86 @@ using MedScan.Shared.Services;
 
 namespace MedScan.MAUI.Services.Notifications;
 
-public sealed class MedicineReminderCoordinator
-{
-    private readonly IMedicineReminderScheduler _scheduler;
+public sealed class MedicineReminderCoordinator(IMedicineReminderScheduler scheduler) {
+    public Task<bool> EnsurePermissionAsync() =>
+        scheduler.RequestPermissionAsync();
 
-    public MedicineReminderCoordinator(IMedicineReminderScheduler scheduler)
-    {
-        _scheduler = scheduler;
-    }
-
-    public Task<bool> EnsurePermissionAsync()
-    {
-        return _scheduler.RequestPermissionAsync();
-    }
-
-    public Task ScheduleForMedicineAsync(UserMedicationDto medication)
-    {
+    public Task ScheduleForMedicineAsync(UserMedicationDto medication) {
         var reminder = MedicineReminderMapper.ToReminderModel(medication);
-        return _scheduler.ScheduleAsync(reminder);
+        return scheduler.ScheduleAsync(reminder);
     }
 
-    public Task CancelForMedicineAsync(UserMedicationDto medication)
-    {
+    public Task CancelForMedicineAsync(UserMedicationDto medication) {
         var reminder = MedicineReminderMapper.ToReminderModel(medication);
-        return _scheduler.CancelAsync(reminder);
+        return scheduler.CancelAsync(reminder);
     }
 
-    public Task RebuildAsync(IEnumerable<UserMedicationDto> medications)
-    {
+    public Task RebuildAsync(IEnumerable<UserMedicationDto> medications) {
         var reminders = medications
             .Select(MedicineReminderMapper.ToReminderModel)
             .ToList();
 
-        return _scheduler.RescheduleAllAsync(reminders);
+        return scheduler.RescheduleAllAsync(reminders);
     }
 
-    public async Task SkipTodayDoseAsync(UserMedicationDto medication, TimeOnly scheduledTime)
-    {
-        if (!medication.RemindersEnabled)
-        {
+    public async Task SkipTodayDoseAsync(UserMedicationDto medication,TimeOnly scheduledTime) {
+        if (!medication.RemindersEnabled) 
             return;
-        }
 
-        await _scheduler.CancelSingleAsync(medication.Id, scheduledTime);
+        await scheduler.CancelSingleAsync(medication.Id,scheduledTime);
 
         var reminder = MedicineReminderMapper.ToReminderModel(medication);
         var notifyTime = medication.ScheduleUnit == MedicationScheduleUnit.Day
             ? DateTime.Today.AddDays(1).Add(scheduledTime.ToTimeSpan())
-            : GetNextOccurrence(reminder, scheduledTime, DateTime.Now.AddMinutes(1));
+            : GetNextOccurrence(reminder,scheduledTime,DateTime.Now.AddMinutes(1));
 
-        if (notifyTime is not null)
-        {
-            await _scheduler.ScheduleSingleAsync(reminder, scheduledTime, notifyTime.Value);
-        }
+        if (notifyTime is not null) 
+            await scheduler.ScheduleSingleAsync(reminder,scheduledTime,notifyTime.Value);
     }
 
-    public async Task EnsureDoseFromNowAsync(UserMedicationDto medication, TimeOnly scheduledTime)
-    {
-        if (!medication.RemindersEnabled)
-        {
+    public async Task EnsureDoseFromNowAsync(UserMedicationDto medication,TimeOnly scheduledTime) {
+        if (!medication.RemindersEnabled) 
             return;
-        }
 
-        await _scheduler.CancelSingleAsync(medication.Id, scheduledTime);
+        await scheduler.CancelSingleAsync(medication.Id,scheduledTime);
 
         var reminder = MedicineReminderMapper.ToReminderModel(medication);
         var notifyTime = medication.ScheduleUnit == MedicationScheduleUnit.Day
             ? GetNextDailyOccurrence(scheduledTime)
-            : GetNextOccurrence(reminder, scheduledTime, DateTime.Now);
+            : GetNextOccurrence(reminder,scheduledTime,DateTime.Now);
 
-        if (notifyTime is not null)
-        {
-            await _scheduler.ScheduleSingleAsync(reminder, scheduledTime, notifyTime.Value);
-        }
+        if (notifyTime is not null) 
+            await scheduler.ScheduleSingleAsync(reminder,scheduledTime,notifyTime.Value);
     }
 
-    private static DateTime? GetNextOccurrence(MedicineReminderModel reminder, TimeOnly scheduledTime, DateTime fromLocal)
-    {
-        var index = reminder.ReminderTimes
-            .Select((time, i) => new { time, i })
-            .FirstOrDefault(x => x.time == scheduledTime)
-            ?.i;
-
-        if (index is null)
-        {
+    private static DateTime? GetNextOccurrence(MedicineReminderModel reminder,TimeOnly scheduledTime,DateTime fromLocal) {
+        var index = FindTimeIndex(reminder.ReminderTimes,scheduledTime);
+        if (index < 0) {
             return null;
         }
+
+        var weeklyDaysForOccurrence = reminder.ScheduleUnit == MedicationScheduleUnit.Week && reminder.WeeklyDays.Count > index
+            ? new List<int> { reminder.WeeklyDays[index] }
+            : [];
 
         return MedicationScheduleCalculator.GetNextOccurrenceDateTime(
             reminder.ScheduleUnit,
             reminder.Frequency,
             reminder.StartDate,
-            [reminder.ReminderTimes[index.Value]],
-            reminder.ScheduleUnit == MedicationScheduleUnit.Week && reminder.WeeklyDays.Count > index.Value
-                ? [reminder.WeeklyDays[index.Value]]
-                : [],
+            [reminder.ReminderTimes[index]],
+            weeklyDaysForOccurrence,
             fromLocal);
     }
+    private static int FindTimeIndex(IReadOnlyList<TimeOnly> times,TimeOnly target) {
+        for (var i = 0; i < times.Count; i++) {
+            if (times[i] == target) 
+                return i;
+        }
 
-    private static DateTime GetNextDailyOccurrence(TimeOnly time)
-    {
+        return -1;
+    }
+
+    private static DateTime GetNextDailyOccurrence(TimeOnly time) {
         var now = DateTime.Now;
         var scheduled = DateTime.Today.Add(time.ToTimeSpan());
 

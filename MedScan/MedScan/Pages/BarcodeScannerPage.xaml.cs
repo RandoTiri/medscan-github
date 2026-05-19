@@ -32,7 +32,7 @@ public partial class BarcodeScannerPage : ContentPage {
         if (cancellationToken.CanBeCanceled) {
             cancellationToken.Register(() => Complete(new BarcodeScanResult {
                 Status = BarcodeScanStatus.Canceled,
-                Message = "Skannimine katkestati."
+                Message = "Skaneerimine katkestati."
             }));
         }
 
@@ -78,7 +78,11 @@ public partial class BarcodeScannerPage : ContentPage {
                 return;
             }
 
-            var retry = await TryDisplayAlertAsync("Viga","Kaamera ei tuvastanud ravimit.","Skanneeri uuesti","Otsi k�sitsi");
+            var retry = await TryDisplayAlertAsync(
+                "Viga",
+                "Kaamera ei tuvastanud ravimit.",
+                "Skanneeri uuesti",
+                "Otsi käsitsi");
             if (!retry.HasValue) {
                 return;
             }
@@ -104,7 +108,7 @@ public partial class BarcodeScannerPage : ContentPage {
 
         Complete(new BarcodeScanResult {
             Status = BarcodeScanStatus.Canceled,
-            Message = "Skannimine katkestati."
+            Message = "Skaneerimine katkestati."
         });
         await CloseAsync();
     }
@@ -169,7 +173,11 @@ public partial class BarcodeScannerPage : ContentPage {
             try {
                 medication = await scannerFlowService.FindByBarcodeAsync(lookupBarcode);
             } catch {
-                var retryFromError = await TryDisplayAlertAsync("Viga","Skannimisel tekkis t�rge.","Skanneeri uuesti","Otsi k�sitsi");
+                var retryFromError = await TryDisplayAlertAsync(
+                    "Viga",
+                    "Skaneerimisel tekkis tõrge.",
+                    "Skaneeri uuesti",
+                    "Otsi käsitsi");
                 if (retryFromError.GetValueOrDefault()) {
                     CameraView.IsDetecting = true;
                     return;
@@ -186,8 +194,8 @@ public partial class BarcodeScannerPage : ContentPage {
                 var retry = await TryDisplayAlertAsync(
                     "Tundmatu triipkood",
                     "Tuvastatud triipkoodi andmeid ei leitud andmebaasist.",
-                    "Skanneeri uuesti",
-                    "Otsi k�sitsi");
+                    "Skaneeri uuesti",
+                    "Otsi käsitsi");
 
                 if (!retry.HasValue) {
                     return;
