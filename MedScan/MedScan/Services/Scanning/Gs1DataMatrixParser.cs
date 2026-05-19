@@ -3,159 +3,155 @@ using System.Text.RegularExpressions;
 
 namespace MedScan.MAUI.Services.Scanning;
 
-internal static class Gs1DataMatrixParser
-{
-    private const char GroupSeparator = '\u001D';
+public static class Gs1DataMatrixParser {
+    private const char GroupSeparator = '';
+    private const string SymbologyIdentifier = "]d2";
+    private const string AiGtin = "01";
+    private const string AiExpirationYymmdd = "17";
+    private const string AiBatchNumber = "10";
+    private const string AiSerialNumber = "21";
 
-    public static bool TryExtract(
-        string rawValue,
-        out string? lookupBarcode,
-        out DateOnly? expirationDate,
-        out string? batchNumber,
-        out string? serialNumber)
-    {
-        lookupBarcode = null;
-        expirationDate = null;
-        batchNumber = null;
-        serialNumber = null;
+    private const int GtinLength = 14;
+    private const int YymmddLength = 6;
+    private const int AiPrefixLength = 2;
 
-        if (string.IsNullOrWhiteSpace(rawValue))
-        {
+    public static bool TryExtract(string rawValue,out Gs1ParseResult result) {
+        result = default;
+
+        if (string.IsNullOrWhiteSpace(rawValue)) 
             return false;
-        }
 
         var value = rawValue.Trim();
-        if (value.StartsWith("]d2", StringComparison.Ordinal))
-        {
-            value = value[3..];
-        }
+        if (value.StartsWith(SymbologyIdentifier,StringComparison.Ordinal))
+            value = value[SymbologyIdentifier.Length..];
 
-        if (TryParseParenthesized(value, out var gtin, out var expiry, out var lot, out var serial) ||
-            TryParseAiStream(value, out gtin, out expiry, out lot, out serial))
-        {
-            lookupBarcode = NormalizeLookupBarcode(gtin);
-            expirationDate = expiry;
-            batchNumber = lot;
-            serialNumber = serial;
-            return !string.IsNullOrWhiteSpace(lookupBarcode);
-        }
+        if (!TryParseParenthesized(value,out var parsed) &&
+            !TryParseAiStream(value,out parsed)) 
+            return false;
 
-        return false;
+        var lookupBarcode = NormalizeLookupBarcode(parsed.Gtin);
+        if (string.IsNullOrWhiteSpace(lookupBarcode)) 
+            return false;
+
+        result = new Gs1ParseResult(
+            lookupBarcode,
+            parsed.Expiry,
+            parsed.Lot,
+            parsed.Serial);
+        return true;
     }
 
-    private static bool TryParseParenthesized(string value, out string? gtin, out DateOnly? expiry, out string? lot, out string? serial)
-    {
-        gtin = null;
-        expiry = null;
-        lot = null;
-        serial = null;
+    private static bool TryParseParenthesized(string value,out Gs1RawValues parsed) {
+        parsed = default;
 
-        var matches = Regex.Matches(value, @"\((\d{2})\)([^\(]*)");
-        if (matches.Count == 0)
-        {
+        var matches = Regex.Matches(value,@"\((\d{2})\)([^\(]*)");
+        if (matches.Count == 0) 
             return false;
-        }
 
-        foreach (Match match in matches)
-        {
+        string? gtin = null;
+        DateOnly? expiry = null;
+        string? lot = null;
+        string? serial = null;
+
+        foreach (Match match in matches) {
             var ai = match.Groups[1].Value;
             var data = match.Groups[2].Value.Trim();
-            if (ai == "01" && data.Length >= 14 && data[..14].All(char.IsDigit))
-            {
-                gtin = data[..14];
-            }
-            else if (ai == "17" && data.Length >= 6 && data[..6].All(char.IsDigit))
-            {
-                expiry = ParseExpiry(data[..6]);
-            }
-            else if (ai == "10")
-            {
+
+            if (ai == AiGtin && data.Length >= GtinLength && data[..GtinLength].All(char.IsDigit)) {
+                gtin = data[..GtinLength];
+            } else if (ai == AiExpirationYymmdd && data.Length >= YymmddLength && data[..YymmddLength].All(char.IsDigit)) {
+                expiry = ParseExpiry(data[..YymmddLength]);
+            } else if (ai == AiBatchNumber) {
                 lot = string.IsNullOrWhiteSpace(data) ? null : data;
-            }
-            else if (ai == "21")
-            {
+            } else if (ai == AiSerialNumber) {
                 serial = string.IsNullOrWhiteSpace(data) ? null : data;
             }
         }
 
-        return gtin is not null;
+        if (gtin is null) 
+            return false;
+
+        parsed = new Gs1RawValues(gtin,expiry,lot,serial);
+        return true;
     }
 
-    private static bool TryParseAiStream(string value, out string? gtin, out DateOnly? expiry, out string? lot, out string? serial)
-    {
-        gtin = null;
-        expiry = null;
-        lot = null;
-        serial = null;
+    private static bool TryParseAiStream(string value,out Gs1RawValues parsed) {
+        parsed = default;
+
+        string? gtin = null;
+        DateOnly? expiry = null;
+        string? lot = null;
+        string? serial = null;
 
         var index = 0;
-        while (index + 2 <= value.Length)
-        {
-            if (value[index] == GroupSeparator)
-            {
+        while (index + AiPrefixLength <= value.Length) {
+            if (value[index] == GroupSeparator) {
                 index++;
                 continue;
             }
 
-            var ai = value.Substring(index, 2);
-            index += 2;
+            var ai = value.Substring(index,AiPrefixLength);
+            index += AiPrefixLength;
 
-            switch (ai)
-            {
-                case "01":
-                    if (index + 14 > value.Length)
-                    {
-                        return gtin is not null;
-                    }
+            switch (ai) {
+                case AiGtin:
+                if (index + GtinLength > value.Length) {
+                    return TryFinalize(gtin,expiry,lot,serial,out parsed);
+                }
 
-                    var maybeGtin = value.Substring(index, 14);
-                    if (!maybeGtin.All(char.IsDigit))
-                    {
-                        return gtin is not null;
-                    }
+                var maybeGtin = value.Substring(index,GtinLength);
+                if (!maybeGtin.All(char.IsDigit)) {
+                    return TryFinalize(gtin,expiry,lot,serial,out parsed);
+                }
 
-                    gtin = maybeGtin;
-                    index += 14;
-                    break;
+                gtin = maybeGtin;
+                index += GtinLength;
+                break;
 
-                case "17":
-                    if (index + 6 > value.Length)
-                    {
-                        return gtin is not null;
-                    }
+                case AiExpirationYymmdd:
+                if (index + YymmddLength > value.Length) {
+                    return TryFinalize(gtin,expiry,lot,serial,out parsed);
+                }
 
-                    var maybeExpiry = value.Substring(index, 6);
-                    if (!maybeExpiry.All(char.IsDigit))
-                    {
-                        return gtin is not null;
-                    }
+                var maybeExpiry = value.Substring(index,YymmddLength);
+                if (!maybeExpiry.All(char.IsDigit)) {
+                    return TryFinalize(gtin,expiry,lot,serial,out parsed);
+                }
 
-                    expiry = ParseExpiry(maybeExpiry);
-                    index += 6;
-                    break;
+                expiry = ParseExpiry(maybeExpiry);
+                index += YymmddLength;
+                break;
 
-                case "10":
-                    lot = ReadVariableLengthSegment(value, ref index);
-                    break;
+                case AiBatchNumber:
+                lot = ReadVariableLengthSegment(value,ref index);
+                break;
 
-                case "21":
-                    serial = ReadVariableLengthSegment(value, ref index);
-                    break;
+                case AiSerialNumber:
+                serial = ReadVariableLengthSegment(value,ref index);
+                break;
 
                 default:
-                    // Unsupported AI in this parser; keep scanning to avoid hard-failing valid payloads.
-                    break;
+                // Unsupported AI in this parser; keep scanning to avoid hard-failing valid payloads.
+                break;
             }
         }
 
-        return gtin is not null;
+        return TryFinalize(gtin,expiry,lot,serial,out parsed);
     }
 
-    private static string? ReadVariableLengthSegment(string value, ref int index)
-    {
+    private static bool TryFinalize(string? gtin,DateOnly? expiry,string? lot,string? serial,out Gs1RawValues parsed) {
+        if (gtin is null) {
+            parsed = default;
+            return false;
+        }
+
+        parsed = new Gs1RawValues(gtin,expiry,lot,serial);
+        return true;
+    }
+
+    private static string? ReadVariableLengthSegment(string value,ref int index) {
         var start = index;
-        while (index < value.Length && value[index] != GroupSeparator)
-        {
+        while (index < value.Length && value[index] != GroupSeparator) {
             index++;
         }
 
@@ -163,46 +159,41 @@ internal static class Gs1DataMatrixParser
         return string.IsNullOrWhiteSpace(data) ? null : data;
     }
 
-    private static string NormalizeLookupBarcode(string? gtin)
-    {
-        if (string.IsNullOrWhiteSpace(gtin))
-        {
+    private static string NormalizeLookupBarcode(string? gtin) {
+        if (string.IsNullOrWhiteSpace(gtin)) 
             return string.Empty;
-        }
 
         return new string(gtin.Where(char.IsDigit).ToArray());
     }
 
-    private static DateOnly? ParseExpiry(string yymmdd)
-    {
-        if (yymmdd.Length != 6)
-        {
+    private static DateOnly? ParseExpiry(string yymmdd) {
+        if (yymmdd.Length != YymmddLength) 
+            return null;
+
+        if (!int.TryParse(yymmdd[..2],NumberStyles.None,CultureInfo.InvariantCulture,out var yy) ||
+            !int.TryParse(yymmdd.Substring(2,2),NumberStyles.None,CultureInfo.InvariantCulture,out var mm) ||
+            !int.TryParse(yymmdd.Substring(4,2),NumberStyles.None,CultureInfo.InvariantCulture,out var dd)) {
             return null;
         }
 
-        // GS1 AI 17 is YYMMDD. "00" day may be used when day is unknown; then use month-end.
-        if (!int.TryParse(yymmdd[..2], NumberStyles.None, CultureInfo.InvariantCulture, out var yy) ||
-            !int.TryParse(yymmdd.Substring(2, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var mm) ||
-            !int.TryParse(yymmdd.Substring(4, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var dd))
-        {
+        if (mm is < 1 or > 12) 
             return null;
-        }
-
-        if (mm is < 1 or > 12)
-        {
-            return null;
-        }
 
         var year = 2000 + yy;
-        var day = dd == 0 ? DateTime.DaysInMonth(year, mm) : dd;
+        var day = dd == 0 ? DateTime.DaysInMonth(year,mm) : dd;
 
-        try
-        {
-            return new DateOnly(year, mm, day);
-        }
-        catch
-        {
+        try {
+            return new DateOnly(year,mm,day);
+        } catch (ArgumentOutOfRangeException) {
             return null;
         }
     }
+
+    private readonly record struct Gs1RawValues(string? Gtin,DateOnly? Expiry,string? Lot,string? Serial);
 }
+
+public readonly record struct Gs1ParseResult(
+    string LookupBarcode,
+    DateOnly? ExpirationDate,
+    string? BatchNumber,
+    string? SerialNumber);
