@@ -1,13 +1,10 @@
 using MedScan.Shared.Services;
 
-namespace MedScan.MAUI.Services.Platform {
-    public class FormFactor : IFormFactor {
-        public string GetFormFactor() {
-            return DeviceInfo.Idiom.ToString();
-        }
+namespace MedScan.MAUI.Services.Platform; 
+public sealed class FormFactor : IFormFactor {
+    public string GetFormFactor() => 
+        DeviceInfo.Idiom.ToString();
 
-        public string GetPlatform() {
-            return DeviceInfo.Platform.ToString() + " - " + DeviceInfo.VersionString;
-        }
-    }
+    public string GetPlatform() =>
+        $"{DeviceInfo.Platform} - {DeviceInfo.VersionString}";
 }
