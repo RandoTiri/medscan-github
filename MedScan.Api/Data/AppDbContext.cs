@@ -48,11 +48,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser> {
                 current.Indication = seed.Indication;
                 current.Warnings = seed.Warnings;
                 current.PdfUrl = seed.PdfUrl;
-                current.MethodOfAdministraion = seed.MethodOfAdministraion;
+                current.MethodOfAdministration = seed.MethodOfAdministration;
                 current.PrescriptionType = seed.PrescriptionType;
                 current.MedicationForm = seed.MedicationForm;
                 current.Manufacturer = seed.Manufacturer;
-                current.MarketingAuthNr = seed.MarketingAuthNr;
+                current.MarketingAuthNumber = seed.MarketingAuthNumber;
                 current.CachedAt = now;
             }
             else

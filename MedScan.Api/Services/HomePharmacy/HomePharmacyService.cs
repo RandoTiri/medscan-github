@@ -139,7 +139,7 @@ public sealed class HomePharmacyService(
             Warnings = item.Medication?.Warnings,
             PdfUrl = item.Medication?.PdfUrl,
             Manufacturer = item.Medication?.Manufacturer,
-            MarketingAuthNumber = item.Medication?.MarketingAuthNr,
+            MarketingAuthNumber = item.Medication?.MarketingAuthNumber,
             AddedAt = item.AddedAt
         };
     }

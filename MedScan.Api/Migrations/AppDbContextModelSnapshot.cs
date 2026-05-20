@@ -195,17 +195,17 @@ namespace MedScan.Api.Migrations
                     b.Property<string>("Manufacturer")
                         .HasColumnType("text");
 
-                    b.Property<string>("MarketingAuthNr")
+                    b.Property<string>("MarketingAuthNumber")
                         .HasColumnType("text")
                         .HasColumnName("MarketingAuthNumber");
 
                     b.Property<string>("MedicationForm")
                         .HasColumnType("text");
 
-                    b.Property<string>("MethodOfAdministraion")
+                    b.Property<string>("MethodOfAdministration")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("MethodOfAdministrion");
+                        .HasColumnName("MethodOfAdministration");
 
                     b.Property<string>("Name")
                         .IsRequired()

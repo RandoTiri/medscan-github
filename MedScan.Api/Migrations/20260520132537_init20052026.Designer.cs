@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MedScan.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260518112302_init18052026")]
-    partial class init18052026
+    [Migration("20260520132537_init20052026")]
+    partial class init20052026
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -198,17 +198,17 @@ namespace MedScan.Api.Migrations
                     b.Property<string>("Manufacturer")
                         .HasColumnType("text");
 
-                    b.Property<string>("MarketingAuthNr")
+                    b.Property<string>("MarketingAuthNumber")
                         .HasColumnType("text")
                         .HasColumnName("MarketingAuthNumber");
 
                     b.Property<string>("MedicationForm")
                         .HasColumnType("text");
 
-                    b.Property<string>("MethodOfAdministraion")
+                    b.Property<string>("MethodOfAdministration")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("MethodOfAdministrion");
+                        .HasColumnName("MethodOfAdministration");
 
                     b.Property<string>("Name")
                         .IsRequired()
