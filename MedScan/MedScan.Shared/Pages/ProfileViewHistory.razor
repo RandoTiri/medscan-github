@@ -1,5 +1,6 @@
 @page "/profile/view/{ProfileId:int}/history"
 @using MedScan.Shared.DTOs.Medication
+@using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
 @using MedScan.Shared.Services
 @inject IAuthService AuthService
@@ -102,10 +103,10 @@ else
     private string? _errorMessage;
     private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
     private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
-    private readonly List<int> _years = Enumerable.Range(1900, DateTime.Today.Year - 1900 + 1).Reverse().ToList();
-    private int _selectedDay = DateTime.Today.Day;
-    private int _selectedMonth = DateTime.Today.Month;
-    private int _selectedYear = DateTime.Today.Year;
+    private readonly List<int> _years = Enumerable.Range(1900, AppDate.CurrentYear - 1900 + 1).Reverse().ToList();
+    private int _selectedDay = AppDate.Today.Day;
+    private int _selectedMonth = AppDate.Today.Month;
+    private int _selectedYear = AppDate.Today.Year;
     private readonly List<HistoryItem> _historyItems = [];
 
     protected override async Task OnParametersSetAsync()

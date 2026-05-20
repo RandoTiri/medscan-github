@@ -30,15 +30,7 @@ public sealed class Patient : Profile
                 return 0;
             }
 
-            var today = DateOnly.FromDateTime(DateTime.Today);
-            var age = today.Year - BirthDate.Value.Year;
-
-            if (today < BirthDate.Value.AddYears(age))
-            {
-                age--;
-            }
-
-            return Math.Max(age, 0);
+            return AppDate.CalculateAge(BirthDate);
         }
     }
 }

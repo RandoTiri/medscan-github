@@ -24,7 +24,7 @@ else
     <div class="mobile-container">
         <header class="header-section">
             <div class="header-top">
-                <div class="header-date">@DateTime.Now.ToString("dddd, d. MMMM", new System.Globalization.CultureInfo("et-EE"))</div>
+                <div class="header-date">@AppDate.Now.ToString("dddd, d. MMMM", new System.Globalization.CultureInfo("et-EE"))</div>
                 <div class="header-icons">
                     <button type="button" class="notification-icon" title="Teavitused" @onclick="OpenNotificationCenterAsync">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -901,7 +901,7 @@ else
 
     private static int GetRemainingMinutesUntilDose(TimeOnly scheduledTime)
     {
-        var now = DateTime.Now;
+        var now = AppDate.Now;
         var scheduledAt = now.Date + scheduledTime.ToTimeSpan();
         var remaining = scheduledAt - now;
         if (remaining <= TimeSpan.Zero)
@@ -932,7 +932,7 @@ else
 
     private static bool IsExpiredDate(DateOnly date)
     {
-        return date < DateOnly.FromDateTime(DateTime.Today);
+        return AppDate.IsExpired(date);
     }
     public void Dispose()
     {

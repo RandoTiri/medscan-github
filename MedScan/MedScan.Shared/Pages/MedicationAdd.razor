@@ -495,7 +495,7 @@ else
                     ScheduleUnit = _scheduleUnit,
                     ScheduledTimes = parsedTimes,
                     WeeklyDays = ShowWeeklyDaySelector ? _weeklyDays.ToList() : [],
-                    StartDate = DateOnly.FromDateTime(DateTime.Now),
+                    StartDate = AppDate.Today,
                     ExpiresOn = _expiresOn,
                     RemindersEnabled = _remindersEnabled,
                     Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()

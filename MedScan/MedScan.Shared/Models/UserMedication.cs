@@ -13,7 +13,7 @@ public class UserMedication
     public MedicationScheduleUnit ScheduleUnit { get; set; } = MedicationScheduleUnit.Day;
     public string ScheduledTimesJson { get; set; } = "[]";
     public string WeeklyDaysJson { get; set; } = "[]";
-    public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+    public DateOnly StartDate { get; set; } = AppDate.Today;
     public DateOnly? ExpiresOn { get; set; }
     public bool RemindersEnabled { get; set; } = true;
     public string? Notes { get; set; }

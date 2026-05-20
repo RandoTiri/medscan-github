@@ -339,7 +339,7 @@ else
 
     private static string BuildExpirationLabel(DateOnly expiresOn)
     {
-        var today = DateOnly.FromDateTime(DateTime.Today);
+        var today = AppDate.Today;
         var daysLeft = expiresOn.DayNumber - today.DayNumber;
 
         if (daysLeft >= 0 && daysLeft < 30)
@@ -460,7 +460,7 @@ else
             return false;
         }
 
-        return expiryDate < DateOnly.FromDateTime(DateTime.Today);
+        return AppDate.IsExpired(expiryDate);
     }
 }
 

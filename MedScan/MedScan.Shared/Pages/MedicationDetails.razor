@@ -664,7 +664,7 @@ else
                     ScheduleUnit = _scheduleUnit,
                     ScheduledTimes = times.ToList(),
                     WeeklyDays = _weeklyDays.ToList(),
-                    StartDate = DateOnly.FromDateTime(DateTime.Now),
+                    StartDate = AppDate.Today,
                     RemindersEnabled = _remindersEnabled,
                     Notes = NormalizeNotes(_editableNotes)
                 });
@@ -986,7 +986,7 @@ else
             return false;
         }
 
-        return expiryDate < DateOnly.FromDateTime(DateTime.Today);
+        return AppDate.IsExpired(expiryDate);
     }
 
     private void CloseExpiredModal()

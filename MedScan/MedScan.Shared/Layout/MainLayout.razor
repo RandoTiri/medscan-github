@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @implements IDisposable
+@using MedScan.Shared.Models
 @inject MedScan.Shared.Services.IThemeService ThemeService
 @inject MedScan.Shared.Services.IInAppDoseAlertService InAppDoseAlertService
 @inject MedScan.Shared.Services.IMedicationService MedicationService
@@ -273,7 +274,7 @@
         try
         {
             var medication = await MedicationService.GetByIdAsync(InAppDoseAlertService.Current.UserMedicationId);
-            if (medication?.ExpiresOn is DateOnly expiryDate && expiryDate < DateOnly.FromDateTime(DateTime.Today))
+            if (medication?.ExpiresOn is DateOnly expiryDate && AppDate.IsExpired(expiryDate))
             {
                 _expiredWarningDate = expiryDate;
                 _isExpiredWarningOpen = true;

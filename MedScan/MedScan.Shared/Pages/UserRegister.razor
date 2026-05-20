@@ -1,5 +1,6 @@
 ﻿@page "/register"
 @layout MedScan.Shared.Layout.AuthLayout
+@using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
@@ -130,7 +131,7 @@
                     </select>
                     <select class="birth-select @(string.IsNullOrEmpty(_birthYear) ? "empty-select" : "")" @bind="_birthYear" disabled="@IsBusy">
                         <option value="">Aasta</option>
-                        @for (var year = DateTime.Today.Year; year >= 1900; year--)
+                        @for (var year = AppDate.CurrentYear; year >= 1900; year--)
                         {
                             <option value="@year">@year</option>
                         }
@@ -272,7 +273,7 @@
             return false;
         }
 
-        if (year < 1900 || year > DateTime.Today.Year)
+        if (year < 1900 || year > AppDate.CurrentYear)
         {
             return false;
         }
@@ -280,7 +281,7 @@
         try
         {
             birthDate = new DateOnly(year, month, day);
-            return birthDate <= DateOnly.FromDateTime(DateTime.Today);
+            return birthDate <= AppDate.Today;
         }
         catch
         {
