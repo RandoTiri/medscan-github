@@ -20,8 +20,8 @@ public sealed class ThemeService(IJSRuntime jsRuntime) : IThemeService
 
         try
         {
-            IsDarkMode = false;
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", ThemeStorageKey, "light");
+            var stored = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", ThemeStorageKey);
+            IsDarkMode = string.Equals(stored, "dark", StringComparison.OrdinalIgnoreCase);
             await ApplyThemeAsync();
             IsInitialized = true;
             OnChanged?.Invoke();
@@ -34,11 +34,12 @@ public sealed class ThemeService(IJSRuntime jsRuntime) : IThemeService
 
     public async Task SetDarkModeAsync(bool enabled)
     {
+        //IsDarkMode = enabled;
         IsDarkMode = false;
 
         try
         {
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", ThemeStorageKey, "light");
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", ThemeStorageKey, enabled ? "dark" : "light");
             await ApplyThemeAsync();
             IsInitialized = true;
         }
