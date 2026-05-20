@@ -3,8 +3,7 @@
 @inject MedScan.Shared.Services.IAuthService AuthService
 @inject MedScan.Shared.Services.IScannerFlowService ScannerFlowService
 
-@if (AuthService.IsLoggedIn)
-{
+@if (AuthService.IsLoggedIn) {
     <nav class="bottom-nav">
         <div class="nav-item @(currentUrl == "" ? "active" : "")" @onclick='() => NavigateTo("/")'>
             <span class="nav-icon">
@@ -43,62 +42,51 @@
 @code {
     private string currentUrl = "";
 
-    protected override void OnInitialized()
-    {
+    protected override void OnInitialized() {
         currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
         Navigation.LocationChanged += OnLocationChanged;
         AuthService.OnChange += StateHasChanged;
     }
 
-    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
-    {
+    private void OnLocationChanged(object? sender,Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) {
         currentUrl = Navigation.ToBaseRelativePath(e.Location);
         StateHasChanged();
     }
 
-    private string GetNavItemClass(string path)
-    {
+    private string GetNavItemClass(string path) {
         var normalizedCurrent = "/" + (currentUrl?.Split('?')[0].Trim('/') ?? "");
         var normalizedPath = "/" + path.Trim('/');
 
-        bool isActive = normalizedCurrent.Equals(normalizedPath, StringComparison.OrdinalIgnoreCase);
+        bool isActive = normalizedCurrent.Equals(normalizedPath,StringComparison.OrdinalIgnoreCase);
 
         return isActive ? "nav-item active" : "nav-item";
     }
 
-    private void NavigateTo(string url)
-    {
+    private void NavigateTo(string url) {
         Navigation.NavigateTo(url);
     }
 
-    private async Task StartScannerAsync()
-    {
+    private async Task StartScannerAsync() {
         var scanResult = await ScannerFlowService.ScanAsync();
 
-        if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
-        {
+        if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode)) {
             var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}";
-            if (scanResult.ExpirationDate is DateOnly expirationDate)
-            {
+            if (scanResult.ExpirationDate is DateOnly expirationDate) {
                 route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
             }
-            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
-            {
+            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber)) {
                 route += route.Contains('?')
                     ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
                     : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
             }
 
             Navigation.NavigateTo(route);
-        }
-        else if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.ManualSearch)
-        {
+        } else if (scanResult.Status == MedScan.Shared.Models.BarcodeScanStatus.ManualSearch) {
             Navigation.NavigateTo("/home-pharmacy/search");
         }
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         Navigation.LocationChanged -= OnLocationChanged;
         AuthService.OnChange -= StateHasChanged;
     }
