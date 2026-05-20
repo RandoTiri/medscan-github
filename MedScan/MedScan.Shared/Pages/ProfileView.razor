@@ -46,7 +46,7 @@ else
                 <div class="profile-avatar @(_isPatientProfile ? "patient-avatar-view" : "main-avatar-view")">@_patient.Initials</div>
                 <div class="profile-main-info @(_isPatientProfile ? "patient-info-view" : "main-info-view")">
                     <h1>@_patient.Name</h1>
-                    <p>@GetProfileDetails(_patient)</p>
+                    <p>@ProfileDisplayFormatter.BuildDetails(_patient)</p>
                 </div>
             </section>
 
@@ -297,7 +297,7 @@ else
             {
                 Id = profile.Id,
                 Name = profile.Name,
-                Gender = string.IsNullOrWhiteSpace(profile.Gender) ? "Määramata" : profile.Gender,
+                Gender = ProfileDisplayFormatter.NormalizeGender(profile.Gender),
                 BirthDate = profile.BirthDate
             };
 
@@ -398,13 +398,6 @@ else
         };
     }
 
-    private static string GetProfileDetails(Patient patient)
-    {
-        var age = patient.Age > 0 ? $"{patient.Age} a" : "Vanus puudub";
-        var gender = string.IsNullOrWhiteSpace(patient.Gender) ? "Määramata" : patient.Gender;
-        return $"{age} · {gender}";
-    }
-
     private async Task SaveChangesAsync()
     {
         if (_patient is null || string.IsNullOrWhiteSpace(_editModel.Name))
@@ -429,7 +422,7 @@ else
             }
 
             _patient.Name = updated.Name;
-            _patient.Gender = string.IsNullOrWhiteSpace(updated.Gender) ? "Määramata" : updated.Gender;
+            _patient.Gender = ProfileDisplayFormatter.NormalizeGender(updated.Gender);
             _patient.BirthDate = updated.BirthDate;
             _isEditing = false;
         }

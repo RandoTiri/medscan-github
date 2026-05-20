@@ -42,7 +42,7 @@ else
                 <div class="profile-avatar">@_profile.Initials</div>
                 <div class="profile-main-info">
                     <h1>@_profile.Name</h1>
-                    <p>@GetProfileDetails(_profile)</p>
+                    <p>@ProfileDisplayFormatter.BuildDetails(_profile)</p>
                 </div>
             </section>
 
@@ -271,7 +271,7 @@ else
             {
                 Id = profile.Id,
                 Name = profile.Name,
-                Gender = string.IsNullOrWhiteSpace(profile.Gender) ? "Määramata" : profile.Gender,
+                Gender = ProfileDisplayFormatter.NormalizeGender(profile.Gender),
                 BirthDate = profile.BirthDate
             };
 
@@ -290,13 +290,6 @@ else
         {
             _isReady = true;
         }
-    }
-
-    private static string GetProfileDetails(Patient patient)
-    {
-        var age = patient.Age > 0 ? $"{patient.Age} a" : "Vanus puudub";
-        var gender = string.IsNullOrWhiteSpace(patient.Gender) ? "Määramata" : patient.Gender;
-        return $"{age} · {gender}";
     }
 
     private void ToggleEdit()
@@ -369,7 +362,7 @@ else
             }
 
             _profile.Name = updated.Name;
-            _profile.Gender = string.IsNullOrWhiteSpace(updated.Gender) ? "Määramata" : updated.Gender;
+            _profile.Gender = ProfileDisplayFormatter.NormalizeGender(updated.Gender);
             _profile.BirthDate = updated.BirthDate;
             _isEditing = false;
             _successMessage = "Kasutaja andmed salvestatud.";

@@ -194,7 +194,7 @@ else
         var request = new CreatePatientProfileRequest
         {
             Name = newPatient.Name,
-            Gender = string.IsNullOrWhiteSpace(newPatient.Gender) ? "Määramata" : newPatient.Gender,
+            Gender = ProfileDisplayFormatter.NormalizeGender(newPatient.Gender),
             BirthDate = newPatient.BirthDate
         };
 
@@ -272,7 +272,7 @@ else
                 Id = mainProfile.Id,
                 Name = mainProfile.Name,
                 BirthDate = mainProfile.BirthDate,
-                Gender = string.IsNullOrWhiteSpace(mainProfile.Gender) ? "Määramata" : mainProfile.Gender
+                Gender = ProfileDisplayFormatter.NormalizeGender(mainProfile.Gender)
             };
 
         CareReceivers = profiles
@@ -282,22 +282,21 @@ else
                 Id = p.Id,
                 Name = p.Name,
                 BirthDate = p.BirthDate,
-                Gender = string.IsNullOrWhiteSpace(p.Gender) ? "Määramata" : p.Gender
+                Gender = ProfileDisplayFormatter.NormalizeGender(p.Gender)
             })
             .ToList();
     }
 
     private static string GetPatientDetails(Patient patient)
     {
-        var agePart = patient.Age > 0 ? $"{patient.Age} a" : "Vanus puudub";
-        return $"{agePart} · {patient.Gender}";
+        return ProfileDisplayFormatter.BuildDetails(patient);
     }
 
     private string GetMainUserDetails()
     {
         if (_mainUserProfile is null)
         {
-            return "Vanus puudub · Määramata";
+            return ProfileDisplayFormatter.BuildDetails(null);
         }
 
         return GetPatientDetails(_mainUserProfile);

@@ -182,21 +182,14 @@ else
                 Id = profile.Id,
                 Name = profile.Name,
                 BirthDate = profile.BirthDate,
-                Gender = string.IsNullOrWhiteSpace(profile.Gender) ? "Määramata" : profile.Gender
+                Gender = ProfileDisplayFormatter.NormalizeGender(profile.Gender)
             };
     }
 
     private string GetMainUserDetails()
     {
-        if (_mainUserProfile is null)
-        {
-            return "Vanus puudub · Määramata";
-        }
-
-        var age = _mainUserProfile.Age > 0 ? $"{_mainUserProfile.Age} a" : "Vanus puudub";
-        return $"{age} · {_mainUserProfile.Gender}";
+        return ProfileDisplayFormatter.BuildDetails(_mainUserProfile);
     }
-
     private void OpenMainProfileView()
     {
         if (_mainProfileId > 0)
