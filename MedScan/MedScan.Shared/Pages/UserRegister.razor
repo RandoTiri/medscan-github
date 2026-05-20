@@ -195,7 +195,8 @@
                 return;
             }
 
-            if (!TryBuildBirthDate(out var birthDate))
+            var birthDateResult = BirthDateRules.BuildFromParts(_birthDay, _birthMonth, _birthYear, isRequired: true);
+            if (!birthDateResult.Success || birthDateResult.BirthDate is not DateOnly birthDate)
             {
                 ErrorMessage = "Sisesta korrektne sünnikuupäev.";
                 return;
@@ -233,45 +234,6 @@
 
     private void TogglePasswordVisibility() {
         ShowPassword = !ShowPassword;
-    }
-
-    private bool TryBuildBirthDate(out DateOnly birthDate)
-    {
-        birthDate = default;
-
-        var hasAny = !string.IsNullOrWhiteSpace(_birthDay) ||
-                     !string.IsNullOrWhiteSpace(_birthMonth) ||
-                     !string.IsNullOrWhiteSpace(_birthYear);
-        var hasAll = !string.IsNullOrWhiteSpace(_birthDay) &&
-                     !string.IsNullOrWhiteSpace(_birthMonth) &&
-                     !string.IsNullOrWhiteSpace(_birthYear);
-
-        if (!hasAny || !hasAll)
-        {
-            return false;
-        }
-
-        if (!int.TryParse(_birthYear, out var year) ||
-            !int.TryParse(_birthMonth, out var month) ||
-            !int.TryParse(_birthDay, out var day))
-        {
-            return false;
-        }
-
-        if (year < 1900 || year > AppDate.CurrentYear)
-        {
-            return false;
-        }
-
-        try
-        {
-            birthDate = new DateOnly(year, month, day);
-            return birthDate <= AppDate.Today;
-        }
-        catch
-        {
-            return false;
-        }
     }
 
 }

@@ -382,37 +382,15 @@ else
 
     private bool ApplyBirthDateFromPicker()
     {
-        var hasAny = !string.IsNullOrWhiteSpace(_birthDay) || !string.IsNullOrWhiteSpace(_birthMonth) || !string.IsNullOrWhiteSpace(_birthYear);
-        var hasAll = !string.IsNullOrWhiteSpace(_birthDay) && !string.IsNullOrWhiteSpace(_birthMonth) && !string.IsNullOrWhiteSpace(_birthYear);
-
-        if (!hasAny)
+        var result = BirthDateRules.BuildFromParts(_birthDay, _birthMonth, _birthYear, isRequired: false);
+        if (result.Success)
         {
-            _editModel.BirthDate = null;
+            _editModel.BirthDate = result.BirthDate;
             return true;
         }
 
-        if (!hasAll)
-        {
-            _errorMessage = "Palun vali sünniajast päev, kuu ja aasta.";
-            return false;
-        }
-
-        if (!int.TryParse(_birthYear, out var year) || !int.TryParse(_birthMonth, out var month) || !int.TryParse(_birthDay, out var day))
-        {
-            _errorMessage = "Sünniaja väärtused on vigased.";
-            return false;
-        }
-
-        try
-        {
-            _editModel.BirthDate = new DateOnly(year, month, day);
-            return true;
-        }
-        catch
-        {
-            _errorMessage = "Valitud sünniaeg ei ole korrektne kuupäev.";
-            return false;
-        }
+        _errorMessage = BirthDateRules.GetErrorMessage(result.Status);
+        return false;
     }
 
     private void TogglePasswordForm()

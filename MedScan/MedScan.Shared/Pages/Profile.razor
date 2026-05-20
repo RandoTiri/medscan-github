@@ -247,34 +247,13 @@ else
 
     private bool ApplyBirthDateFromPicker()
     {
-        var hasAny = !string.IsNullOrWhiteSpace(_birthDay) || !string.IsNullOrWhiteSpace(_birthMonth) || !string.IsNullOrWhiteSpace(_birthYear);
-        var hasAll = !string.IsNullOrWhiteSpace(_birthDay) && !string.IsNullOrWhiteSpace(_birthMonth) && !string.IsNullOrWhiteSpace(_birthYear);
-
-        if (!hasAny)
+        var result = BirthDateRules.BuildFromParts(_birthDay, _birthMonth, _birthYear, isRequired: false);
+        if (result.Success)
         {
-            newPatient.BirthDate = null;
-            return true;
+            newPatient.BirthDate = result.BirthDate;
         }
 
-        if (!hasAll)
-        {
-            return false;
-        }
-
-        if (!int.TryParse(_birthYear, out var year) || !int.TryParse(_birthMonth, out var month) || !int.TryParse(_birthDay, out var day))
-        {
-            return false;
-        }
-
-        try
-        {
-            newPatient.BirthDate = new DateOnly(year, month, day);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        return result.Success;
     }
 
     private async Task LoadPatientsAsync()
