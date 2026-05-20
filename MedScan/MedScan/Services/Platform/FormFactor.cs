@@ -1,4 +1,4 @@
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Platform;
 
 namespace MedScan.MAUI.Services.Platform; 
 public sealed class FormFactor : IFormFactor {

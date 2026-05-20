@@ -1,5 +1,7 @@
 using MedScan.MAUI.Services.Notifications;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Auth;
+using MedScan.Shared.Services.Medications;
+using MedScan.Shared.Services.Notifications;
 using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Startup;

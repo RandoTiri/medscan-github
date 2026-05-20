@@ -8,5 +8,5 @@ public class Profile {
     public string Gender { get; set; } = string.Empty;
     public ProfileTypeEnum ProfileType { get; set; }
     public DateOnly? BirthDate { get; set; }
-    public ICollection<UserMedication> Medications { get; set; } = new List<UserMedication>();
+    public ICollection<UserMedication> Medications { get; set; } = [];
 }

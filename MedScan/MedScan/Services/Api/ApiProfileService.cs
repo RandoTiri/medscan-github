@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Net;
-using MedScan.Shared.Models;
-using MedScan.Shared.Services;
+using MedScan.Shared.DTOs.Profile;
+using MedScan.Shared.Services.Profiles;
 
 namespace MedScan.MAUI.Services.Api;
 

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using MedScan.Api.Data.Identity;
 using MedScan.Api.Repositories;
 using MedScan.Api.Repositories.Profiles;
+using MedScan.Shared.DTOs.Profile;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
 using Microsoft.AspNetCore.Authorization;

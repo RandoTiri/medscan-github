@@ -1,5 +1,5 @@
 using MedScan.Shared.Models;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Notifications;
 
 namespace MedScan.MAUI.Services.Notifications;
 

@@ -1,7 +1,7 @@
 using MedScan.MAUI.Services.Notifications;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models.Enums;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Medications;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Net.Http.Json;

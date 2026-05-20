@@ -1,5 +1,6 @@
 using MedScan.Shared.Models;
-using MedScan.Shared.Services;
+using MedScan.Shared.Models.Enums;
+using MedScan.Shared.Services.Catalog;
 using Microsoft.Extensions.Logging;
 using ZXing.Net.Maui;
 

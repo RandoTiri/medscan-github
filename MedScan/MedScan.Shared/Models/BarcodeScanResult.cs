@@ -1,17 +1,8 @@
+using MedScan.Shared.Models.Enums;
+
 namespace MedScan.Shared.Models;
 
-public enum BarcodeScanStatus
-{
-    Success,
-    PermissionDenied,
-    NotDetected,
-    Canceled,
-    Error,
-    ManualSearch
-}
-
-public sealed class BarcodeScanResult
-{
+public sealed class BarcodeScanResult {
     public BarcodeScanStatus Status { get; init; }
     public string? Barcode { get; init; }
     public DateOnly? ExpirationDate { get; init; }

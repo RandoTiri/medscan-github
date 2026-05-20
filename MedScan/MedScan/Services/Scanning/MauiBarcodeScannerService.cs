@@ -1,6 +1,7 @@
 using MedScan.MAUI.Pages;
 using MedScan.Shared.Models;
-using MedScan.Shared.Services;
+using MedScan.Shared.Models.Enums;
+using MedScan.Shared.Services.Scanning;
 using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Scanning;

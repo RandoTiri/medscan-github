@@ -1,7 +1,6 @@
 namespace MedScan.Shared.Models;
 
-public sealed class HomePharmacyItem
-{
+public sealed class HomePharmacyItem {
     public int Id { get; set; }
     public int ProfileId { get; set; }
     public Profile Profile { get; set; } = null!;

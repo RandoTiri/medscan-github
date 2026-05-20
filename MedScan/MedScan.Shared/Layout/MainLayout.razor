@@ -1,9 +1,9 @@
 @inherits LayoutComponentBase
 @implements IDisposable
 @using MedScan.Shared.Models
-@inject MedScan.Shared.Services.IThemeService ThemeService
-@inject MedScan.Shared.Services.IInAppDoseAlertService InAppDoseAlertService
-@inject MedScan.Shared.Services.IMedicationService MedicationService
+@inject IThemeService ThemeService
+@inject IInAppDoseAlertService InAppDoseAlertService
+@inject IMedicationService MedicationService
 
 <div class="page">
     <main>
@@ -46,144 +46,6 @@
         </section>
     }
 </div>
-
-<style>
-    .alert-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.35);
-        z-index: 1098;
-    }
-
-    .dose-alert-modal {
-        position: fixed;
-        left: 18px;
-        right: 18px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: #ffffff;
-        border-radius: 20px;
-        box-shadow: 0 24px 56px rgba(0, 0, 0, 0.22);
-        padding: 18px;
-        z-index: 1099;
-        text-align: center;
-    }
-
-    .dose-alert-modal h2 {
-        margin: 0;
-        font-size: 24px;
-        line-height: 1;
-        color: #1A2E29;
-        font-weight: 900;
-    }
-
-    .dose-alert-med {
-        margin: 10px 0 0;
-        color: #1A2E29;
-        font-size: 16px;
-        font-weight: 800;
-    }
-
-    .dose-alert-profile {
-        margin: 6px 0 0;
-        color: #1A2E29;
-        font-size: 14px;
-        font-weight: 700;
-    }
-
-    .dose-alert-note {
-        margin: 10px 0 0;
-        color: #6b7280;
-        font-size: 14px;
-        font-style: italic;
-    }
-
-    .dose-alert-actions {
-        margin-top: 16px;
-        display: flex;
-        gap: 10px;
-    }
-
-    .dose-alert-dismiss,
-    .dose-alert-done {
-        flex: 1;
-        border-radius: 12px;
-        padding: 12px 10px;
-        font-size: 16px;
-        font-weight: 800;
-        cursor: pointer;
-    }
-
-    .dose-alert-dismiss {
-        background: #fdf5f5;
-        color: #d1303b;
-        border: 2px solid #f9d8db;
-    }
-
-    .dose-alert-done {
-        border: none;
-        background: #1f7a60;
-        color: #fff;
-    }
-
-    .expired-warning-modal {
-        position: fixed;
-        left: 50%;
-        width: calc(100vw - 32px);
-        max-width: 560px;
-        transform: translateX(-50%);
-        top: 50%;
-        margin-top: -120px;
-        background: #ffffff;
-        border: 1px solid #d5e4dc;
-        border-radius: 14px;
-        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
-        padding: 16px;
-        z-index: 1100;
-    }
-
-    .expired-warning-modal h3 {
-        margin: 0 0 10px 0;
-        color: #ab3f4c;
-        font-size: 18px;
-        font-weight: 800;
-    }
-
-    .expired-warning-modal p {
-        margin: 0 0 8px 0;
-        color: #1A2E29;
-        font-size: 14px;
-        line-height: 1.4;
-    }
-
-    .expired-warning-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 8px;
-    }
-
-    .expired-warning-confirm,
-    .expired-warning-decline {
-        flex: 1;
-        border-radius: 12px;
-        padding: 12px 16px;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-    }
-
-    .expired-warning-confirm {
-        border: none;
-        background: #1d735c;
-        color: #fff;
-    }
-
-    .expired-warning-decline {
-        border: 2px solid #f9d8db;
-        background: #fdf5f5;
-        color: #d1303b;
-    }
-</style>
 
 @code {
     private bool _isUpdatingFromPopup;

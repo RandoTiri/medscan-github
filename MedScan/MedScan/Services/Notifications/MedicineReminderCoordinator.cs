@@ -1,6 +1,6 @@
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models.Enums;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Notifications;
 
 namespace MedScan.MAUI.Services.Notifications;
 

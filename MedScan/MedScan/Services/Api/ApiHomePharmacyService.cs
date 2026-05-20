@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using MedScan.Shared.DTOs.HomePharmacy;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.HomePharmacy;
 using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Api;

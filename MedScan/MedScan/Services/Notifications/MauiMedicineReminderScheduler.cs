@@ -1,6 +1,6 @@
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Notifications;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;
 using Plugin.LocalNotification.Core.Models.AndroidOption;

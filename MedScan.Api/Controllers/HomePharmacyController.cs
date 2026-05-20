@@ -2,7 +2,7 @@ using System.Security.Claims;
 using MedScan.Api.Repositories;
 using MedScan.Api.Repositories.Profiles;
 using MedScan.Shared.DTOs.HomePharmacy;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.HomePharmacy;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

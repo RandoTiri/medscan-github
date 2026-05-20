@@ -1,4 +1,5 @@
 using MedScan.Api.Repositories.Medications;
+using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 
 namespace MedScan.Api.Services.Catalog;

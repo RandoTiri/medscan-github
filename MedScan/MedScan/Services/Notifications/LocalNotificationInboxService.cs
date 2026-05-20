@@ -1,5 +1,7 @@
 using MedScan.Shared.Models;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Auth;
+using MedScan.Shared.Services.Medications;
+using MedScan.Shared.Services.Notifications;
 using Microsoft.Extensions.Logging;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;

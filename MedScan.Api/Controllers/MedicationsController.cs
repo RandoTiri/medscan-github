@@ -3,7 +3,7 @@ using MedScan.Api.Repositories;
 using MedScan.Api.Repositories.Profiles;
 using MedScan.Api.Repositories.UserMedications;
 using MedScan.Shared.DTOs.Medication;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Medications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

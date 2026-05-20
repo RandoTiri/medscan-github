@@ -1,7 +1,6 @@
 namespace MedScan.Shared.Models;
 
-public sealed class InAppDoseAlert
-{
+public sealed class InAppDoseAlert {
     public int UserMedicationId { get; init; }
     public TimeOnly ScheduledTime { get; init; }
     public string MedicationName { get; init; } = string.Empty;

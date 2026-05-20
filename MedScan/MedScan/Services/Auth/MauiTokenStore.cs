@@ -1,4 +1,4 @@
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Auth;
 
 namespace MedScan.MAUI.Services.Auth;
 

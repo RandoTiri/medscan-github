@@ -1,6 +1,7 @@
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models.Enums;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Medications;
+using MedScan.Shared.Services.Notifications;
 using Microsoft.Extensions.Logging;
 using Plugin.LocalNotification;
 using Plugin.LocalNotification.Core.Models;

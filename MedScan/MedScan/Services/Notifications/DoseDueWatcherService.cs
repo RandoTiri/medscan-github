@@ -1,7 +1,10 @@
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Auth;
+using MedScan.Shared.Services.Medications;
+using MedScan.Shared.Services.Notifications;
+using MedScan.Shared.Services.Profiles;
 using Microsoft.Extensions.Logging;
 
 namespace MedScan.MAUI.Services.Notifications;

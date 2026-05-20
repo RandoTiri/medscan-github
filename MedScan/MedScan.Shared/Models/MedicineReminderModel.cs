@@ -2,8 +2,7 @@ using MedScan.Shared.Models.Enums;
 
 namespace MedScan.Shared.Models;
 
-public sealed class MedicineReminderModel
-{
+public sealed class MedicineReminderModel {
     public int UserMedicationId { get; init; }
     public string MedicationName { get; init; } = string.Empty;
     public string ProfileName { get; init; } = string.Empty;

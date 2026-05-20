@@ -1,4 +1,4 @@
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Platform;
 using Microsoft.JSInterop;
 
 namespace MedScan.Web.Services;

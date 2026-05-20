@@ -1,4 +1,4 @@
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Platform;
 
 namespace MedScan.Web.Services {
     public class FormFactor : IFormFactor {

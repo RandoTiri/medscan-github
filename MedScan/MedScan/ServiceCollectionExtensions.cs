@@ -4,7 +4,14 @@ using MedScan.MAUI.Services.Notifications;
 using MedScan.MAUI.Services.Platform;
 using MedScan.MAUI.Services.Scanning;
 using MedScan.MAUI.Services.Startup;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Auth;
+using MedScan.Shared.Services.Catalog;
+using MedScan.Shared.Services.HomePharmacy;
+using MedScan.Shared.Services.Medications;
+using MedScan.Shared.Services.Notifications;
+using MedScan.Shared.Services.Platform;
+using MedScan.Shared.Services.Profiles;
+using MedScan.Shared.Services.Scanning;
 
 namespace MedScan.MAUI;
 

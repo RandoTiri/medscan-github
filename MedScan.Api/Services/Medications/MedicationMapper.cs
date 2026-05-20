@@ -1,6 +1,7 @@
 ﻿using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
 using MedScan.Shared.Models.Enums;
+using MedScan.Shared.Utilities;
 
 namespace MedScan.Api.Services.Medications;
 

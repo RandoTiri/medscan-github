@@ -1,4 +1,5 @@
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Medications;
+using MedScan.Shared.Services.Platform;
 using MedScan.Web.Components;
 using MedScan.Web.Services;
 

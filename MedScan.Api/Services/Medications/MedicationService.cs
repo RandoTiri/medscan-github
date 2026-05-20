@@ -3,7 +3,7 @@ using MedScan.Api.Repositories.Medications;
 using MedScan.Api.Repositories.UserMedications;
 using MedScan.Shared.DTOs.Medication;
 using MedScan.Shared.Models;
-using MedScan.Shared.Services;
+using MedScan.Shared.Services.Medications;
 
 namespace MedScan.Api.Services.Medications;
 

@@ -1,4 +1,4 @@
-using MedScan.Shared.Models;
+using MedScan.Shared.DTOs.Medication;
 
 namespace MedScan.Api.Services.Catalog;
 
