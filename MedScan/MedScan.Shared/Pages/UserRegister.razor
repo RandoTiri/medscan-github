@@ -190,8 +190,8 @@
         try {
             var normalizedEmail = Email.Trim();
 
-            if (!HasValidEmailSuffix(normalizedEmail)) {
-                ErrorMessage = "Invalid email.";
+            if (!EmailRules.IsValid(normalizedEmail)) {
+                ErrorMessage = EmailRules.InvalidEmailMessage;
                 return;
             }
 
@@ -233,21 +233,6 @@
 
     private void TogglePasswordVisibility() {
         ShowPassword = !ShowPassword;
-    }
-
-    private static bool HasValidEmailSuffix(string email) {
-        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')) return false;
-
-        if (email.Length >= 3 && email[^3] == '.' && 
-            char.IsLetter(email[^2]) && 
-            char.IsLetter(email[^1])) return true;
-
-        if (email.Length >= 4 && email[^4] == '.' && 
-            char.IsLetter(email[^3]) && 
-            char.IsLetter(email[^2]) && 
-            char.IsLetter(email[^1])) return true;
-
-        return false;
     }
 
     private bool TryBuildBirthDate(out DateOnly birthDate)
