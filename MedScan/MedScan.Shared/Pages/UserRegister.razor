@@ -169,8 +169,8 @@
     private bool ShowPassword = false;
     private string PasswordInputType => ShowPassword ? "text" : "password";
     private bool RegistrationSuccessful = false;
-    private const string PasswordRequirementsText = "Parool peab olema vähemalt 6 tähemärki pikk.";
-    private bool ShowPasswordValidationError => !string.IsNullOrEmpty(Password) && Password.Length < 6;
+    private const string PasswordRequirementsText = PasswordRules.RequirementsText;
+    private bool ShowPasswordValidationError => !string.IsNullOrEmpty(Password) && !PasswordRules.IsValid(Password);
 
     protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
@@ -201,7 +201,7 @@
                 return;
             }
 
-            if (!IsPasswordValid(Password))
+            if (!PasswordRules.IsValid(Password))
             {
                 ErrorMessage = PasswordRequirementsText;
                 return;
@@ -289,10 +289,6 @@
         }
     }
 
-    private static bool IsPasswordValid(string password)
-    {
-        return !string.IsNullOrWhiteSpace(password) && password.Length >= 6;
-    }
 }
 
 

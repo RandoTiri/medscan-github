@@ -235,7 +235,7 @@ else
     private string _currentPassword = string.Empty;
     private string _newPassword = string.Empty;
     private string _confirmNewPassword = string.Empty;
-    private const string PasswordRequirementsText = "Parool peab olema vähemalt 6 tähemärki pikk.";
+    private const string PasswordRequirementsText = PasswordRules.RequirementsText;
     private bool ShowConfirmNewPasswordMismatchError =>
         !string.IsNullOrEmpty(_confirmNewPassword) &&
         !string.Equals(_newPassword, _confirmNewPassword, StringComparison.Ordinal);
@@ -459,7 +459,7 @@ else
             return;
         }
 
-        if (!IsPasswordValid(_newPassword))
+        if (!PasswordRules.IsValid(_newPassword))
         {
             _errorMessage = PasswordRequirementsText;
             return;
@@ -507,10 +507,6 @@ else
 
     private void GoBack() => Navigation.NavigateTo("/settings");
 
-    private static bool IsPasswordValid(string password)
-    {
-        return !string.IsNullOrWhiteSpace(password) && password.Length >= 6;
-    }
 }
 
 
