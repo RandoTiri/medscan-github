@@ -286,7 +286,7 @@ else
     {
         _frequencyPerDay = frequency;
         var targetTimeCount = GetVisibleTimeCount();
-        var defaults = GetDefaultTimes(Math.Max(frequency, targetTimeCount));
+        var defaults = MedicationScheduleDefaults.BuildDefaultTimes(Math.Max(frequency, targetTimeCount));
 
         if (_scheduledTimeTexts.Count > targetTimeCount)
         {
@@ -299,18 +299,6 @@ else
         }
 
         SyncWeeklyDays();
-    }
-
-    private static List<string> GetDefaultTimes(int frequency)
-    {
-        return frequency switch
-        {
-            1 => ["08:00"],
-            2 => ["08:00", "20:00"],
-            3 => ["08:00", "14:00", "20:00"],
-            4 => ["08:00", "12:00", "16:00", "20:00"],
-            _ => ["08:00"]
-        };
     }
 
     private void OnScheduleUnitChanged(ChangeEventArgs args)
@@ -335,7 +323,7 @@ else
     private void EnsureVisibleTimeCount()
     {
         var targetTimeCount = GetVisibleTimeCount();
-        var defaults = GetDefaultTimes(Math.Max(_frequencyPerDay, targetTimeCount));
+        var defaults = MedicationScheduleDefaults.BuildDefaultTimes(Math.Max(_frequencyPerDay, targetTimeCount));
 
         if (_scheduledTimeTexts.Count > targetTimeCount)
         {
@@ -356,7 +344,7 @@ else
             return;
         }
 
-        var defaults = GetDefaultWeeklyDays(_frequencyPerDay);
+        var defaults = MedicationScheduleDefaults.BuildDefaultWeeklyDays(_frequencyPerDay);
         if (_weeklyDays.Count > _frequencyPerDay)
         {
             _weeklyDays = _weeklyDays.Take(_frequencyPerDay).ToList();
@@ -368,23 +356,6 @@ else
         }
 
         ReorderWeeklyPairs();
-    }
-
-    private static List<int> GetDefaultWeeklyDays(int frequency)
-    {
-        var mondayBasedDays =
-            new[]
-            {
-                (int)DayOfWeek.Monday,
-                (int)DayOfWeek.Tuesday,
-                (int)DayOfWeek.Wednesday,
-                (int)DayOfWeek.Thursday,
-                (int)DayOfWeek.Friday,
-                (int)DayOfWeek.Saturday,
-                (int)DayOfWeek.Sunday
-            };
-
-        return mondayBasedDays.Take(frequency).ToList();
     }
 
     private string GetWeeklyDayValue(int index)
@@ -419,17 +390,12 @@ else
 
         var orderedPairs = _weeklyDays
             .Select((day, index) => new { Day = day, Time = _scheduledTimeTexts[index], Index = index })
-            .OrderBy(pair => GetWeekdayOrder(pair.Day))
+            .OrderBy(pair => MedicationScheduleDefaults.GetMondayBasedWeekdayOrder(pair.Day))
             .ThenBy(pair => pair.Index)
             .ToList();
 
         _weeklyDays = orderedPairs.Select(pair => pair.Day).ToList();
         _scheduledTimeTexts = orderedPairs.Select(pair => pair.Time).ToList();
-    }
-
-    private static int GetWeekdayOrder(int day)
-    {
-        return day == (int)DayOfWeek.Sunday ? 6 : day - 1;
     }
 
     private void OnHourChanged(int index, ChangeEventArgs args)

@@ -73,7 +73,7 @@ else
                 }
                 <div class="info-row">
                     <span class="label">Pakendi kogus</span>
-                    <span class="val">@FormatPackSize(_medication.PackSize)</span>
+                    <span class="val">@MedicationTextFormatter.FormatPackSize(_medication.PackSize)</span>
                 </div>
                 @if (!string.IsNullOrWhiteSpace(_medication.ShortDescription))
                 {
@@ -100,7 +100,7 @@ else
                         Hoiatused
                     </div>
                     <div class="warning-list">
-                        @foreach (var warning in SplitWarnings(_medication.Warnings))
+                        @foreach (var warning in MedicationTextFormatter.SplitWarnings(_medication.Warnings))
                         {
                             <div class="warning-item">
                                 <span class="warning-icon">&#9888;</span>
@@ -271,29 +271,6 @@ else
         return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
     }
 
-    private static string FormatPackSize(string? packSize)
-    {
-        if (string.IsNullOrWhiteSpace(packSize))
-        {
-            return "-";
-        }
-
-        var digits = new string(packSize.Where(char.IsDigit).ToArray());
-        return string.IsNullOrWhiteSpace(digits) ? packSize.Trim() : digits;
-    }
-
-    private static IEnumerable<string> SplitWarnings(string? warnings)
-    {
-        if (string.IsNullOrWhiteSpace(warnings))
-        {
-            return [];
-        }
-
-        return warnings
-            .Split(['\n', ';', '.'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(x => x.EndsWith('.') ? x : $"{x}.")
-            .Where(x => !string.IsNullOrWhiteSpace(x));
-    }
 }
 
 

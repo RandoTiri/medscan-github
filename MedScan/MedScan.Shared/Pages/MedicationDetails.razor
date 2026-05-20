@@ -1,6 +1,7 @@
 ﻿@page "/home-pharmacy/details/{Id:int}"
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.DTOs.HomePharmacy
+@using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
 @using MedScan.Shared.Services
 @inject NavigationManager Navigation
@@ -86,7 +87,7 @@ else
                 </div>
                 <div class="info-row">
                     <span class="label">Pakendi kogus</span>
-                    <span class="val">@FormatPackSize(_item.PackSize)</span>
+                    <span class="val">@MedicationTextFormatter.FormatPackSize(_item.PackSize)</span>
                 </div>
                 <div class="info-row">
                     <span class="label">Näidustus</span>
@@ -124,7 +125,7 @@ else
                 </div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(_item.Warnings))
+            @if (_item is { Warnings: { Length: > 0 } warnings } && !string.IsNullOrWhiteSpace(warnings))
             {
                 <div class="warnings-card">
                     <div class="card-title warning-title">
@@ -136,7 +137,7 @@ else
                         Hoiatused
                     </div>
                     <div class="warning-list">
-                        @foreach (var warning in SplitWarnings(_item.Warnings))
+                        @foreach (var warning in MedicationTextFormatter.SplitWarnings(warnings))
                         {
                             <div class="warning-item">
                                 <span class="warning-icon">&#9888;</span>
@@ -476,7 +477,7 @@ else
     private void SetFrequency(int frequency)
     {
         _frequencyPerDay = frequency;
-        _scheduledTimeTexts = GetDefaultTimes(GetVisibleTimeCount());
+        _scheduledTimeTexts = MedicationScheduleDefaults.BuildDefaultTimes(GetVisibleTimeCount());
         SyncWeeklyDays();
     }
 
@@ -500,7 +501,7 @@ else
     private void EnsureVisibleTimeCount()
     {
         var targetTimeCount = GetVisibleTimeCount();
-        var defaults = GetDefaultTimes(Math.Max(_frequencyPerDay, targetTimeCount));
+        var defaults = MedicationScheduleDefaults.BuildDefaultTimes(Math.Max(_frequencyPerDay, targetTimeCount));
 
         while (_scheduledTimeTexts.Count < targetTimeCount)
         {
@@ -513,18 +514,6 @@ else
         }
     }
 
-    private static List<string> GetDefaultTimes(int frequency)
-    {
-        return frequency switch
-        {
-            1 => ["08:00"],
-            2 => ["08:00", "20:00"],
-            3 => ["08:00", "14:00", "20:00"],
-            4 => ["08:00", "12:00", "16:00", "20:00"],
-            _ => ["08:00"]
-        };
-    }
-
     private void SyncWeeklyDays()
     {
         if (!ShowWeeklyDaySelector)
@@ -533,7 +522,7 @@ else
             return;
         }
 
-        var defaults = GetDefaultWeeklyDays(_frequencyPerDay);
+        var defaults = MedicationScheduleDefaults.BuildDefaultWeeklyDays(_frequencyPerDay);
         if (_weeklyDays.Count > _frequencyPerDay)
         {
             _weeklyDays = _weeklyDays.Take(_frequencyPerDay).ToList();
@@ -545,22 +534,6 @@ else
         }
 
         ReorderWeeklyPairs();
-    }
-
-    private static List<int> GetDefaultWeeklyDays(int frequency)
-    {
-        var mondayBasedDays = new[]
-        {
-            (int)DayOfWeek.Monday,
-            (int)DayOfWeek.Tuesday,
-            (int)DayOfWeek.Wednesday,
-            (int)DayOfWeek.Thursday,
-            (int)DayOfWeek.Friday,
-            (int)DayOfWeek.Saturday,
-            (int)DayOfWeek.Sunday
-        };
-
-        return mondayBasedDays.Take(frequency).ToList();
     }
 
     private string GetWeeklyDayValue(int index)
@@ -595,17 +568,12 @@ else
 
         var orderedPairs = _weeklyDays
             .Select((day, index) => new { Day = day, Time = _scheduledTimeTexts[index], Index = index })
-            .OrderBy(pair => GetWeekdayOrder(pair.Day))
+            .OrderBy(pair => MedicationScheduleDefaults.GetMondayBasedWeekdayOrder(pair.Day))
             .ThenBy(pair => pair.Index)
             .ToList();
 
         _weeklyDays = orderedPairs.Select(pair => pair.Day).ToList();
         _scheduledTimeTexts = orderedPairs.Select(pair => pair.Time).ToList();
-    }
-
-    private static int GetWeekdayOrder(int day)
-    {
-        return day == (int)DayOfWeek.Sunday ? 6 : day - 1;
     }
 
     private void OnHourChanged(int index, ChangeEventArgs args)
@@ -989,17 +957,6 @@ else
         Navigation.NavigateTo(_item.PdfUrl, true);
     }
 
-    private static string FormatPackSize(string? packSize)
-    {
-        if (string.IsNullOrWhiteSpace(packSize))
-        {
-            return "-";
-        }
-
-        var digits = new string(packSize.Where(char.IsDigit).ToArray());
-        return string.IsNullOrWhiteSpace(digits) ? packSize.Trim() : digits;
-    }
-
     private async Task<HomePharmacyItemDto?> SaveMedicationNotesAsync()
     {
         if (_item is null)
@@ -1037,19 +994,6 @@ else
         _showExpiredModal = false;
     }
 
-    
-    private static IEnumerable<string> SplitWarnings(string? warnings)
-    {
-        if (string.IsNullOrWhiteSpace(warnings))
-        {
-            return [];
-        }
-
-        return warnings
-            .Split(['\n', ';', '.'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(x => x.EndsWith('.') ? x : $"{x}.")
-            .Where(x => !string.IsNullOrWhiteSpace(x));
-    }
 }
 
 
