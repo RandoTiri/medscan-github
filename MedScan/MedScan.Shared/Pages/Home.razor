@@ -417,7 +417,7 @@ else
 
         _familyMedicationCards.Clear();
         _familyMedicationCards.AddRange(allMedications
-            .Where(tuple => tuple.Profile.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase))
+            .Where(tuple => ProfileTypeMapper.IsPatient(tuple.Profile.Type))
             .Where(tuple => tuple.Medication.IsActive)
             .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile, tuple.Medication, tuple.RemainingQuantity, tuple.ExpiresOn))
             .OrderBy(card => card.NextTimeSortKey)
@@ -428,7 +428,7 @@ else
 
     private static ProfileSummary? ResolveMainProfile(IReadOnlyList<ProfileSummary> profiles)
     {
-        return profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase))
+        return profiles.FirstOrDefault(p => ProfileTypeMapper.IsMainUser(p.Type))
                ?? profiles.FirstOrDefault();
     }
 

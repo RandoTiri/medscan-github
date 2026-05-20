@@ -291,7 +291,7 @@ else
                 return;
             }
 
-            _isPatientProfile = profile.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase);
+            _isPatientProfile = ProfileTypeMapper.IsPatient(profile.Type);
 
             _patient = new Patient
             {

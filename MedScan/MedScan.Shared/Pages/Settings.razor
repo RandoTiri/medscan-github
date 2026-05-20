@@ -169,11 +169,11 @@ else
         var profiles = await ProfileService.GetMyProfilesAsync();
 
         _mainProfileId = AuthService.CurrentUser?.DefaultProfileId
-            ?? profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase))?.Id
+            ?? profiles.FirstOrDefault(p => ProfileTypeMapper.IsMainUser(p.Type))?.Id
             ?? 0;
 
         var profile = profiles.FirstOrDefault(p => p.Id == _mainProfileId)
-            ?? profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase));
+            ?? profiles.FirstOrDefault(p => ProfileTypeMapper.IsMainUser(p.Type));
 
         _mainUserProfile = profile is null
             ? null

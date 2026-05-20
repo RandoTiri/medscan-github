@@ -282,11 +282,11 @@ else
         var profiles = await ProfileService.GetMyProfilesAsync();
 
         _mainProfileId = AuthService.CurrentUser?.DefaultProfileId
-            ?? profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase))?.Id
+            ?? profiles.FirstOrDefault(p => ProfileTypeMapper.IsMainUser(p.Type))?.Id
             ?? 0;
 
         var mainProfile = profiles.FirstOrDefault(p => p.Id == _mainProfileId)
-            ?? profiles.FirstOrDefault(p => p.Type.Equals("Ise", StringComparison.OrdinalIgnoreCase));
+            ?? profiles.FirstOrDefault(p => ProfileTypeMapper.IsMainUser(p.Type));
 
         _mainUserProfile = mainProfile is null
             ? null
@@ -299,7 +299,7 @@ else
             };
 
         CareReceivers = profiles
-            .Where(p => p.Type.Equals("Patsient", StringComparison.OrdinalIgnoreCase))
+            .Where(p => ProfileTypeMapper.IsPatient(p.Type))
             .Select(p => new Patient
             {
                 Id = p.Id,
