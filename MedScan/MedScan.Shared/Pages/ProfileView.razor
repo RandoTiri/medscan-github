@@ -506,15 +506,12 @@ else
 
     private bool ApplyBirthDateFromPicker()
     {
-        var result = BirthDateRules.BuildFromParts(_birthDay, _birthMonth, _birthYear, isRequired: false);
-        if (result.Success)
-        {
-            _editModel.BirthDate = result.BirthDate;
-            return true;
-        }
-
-        _errorMessage = BirthDateRules.GetErrorMessage(result.Status);
-        return false;
+        return BirthDateRules.TryApplyOptionalFromParts(
+            _birthDay,
+            _birthMonth,
+            _birthYear,
+            birthDate => _editModel.BirthDate = birthDate,
+            errorMessage => _errorMessage = errorMessage);
     }
 
     private void GoBack() => Navigation.NavigateTo("/profile");

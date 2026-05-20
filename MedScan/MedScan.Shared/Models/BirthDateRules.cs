@@ -1,6 +1,7 @@
-using MedScan.Shared.Models.Enums;
+﻿using MedScan.Shared.Models.Enums;
 
 namespace MedScan.Shared.Models;
+
 
 public readonly record struct BirthDateBuildResult(
     bool Success,
@@ -51,6 +52,22 @@ public static class BirthDateRules {
         } catch {
             return new BirthDateBuildResult(false,null,BirthDateBuildStatus.InvalidValue);
         }
+    }
+
+    public static bool TryApplyOptionalFromParts(
+        string? day,
+        string? month,
+        string? year,
+        Action<DateOnly?> applyBirthDate,
+        Action<string>? applyError = null) {
+        var result = BuildFromParts(day,month,year,isRequired: false);
+        if (result.Success) {
+            applyBirthDate(result.BirthDate);
+            return true;
+        }
+
+        applyError?.Invoke(GetErrorMessage(result.Status));
+        return false;
     }
 
     public static string GetErrorMessage(BirthDateBuildStatus status) {

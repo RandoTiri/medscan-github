@@ -247,13 +247,11 @@ else
 
     private bool ApplyBirthDateFromPicker()
     {
-        var result = BirthDateRules.BuildFromParts(_birthDay, _birthMonth, _birthYear, isRequired: false);
-        if (result.Success)
-        {
-            newPatient.BirthDate = result.BirthDate;
-        }
-
-        return result.Success;
+        return BirthDateRules.TryApplyOptionalFromParts(
+            _birthDay,
+            _birthMonth,
+            _birthYear,
+            birthDate => newPatient.BirthDate = birthDate);
     }
 
     private async Task LoadPatientsAsync()
