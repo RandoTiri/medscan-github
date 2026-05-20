@@ -26,9 +26,9 @@ public sealed class ThemeService(IJSRuntime jsRuntime) : IThemeService
             IsInitialized = true;
             OnChanged?.Invoke();
         }
-        catch
+        catch (Exception ex)
         {
-            // Best effort. If JS isn't available yet, component can try again later.
+            SharedDiagnostics.Log("THEME INIT", ex);
         }
     }
 
@@ -43,9 +43,9 @@ public sealed class ThemeService(IJSRuntime jsRuntime) : IThemeService
             await ApplyThemeAsync();
             IsInitialized = true;
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore JS failures to keep UI responsive.
+            SharedDiagnostics.Log("THEME SET", ex);
         }
 
         OnChanged?.Invoke();

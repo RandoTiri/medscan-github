@@ -109,8 +109,9 @@ public sealed class ScannerFlowService(
                 UserMedicationId = saved.Id
             };
         }
-        catch
+        catch (Exception ex)
         {
+            SharedDiagnostics.Log("SCANNER ADD MEDICATION", ex);
             return new AddMedicationToScheduleResult
             {
                 Message = "Ravimi lisamine ebaonnestus. Proovi uuesti."

@@ -175,7 +175,8 @@ public class AuthService(HttpClient httpClient,ITokenStore tokenStore) : IAuthSe
     private async Task<UserInfo?> GetCurrentUserAsync() {
         try {
             return await httpClient.GetFromJsonAsync<UserInfo>("/api/auth/me",JsonOptions);
-        } catch {
+        } catch (Exception ex) {
+            SharedDiagnostics.Log("GET CURRENT USER",ex);
             return null;
         }
     }

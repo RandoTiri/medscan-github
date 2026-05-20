@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace MedScan.Shared.Services;
 
 internal static class AuthExceptionMessageBuilder {
@@ -15,7 +13,6 @@ internal static class AuthExceptionMessageBuilder {
         return $"{operation} ebaõnnestus. Proovi uuesti.";
     }
 
-    public static void Log(string operation,string baseAddress,Exception exception) {
-        Debug.WriteLine($"{operation} ERROR | BaseAddress={baseAddress} | {exception}");
-    }
+    public static void Log(string operation,string baseAddress,Exception exception) =>
+        SharedDiagnostics.Log(operation,$"BaseAddress={baseAddress}",exception);
 }

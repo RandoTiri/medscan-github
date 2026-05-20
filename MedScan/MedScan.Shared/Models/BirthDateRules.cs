@@ -49,7 +49,7 @@ public static class BirthDateRules {
             return birthDate > AppDate.Today
                 ? new BirthDateBuildResult(false,null,BirthDateBuildStatus.FutureDate)
                 : new BirthDateBuildResult(true,birthDate,BirthDateBuildStatus.Valid);
-        } catch {
+        } catch (ArgumentOutOfRangeException) {
             return new BirthDateBuildResult(false,null,BirthDateBuildStatus.InvalidValue);
         }
     }
