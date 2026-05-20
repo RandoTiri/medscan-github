@@ -1,6 +1,9 @@
 namespace MedScan.Shared.Models;
 
 public static class MedicationScheduleDefaults {
+    public const int MinDailyFrequency = 1;
+    public const int MaxDailyFrequency = 24;
+
     private static readonly int[] MondayBasedDays =
     [
         (int)DayOfWeek.Monday,

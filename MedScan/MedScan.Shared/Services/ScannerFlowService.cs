@@ -35,7 +35,7 @@ public sealed class ScannerFlowService(
         return barcodeScannerService.OpenAppSettingsAsync();
     }
 
-    public Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query, int limit = 20, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query, int limit = MedicationCatalogClient.DefaultSearchLimit, CancellationToken cancellationToken = default)
     {
         return medicationCatalogClient.SearchByNameAsync(query, limit, cancellationToken);
     }
@@ -54,9 +54,12 @@ public sealed class ScannerFlowService(
             return new AddMedicationToScheduleResult { Message = "Ravimi ID on vigane." };
         }
 
-        if (frequencyPerDay <= 0)
+        if (frequencyPerDay < MedicationScheduleDefaults.MinDailyFrequency || frequencyPerDay > MedicationScheduleDefaults.MaxDailyFrequency)
         {
-            return new AddMedicationToScheduleResult { Message = "Sagedus peab olema vahemikus 1-24." };
+            return new AddMedicationToScheduleResult
+            {
+                Message = $"Sagedus peab olema vahemikus {MedicationScheduleDefaults.MinDailyFrequency}-{MedicationScheduleDefaults.MaxDailyFrequency}."
+            };
         }
 
         if (scheduledTimes.Count == 0)
@@ -91,7 +94,7 @@ public sealed class ScannerFlowService(
         {
             ProfileId = profileId.Value,
             MedicationId = medicationId,
-            FrequencyPerDay = Math.Clamp(frequencyPerDay, 1, 24),
+            FrequencyPerDay = Math.Clamp(frequencyPerDay, MedicationScheduleDefaults.MinDailyFrequency, MedicationScheduleDefaults.MaxDailyFrequency),
             ScheduledTimes = normalizedTimes,
             ExpiresOn = expiresOn,
             RemindersEnabled = remindersEnabled,

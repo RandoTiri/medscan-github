@@ -6,6 +6,10 @@ namespace MedScan.Shared.Services;
 
 public sealed class MedicationCatalogClient(HttpClient httpClient) : IMedicationCatalogClient
 {
+    public const int DefaultSearchLimit = 20;
+    private const int MinSearchLimit = 1;
+    private const int MaxSearchLimit = 50;
+
     public async Task<MedicationLookupResult?> FindByBarcodeAsync(string barcode, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(barcode))
@@ -26,14 +30,14 @@ public sealed class MedicationCatalogClient(HttpClient httpClient) : IMedication
         return await response.Content.ReadFromJsonAsync<MedicationLookupResult>(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query, int limit = 20, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query, int limit = DefaultSearchLimit, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(query))
         {
             return [];
         }
 
-        var url = $"api/medication-catalog/search?query={Uri.EscapeDataString(query.Trim())}&limit={Math.Clamp(limit, 1, 50)}";
+        var url = $"api/medication-catalog/search?query={Uri.EscapeDataString(query.Trim())}&limit={Math.Clamp(limit, MinSearchLimit, MaxSearchLimit)}";
         var results = await httpClient.GetFromJsonAsync<List<MedicationLookupResult>>(url, cancellationToken);
         return results ?? [];
     }

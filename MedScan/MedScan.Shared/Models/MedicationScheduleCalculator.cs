@@ -5,6 +5,7 @@ namespace MedScan.Shared.Models;
 public static class MedicationScheduleCalculator
 {
     private const int MonthlyCycleDays = 30;
+    private const int NextOccurrenceSearchHorizonDays = 370;
 
     public static List<MedicationScheduleOccurrence> GetOccurrencesForDate(
         MedicationScheduleUnit unit,
@@ -42,7 +43,7 @@ public static class MedicationScheduleCalculator
         }
 
         var startSearchDate = DateOnly.FromDateTime(fromLocal);
-        for (var i = 0; i < 370; i++)
+        for (var i = 0; i < NextOccurrenceSearchHorizonDays; i++)
         {
             var date = startSearchDate.AddDays(i);
             var occurrences = GetOccurrencesForDate(unit, frequency, startDate, scheduledTimes, weeklyDays, date)
