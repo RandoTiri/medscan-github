@@ -2,8 +2,7 @@ using MedScan.Shared.Models.Enums;
 
 namespace MedScan.Shared.DTOs.Medication;
 
-public sealed class AddMedicationDto
-{
+public sealed class AddMedicationDto {
     public int ProfileId { get; set; }
     public int MedicationId { get; set; }
     public int FrequencyPerDay { get; set; }

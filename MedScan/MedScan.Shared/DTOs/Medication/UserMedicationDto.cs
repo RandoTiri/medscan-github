@@ -2,8 +2,7 @@ using MedScan.Shared.Models.Enums;
 
 namespace MedScan.Shared.DTOs.Medication;
 
-public sealed class UserMedicationDto
-{
+public sealed class UserMedicationDto {
     public int Id { get; set; }
     public int ProfileId { get; set; }
     public string ProfileName { get; set; } = string.Empty;

@@ -1,7 +1,6 @@
 namespace MedScan.Shared.DTOs.HomePharmacy;
 
-public sealed class HomePharmacyItemDto
-{
+public sealed class HomePharmacyItemDto {
     public int Id { get; set; }
     public int ProfileId { get; set; }
     public string ProfileName { get; set; } = string.Empty;

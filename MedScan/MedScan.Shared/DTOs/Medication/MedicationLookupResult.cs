@@ -1,7 +1,6 @@
 namespace MedScan.Shared.DTOs.Medication;
 
-public sealed class MedicationLookupResult
-{
+public sealed class MedicationLookupResult {
     public int Id { get; set; }
     public string Barcode { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;

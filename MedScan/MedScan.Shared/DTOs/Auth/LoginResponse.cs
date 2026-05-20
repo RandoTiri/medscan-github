@@ -2,8 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace MedScan.Shared.DTOs.Auth;
 
-public class LoginResponse
-{
+public class LoginResponse {
     [JsonPropertyName("tokenType")]
     public string TokenType { get; set; } = string.Empty;
 
