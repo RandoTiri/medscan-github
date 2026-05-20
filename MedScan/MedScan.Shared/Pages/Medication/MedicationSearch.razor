@@ -1,11 +1,10 @@
-@page "/home-pharmacy/search"
+﻿@page "/home-pharmacy/search"
+@inherits MedScan.Shared.Pages.Medication.MedicationScannerComponentBase
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Models
 @using MedScan.Shared.Services
 @using Microsoft.AspNetCore.Components.Forms
-@inject NavigationManager Navigation
 @inject IAuthService AuthService
-@inject IScannerFlowService ScannerFlowService
 @inject IHomePharmacyService HomePharmacyService
 
 <PageTitle>Lisa ravim</PageTitle>
@@ -37,7 +36,7 @@ else
         <section class="search-card">
             <div class="manual-search-bar">
                 <input class="field-input"
-                       placeholder="Otsi ravimit nime järgi"
+                       placeholder="Otsi ravimit nime jÃ¤rgi"
                        value="@_query"
                        @oninput="OnQueryInputAsync" />
                 <button class="search-btn"
@@ -199,35 +198,10 @@ else
 
     private async Task BackToScannerAsync()
     {
-        var scanResult = await ScannerFlowService.ScanAsync();
-
-        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
-        {
-            var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}";
-            if (_targetProfileId > 0)
-            {
-                route += $"?profileId={_targetProfileId}";
-            }
-            if (scanResult.ExpirationDate is DateOnly expirationDate)
-            {
-                route += route.Contains('?')
-                    ? $"&exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}"
-                    : $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
-            }
-            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
-            {
-                route += route.Contains('?')
-                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
-                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
-            }
-
-            Navigation.NavigateTo(route, replace: true);
-            return;
-        }
-
-        if (scanResult.Status == BarcodeScanStatus.Canceled)
-        {
-            Navigation.NavigateTo("/home-pharmacy", replace: true);
-        }
+        await RunMedicationScannerAsync(
+            _targetProfileId > 0 ? _targetProfileId : null,
+            replace: true,
+            canceledRoute: "/home-pharmacy",
+            navigateOnManualSearch: false);
     }
 }

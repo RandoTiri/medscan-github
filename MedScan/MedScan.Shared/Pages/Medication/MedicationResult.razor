@@ -173,8 +173,8 @@ else
             _isLoading = true;
             try
             {
-                _expirationDate = ParseExpirationQuery(ExpirationQuery);
-                _batchNumber = ParseBatchQuery(BatchQuery);
+                _expirationDate = MedicationScanQueryParser.ParseExpiration(ExpirationQuery);
+                _batchNumber = MedicationScanQueryParser.ParseBatch(BatchQuery);
                 _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
                 if (_medication == null)
                 {
@@ -254,21 +254,6 @@ else
     private void BackToSearch()
     {
         Navigation.NavigateTo($"/home-pharmacy/search?ProfileId={ProfileId}");
-    }
-
-    private static DateOnly? ParseExpirationQuery(string? query)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return null;
-        }
-
-        return DateOnly.TryParse(query, out var parsed) ? parsed : null;
-    }
-
-    private static string? ParseBatchQuery(string? query)
-    {
-        return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
     }
 
 }

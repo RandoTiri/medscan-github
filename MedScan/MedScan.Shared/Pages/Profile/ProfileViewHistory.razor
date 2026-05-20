@@ -101,9 +101,9 @@ else
 
     private bool _isReady;
     private string? _errorMessage;
-    private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
-    private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
-    private readonly List<int> _years = Enumerable.Range(1900, AppDate.CurrentYear - 1900 + 1).Reverse().ToList();
+    private readonly IReadOnlyList<int> _days = BirthDatePickerOptions.Days;
+    private readonly IReadOnlyList<int> _months = BirthDatePickerOptions.Months;
+    private readonly IReadOnlyList<int> _years = BirthDatePickerOptions.Years;
     private int _selectedDay = AppDate.Today.Day;
     private int _selectedMonth = AppDate.Today.Month;
     private int _selectedYear = AppDate.Today.Year;
@@ -137,10 +137,10 @@ else
                 {
                     var localTime = entry.ScheduledTime.ToLocalTime();
                     return new HistoryItem(
-                        DisplayName: BuildDisplayName(entry.MedicationName, entry.Strength),
+                        DisplayName: MedicationTextFormatter.BuildDisplayName(entry.MedicationName, entry.Strength),
                         ScheduleText: $"{selectedDate:dd.MM.yyyy} · {localTime:HH:mm}",
-                        StatusLabel: entry.Status == DoseStatusEnum.Done ? "Võetud" : "Võtmata",
-                        StatusCss: entry.Status == DoseStatusEnum.Done ? "status-done" : "status-missed",
+                        StatusLabel: MedicationTextFormatter.GetDoseStatusLabel(entry.Status),
+                        StatusCss: MedicationTextFormatter.GetDoseStatusCss(entry.Status),
                         SortKey: localTime.TimeOfDay);
                 })
                 .OrderBy(item => item.SortKey)
@@ -150,16 +150,6 @@ else
         {
             _errorMessage = "Manustamise logi laadimine ebaõnnestus.";
         }
-    }
-
-    private static string BuildDisplayName(string medicationName, string? strength)
-    {
-        if (string.IsNullOrWhiteSpace(strength) || medicationName.Contains(strength, StringComparison.OrdinalIgnoreCase))
-        {
-            return medicationName;
-        }
-
-        return $"{medicationName} {strength}";
     }
 
     private void GoBack()

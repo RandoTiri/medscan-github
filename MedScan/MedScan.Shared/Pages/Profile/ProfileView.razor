@@ -1,4 +1,5 @@
 @page "/profile/view/{ProfileId:int}"
+@inherits MedScan.Shared.Pages.Medication.MedicationScannerComponentBase
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
@@ -6,8 +7,6 @@
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
-@inject IScannerFlowService ScannerFlowService
-@inject NavigationManager Navigation
 
 <PageTitle>Profiili vaade</PageTitle>
 
@@ -251,9 +250,9 @@ else
     private Patient? _patient;
     private readonly List<DoseEntry> _entries = [];
     private readonly List<UserMedicationDto> _profileMedications = [];
-    private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
-    private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
-    private readonly List<int> _years = Enumerable.Range(1900, AppDate.CurrentYear - 1900 + 1).Reverse().ToList();
+    private readonly IReadOnlyList<int> _days = BirthDatePickerOptions.Days;
+    private readonly IReadOnlyList<int> _months = BirthDatePickerOptions.Months;
+    private readonly IReadOnlyList<int> _years = BirthDatePickerOptions.Years;
     private string _birthDay = string.Empty;
     private string _birthMonth = string.Empty;
     private string _birthYear = string.Empty;
@@ -354,7 +353,7 @@ else
                 {
                     return m.TodayDoses.Select(dose => new DoseEntry(
                         dose.ScheduledTime,
-                        BuildDisplayName(m),
+                        MedicationTextFormatter.BuildDisplayName(m),
                         m,
                         dose.Status));
                 }
@@ -366,7 +365,7 @@ else
 
                 return m.ScheduledTimes.Select(time => new DoseEntry(
                     time,
-                    BuildDisplayName(m),
+                    MedicationTextFormatter.BuildDisplayName(m),
                     m,
                     DoseStatusEnum.Pending));
             })
@@ -375,27 +374,9 @@ else
             .ToList();
     }
 
-    private static string BuildDisplayName(UserMedicationDto medication)
-    {
-        var name = medication.MedicationName?.Trim() ?? string.Empty;
-        var strength = medication.Strength?.Trim();
-
-        if (string.IsNullOrWhiteSpace(strength) || name.Contains(strength, StringComparison.OrdinalIgnoreCase))
-        {
-            return name;
-        }
-
-        return $"{name} {strength}";
-    }
-
     private static StatusView GetStatusView(DoseStatusEnum? status)
     {
-        return status switch
-        {
-            DoseStatusEnum.Done => new StatusView("Võetud", "status-done", ""),
-            DoseStatusEnum.Missed or DoseStatusEnum.Skipped => new StatusView("Võtmata", "status-missed", ""),
-            _ => new StatusView("Ootel", "status-pending", "")
-        };
+        return new StatusView(MedicationTextFormatter.GetDoseStatusLabel(status),MedicationTextFormatter.GetDoseStatusCss(status),string.Empty);
     }
 
     private async Task SaveChangesAsync()
@@ -509,24 +490,29 @@ else
 
     private void GoBack() => Navigation.NavigateTo("/profile");
 
-    private async Task StartScannerAsync()
+    protected override Task OnBeforeScannerAsync()
     {
         _errorMessage = null;
         _medicationCheckMessage = null;
 
-        var scanResult = await ScannerFlowService.ScanAsync();
-        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
-        {
-            await VerifyMedicationByBarcodeAsync(scanResult.Barcode);
-        }
-        else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
-        {
-            OpenManualSearch();
-        }
-        else if (scanResult.Status == BarcodeScanStatus.PermissionDenied)
-        {
-            _errorMessage = "Skänneri kasutamiseks on vaja kaameraluba.";
-        }
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnSuccessfulScanAsync(BarcodeScanResult scanResult, int? targetProfileId, bool replace)
+    {
+        await VerifyMedicationByBarcodeAsync(scanResult.Barcode ?? string.Empty);
+    }
+
+    protected override Task OnManualSearchScanAsync(int? targetProfileId, bool replace)
+    {
+        OpenManualSearch();
+        return Task.CompletedTask;
+    }
+
+    protected override Task OnPermissionDeniedScanAsync()
+    {
+        _errorMessage = "Skänneri kasutamiseks on vaja kaameraluba.";
+        return Task.CompletedTask;
     }
 
     private void OpenTodayOverview()

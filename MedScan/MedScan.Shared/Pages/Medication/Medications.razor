@@ -1,14 +1,13 @@
 @page "/home-pharmacy"
+@inherits MedScan.Shared.Pages.Medication.MedicationScannerComponentBase
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.Models
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.Models.Enums
 @using MedScan.Shared.Services
-@inject NavigationManager Navigation
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IHomePharmacyService HomePharmacyService
-@inject IScannerFlowService ScannerFlowService
 @inject IMedicationService MedicationService
 
 <PageTitle>Ravimid</PageTitle>
@@ -94,7 +93,7 @@ else
                                 <div class="top-line">
                                     <h2>@med.MedicationName</h2>
                                 </div>
-                                <p class="meta-line">@FormatSchedule(med)</p>
+                                <p class="meta-line">@MedicationTextFormatter.FormatSchedule(med)</p>
                                 @if (!string.IsNullOrWhiteSpace(med.Notes))
                                 {
                                     <p class="note-line">@med.Notes</p>
@@ -141,7 +140,7 @@ else
                                 <p class="meta-line">@item.Strength</p>
                             }
 
-                            <p class="quantity-line">@BuildShelfLifeLabel(item.ExpiresOn)</p>
+                            <p class="quantity-line">@MedicationTextFormatter.FormatShelfLife(item.ExpiresOn)</p>
 
                             @if (item.PackageNumber is not null)
                             {
@@ -337,57 +336,9 @@ else
             : 0;
     }
 
-    private static string BuildExpirationLabel(DateOnly expiresOn)
-    {
-        var today = AppDate.Today;
-        var daysLeft = expiresOn.DayNumber - today.DayNumber;
-
-        if (daysLeft >= 0 && daysLeft < 30)
-        {
-            return $"Aegub: {expiresOn:dd.MM.yyyy} (aegub {daysLeft} päeva pärast)";
-        }
-
-        return $"Aegub: {expiresOn:dd.MM.yyyy}";
-    }
-
     private async Task OpenAddPageAsync()
     {
-        var scanResult = await ScannerFlowService.ScanAsync();
-
-        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
-        {
-            var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}";
-            if (_selectedProfileId > 0)
-            {
-                route += $"?profileId={_selectedProfileId}";
-            }
-            if (scanResult.ExpirationDate is DateOnly expirationDate)
-            {
-                route += route.Contains('?')
-                    ? $"&exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}"
-                    : $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
-            }
-            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
-            {
-                route += route.Contains('?')
-                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
-                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
-            }
-
-            Navigation.NavigateTo(route);
-            return;
-        }
-
-        if (scanResult.Status == BarcodeScanStatus.ManualSearch)
-        {
-            if (_selectedProfileId > 0)
-            {
-                Navigation.NavigateTo($"/home-pharmacy/search?profileId={_selectedProfileId}");
-                return;
-            }
-
-            Navigation.NavigateTo("/home-pharmacy/search");
-        }
+        await RunMedicationScannerAsync(_selectedProfileId > 0 ? _selectedProfileId : null);
     }
 
     private void OpenDetails(HomePharmacyItemDto item)
@@ -420,39 +371,6 @@ else
         _showSchedule = !_showSchedule;
     }
 
-    private string FormatSchedule(UserMedicationDto med)
-    {
-        var unitSuffix = med.ScheduleUnit switch
-        {
-            MedicationScheduleUnit.Day => "päevas",
-            MedicationScheduleUnit.Week => "nädalas",
-            MedicationScheduleUnit.Month => "kuus",
-            _ => ""
-        };
-
-        return $"{med.FrequencyPerDay} korda {unitSuffix}";
-    }
-
-    private static string BuildShelfLifeLabel(DateOnly? expiresOn)
-    {
-        return expiresOn is DateOnly date
-            ? $"Säilimisaeg: {date:dd.MM.yyyy}"
-            : "Säilimisaeg puudub";
-    }
-
-    private static string GetMedicationInitial(string? medicationName)
-    {
-        if (string.IsNullOrWhiteSpace(medicationName))
-        {
-            return "R";
-        }
-
-        var firstLetter = medicationName.Trim().FirstOrDefault(char.IsLetter);
-        return firstLetter == default
-            ? "R"
-            : char.ToUpperInvariant(firstLetter).ToString();
-    }
-
     private static bool IsExpired(DateOnly? expiresOn)
     {
         if (expiresOn is not DateOnly expiryDate)
@@ -463,4 +381,3 @@ else
         return AppDate.IsExpired(expiryDate);
     }
 }
-

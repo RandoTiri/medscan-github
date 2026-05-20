@@ -666,7 +666,7 @@ else
                     WeeklyDays = _weeklyDays.ToList(),
                     StartDate = AppDate.Today,
                     RemindersEnabled = _remindersEnabled,
-                    Notes = NormalizeNotes(_editableNotes)
+                    Notes = MedicationTextFormatter.NormalizeNote(_editableNotes)
                 });
 
                 var updatedItem = await SaveMedicationNotesAsync();
@@ -696,7 +696,7 @@ else
                 WeeklyDays = _weeklyDays.ToList(),
                 StartDate = _schedule.StartDate,
                 RemindersEnabled = _remindersEnabled,
-                Notes = NormalizeNotes(_editableNotes)
+                Notes = MedicationTextFormatter.NormalizeNote(_editableNotes)
             });
 
             if (updated is null)
@@ -805,7 +805,7 @@ else
                 BatchNumber = _item.BatchNumber,
                 ExpiresOn = _item.ExpiresOn,
                 Quantity = _editableQuantity,
-                Notes = NormalizeNotes(_editableNotes)
+                Notes = MedicationTextFormatter.NormalizeNote(_editableNotes)
             });
 
             if (updated is null)
@@ -868,7 +868,7 @@ else
             {
                 ProfileId = _item.ProfileId,
                 Quantity = 1,
-                Notes = NormalizeNotes(_editableNotes),
+                Notes = MedicationTextFormatter.NormalizeNote(_editableNotes),
                 ConfirmLastUnit = true
             });
 
@@ -901,7 +901,7 @@ else
         }
     }
 
-    private bool NotesUnchanged => string.Equals(NormalizeNotes(_editableNotes), NormalizeNotes(_item?.Notes), StringComparison.Ordinal);
+    private bool NotesUnchanged => string.Equals(MedicationTextFormatter.NormalizeNote(_editableNotes), MedicationTextFormatter.NormalizeNote(_item?.Notes), StringComparison.Ordinal);
 
     private async Task SaveNotesAsync()
     {
@@ -970,13 +970,8 @@ else
             BatchNumber = _item.BatchNumber,
             ExpiresOn = _item.ExpiresOn,
             Quantity = _item.Quantity,
-            Notes = NormalizeNotes(_editableNotes)
+            Notes = MedicationTextFormatter.NormalizeNote(_editableNotes)
         });
-    }
-
-    private static string? NormalizeNotes(string? notes)
-    {
-        return string.IsNullOrWhiteSpace(notes) ? null : notes.Trim();
     }
 
     private static bool IsExpired(DateOnly? expiresOn)

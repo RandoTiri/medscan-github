@@ -1,38 +1,32 @@
 @page "/"
+@inherits MedScan.Shared.Pages.Medication.MedicationScannerComponentBase
 @implements IDisposable
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
 @inject IHomePharmacyService HomePharmacyService
 @inject IMedicationStatusEvents MedicationStatusEvents
-@inject IScannerFlowService ScannerFlowService
 @inject INotificationInboxService NotificationInboxService
-@inject NavigationManager Navigation
 
 <PageTitle>Avaleht</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="mobile-container">
         <header class="header-section">
             <div class="header-top">
-                <div class="header-date">@AppDate.Now.ToString("dddd, d. MMMM", new System.Globalization.CultureInfo("et-EE"))</div>
+                <div class="header-date">@AppDate.Now.ToString("dddd, d. MMMM",new System.Globalization.CultureInfo("et-EE"))</div>
                 <div class="header-icons">
                     <button type="button" class="notification-icon" title="Teavitused" @onclick="OpenNotificationCenterAsync">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                         </svg>
-                        @if (_hasUnrespondedNotifications)
-                        {
+                        @if (_hasUnrespondedNotifications) {
                             <span class="notification-dot"></span>
                         }
                     </button>
@@ -88,14 +82,10 @@ else
                 <a href="javascript:void(0)" @onclick="OpenMyMedicines">Kõik</a>
             </div>
 
-            @if (_myMedicationCards.Count == 0)
-            {
+            @if (_myMedicationCards.Count == 0) {
                 <div class="empty-card">Täna pole veel ravimeid lisatud.</div>
-            }
-            else
-            {
-                @foreach (var card in _myMedicationCards)
-                {
+            } else {
+                @foreach (var card in _myMedicationCards) {
                     <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
                         <div class="status-box @card.StatusCss">
                             <div class="med-icon">
@@ -116,12 +106,10 @@ else
                         </div>
                         <div class="med-info">
                             <h3>@card.Name</h3>
-                            @if (card.ExpiresOn is DateOnly expiresOn && IsExpiredDate(expiresOn))
-                            {
+                            @if (card.ExpiresOn is DateOnly expiresOn && IsExpiredDate(expiresOn)) {
                                 <p class="expired-date">Aegunud: @expiresOn.ToString("dd.MM.yyyy")</p>
                             }
-                            @if (!string.IsNullOrWhiteSpace(card.Note))
-                            {
+                            @if (!string.IsNullOrWhiteSpace(card.Note)) {
                                 <p class="med-note">💬 @card.Note</p>
                             }
                             <div class="time-chip-row">
@@ -150,14 +138,10 @@ else
                 <h2>Hooldatavate tänane raviskeem</h2>
             </div>
 
-            @if (_familyMedicationCards.Count == 0)
-            {
+            @if (_familyMedicationCards.Count == 0) {
                 <div class="empty-card">Hooldatavate ravimeid täna ei leitud.</div>
-            }
-            else
-            {
-                @foreach (var card in _familyMedicationCards)
-                {
+            } else {
+                @foreach (var card in _familyMedicationCards) {
                     <button type="button" class="family-dose-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
                         <div class="status-box @card.StatusCss">
                             <div class="med-icon">
@@ -179,12 +163,10 @@ else
                         <div class="family-dose-info">
                             <h3>@card.ProfileName</h3>
                             <p class="family-med-name">@card.Name</p>
-                            @if (card.ExpiresOn is DateOnly expiresOn && IsExpiredDate(expiresOn))
-                            {
+                            @if (card.ExpiresOn is DateOnly expiresOn && IsExpiredDate(expiresOn)) {
                                 <p class="expired-date">Aegunud: @expiresOn.ToString("dd.MM.yyyy")</p>
                             }
-                            @if (!string.IsNullOrWhiteSpace(card.Note))
-                            {
+                            @if (!string.IsNullOrWhiteSpace(card.Note)) {
                                 <p class="family-note">💬 @card.Note</p>
                             }
                             <div class="time-chip-row">
@@ -210,8 +192,7 @@ else
             }
         </main>
 
-        @if (_expiredDoseWarning is not null)
-        {
+        @if (_expiredDoseWarning is not null) {
             <div class="dose-modal-backdrop" @onclick="CloseExpiredDoseWarning"></div>
             <section class="expired-warning-modal" role="dialog" aria-modal="true" aria-label="Aegunud ravimi hoiatus">
                 <h3>Tähelepanu!</h3>
@@ -222,20 +203,17 @@ else
             </section>
         }
 
-        @if (_selectedDoseCard is not null)
-        {
+        @if (_selectedDoseCard is not null) {
             <div class="dose-modal-backdrop" @onclick="CloseDoseModal"></div>
             <section class="dose-modal" role="dialog" aria-modal="true" aria-label="Ravimi staatus">
                 <h3>@_selectedDoseCard.Name</h3>
                 <p class="dose-modal-time">Annuse aeg: @_selectedDoseCard.ScheduledTime.ToString("HH:mm")</p>
 
-                @if (!string.IsNullOrWhiteSpace(_modalErrorMessage))
-                {
+                @if (!string.IsNullOrWhiteSpace(_modalErrorMessage)) {
                     <div class="error-box">@_modalErrorMessage</div>
                 }
 
-                @if (_showEarlyDoneConfirmation && _earlyDoneMinutesRemaining > 0)
-                {
+                @if (_showEarlyDoneConfirmation && _earlyDoneMinutesRemaining > 0) {
                     <div class="confirm-box">
                         Kas oled kindel, et võtad ravimi praegu? Õige ajani on @FormatRemainingTime(_earlyDoneMinutesRemaining) veel aega.
                         <div class="confirm-box-actions">
@@ -243,12 +221,10 @@ else
                             <button type="button" class="confirm-no" disabled="@_isUpdatingDose" @onclick="CancelEarlyDoneConfirmation">Ei</button>
                         </div>
                     </div>
-                }
-
-                else if (_showLastUnitConfirmation)
-                {
+                } else if (_showLastUnitConfirmation) {
                     <div class="confirm-box">
-                        <strong>See on viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.</strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
+                        <strong>See on viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.
+                        </strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
                         <div class="confirm-box-actions">
                             <button type="button" class="confirm-yes" disabled="@_isUpdatingDose" @onclick="ConfirmLastUnitDoneAsync">Jah</button>
                             <button type="button" class="confirm-no" disabled="@_isUpdatingDose" @onclick="CancelLastUnitConfirmation">Ei</button>
@@ -256,13 +232,11 @@ else
                     </div>
                 }
 
-                @if (!string.IsNullOrWhiteSpace(_modalInfoMessage))
-                {
+                @if (!string.IsNullOrWhiteSpace(_modalInfoMessage)) {
                     <div class="success-box">@_modalInfoMessage</div>
                 }
 
-                @if (!_showEarlyDoneConfirmation && !_showLastUnitConfirmation && string.IsNullOrWhiteSpace(_modalInfoMessage))
-                {
+                @if (!_showEarlyDoneConfirmation && !_showLastUnitConfirmation && string.IsNullOrWhiteSpace(_modalInfoMessage)) {
                     <div class="dose-modal-actions">
                         <button type="button" class="status-btn status-btn-done @GetModalButtonCss(DoseStatusEnum.Done)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done)">Võetud</button>
                         <button type="button" class="status-btn status-btn-missed @GetModalButtonCss(DoseStatusEnum.Missed)" disabled="@_isUpdatingDose" @onclick="() => UpdateDoseStatusFromModalAsync(DoseStatusEnum.Missed)">Võtmata</button>
@@ -273,8 +247,7 @@ else
             </section>
         }
 
-        @if (_isNotificationCenterOpen)
-        {
+        @if (_isNotificationCenterOpen) {
             <div class="dose-modal-backdrop" @onclick="CloseNotificationCenter"></div>
             <section class="notification-center-modal" role="dialog" aria-modal="true" aria-label="Teavitused">
                 <div class="notification-center-header">
@@ -282,22 +255,17 @@ else
                     <button type="button" class="notification-center-close" @onclick="CloseNotificationCenter">Sulge</button>
                 </div>
 
-                @if (_notificationItems.Count == 0)
-                {
+                @if (_notificationItems.Count == 0) {
                     <p class="notification-empty">Varasemaid teavitusi pole.</p>
-                }
-                else
-                {
+                } else {
                     <div class="notification-list">
-                        @foreach (var item in _notificationItems)
-                        {
+                        @foreach (var item in _notificationItems) {
                             <article class="notification-item @(item.IsResponded ? "responded" : "pending")">
                                 <div class="notification-item-top">
                                     <strong>@(string.IsNullOrWhiteSpace(item.Title) ? "MedScan" : item.Title)</strong>
                                     <span>@item.OccurredAt.ToString("dd.MM")</span>
                                 </div>
-                                @if (!string.IsNullOrWhiteSpace(item.Description))
-                                {
+                                @if (!string.IsNullOrWhiteSpace(item.Description)) {
                                     <p>@item.Description</p>
                                 }
                                 <div class="notification-time-row">
@@ -342,14 +310,12 @@ else
     private readonly List<HomeMedicationCard> _myMedicationCards = [];
     private readonly List<FamilyMedicationCard> _familyMedicationCards = [];
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         MedicationStatusEvents.Changed += OnMedicationStatusChanged;
         NotificationInboxService.Changed += OnNotificationInboxChanged;
         await AuthService.InitializeAsync();
 
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -360,20 +326,18 @@ else
         _isReady = true;
     }
 
-    private async Task LoadHomeDataAsync()
-    {
+    private async Task LoadHomeDataAsync() {
         var profiles = await ProfileService.GetMyProfilesAsync();
         var mainProfile = ResolveMainProfile(profiles);
 
-        var allMedications = new List<(ProfileSummary Profile, UserMedicationDto Medication, int RemainingQuantity, DateOnly? ExpiresOn)>();
+        var allMedications = new List<(ProfileSummary Profile,UserMedicationDto Medication,int RemainingQuantity,DateOnly? ExpiresOn)>();
 
-        foreach (var profile in profiles)
-        {
+        foreach (var profile in profiles) {
             var schedule = await MedicationService.GetScheduleAsync(profile.Id);
             var homePharmacyItems = await HomePharmacyService.GetByProfileIdAsync(profile.Id);
             var quantitiesByMedicationId = homePharmacyItems
                 .GroupBy(item => item.MedicationId)
-                .ToDictionary(group => group.Key, group => group.Sum(item => item.Quantity));
+                .ToDictionary(group => group.Key,group => group.Sum(item => item.Quantity));
             var expiryByMedicationId = homePharmacyItems
                 .Where(item => item.Quantity > 0)
                 .GroupBy(item => item.MedicationId)
@@ -395,8 +359,8 @@ else
                 .Select(medication => (
                     profile,
                     medication,
-                    quantitiesByMedicationId.TryGetValue(medication.MedicationId, out var quantity) ? quantity : 0,
-                    expiryByMedicationId.TryGetValue(medication.MedicationId, out var expiry) ? expiry : null)));
+                    quantitiesByMedicationId.TryGetValue(medication.MedicationId,out var quantity) ? quantity : 0,
+                    expiryByMedicationId.TryGetValue(medication.MedicationId,out var expiry) ? expiry : null)));
         }
 
         var allTodayDoses = allMedications
@@ -411,7 +375,7 @@ else
         _myMedicationCards.AddRange(allMedications
             .Where(tuple => mainProfile is not null && tuple.Profile.Id == mainProfile.Id)
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => BuildHomeMedicationCards(tuple.Medication, tuple.RemainingQuantity, tuple.ExpiresOn))
+            .SelectMany(tuple => BuildHomeMedicationCards(tuple.Medication,tuple.RemainingQuantity,tuple.ExpiresOn))
             .OrderBy(card => card.NextTimeSortKey)
             .ThenBy(card => card.Name));
 
@@ -419,60 +383,38 @@ else
         _familyMedicationCards.AddRange(allMedications
             .Where(tuple => ProfileTypeMapper.IsPatient(tuple.Profile.Type))
             .Where(tuple => tuple.Medication.IsActive)
-            .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile, tuple.Medication, tuple.RemainingQuantity, tuple.ExpiresOn))
+            .SelectMany(tuple => BuildFamilyMedicationCards(tuple.Profile,tuple.Medication,tuple.RemainingQuantity,tuple.ExpiresOn))
             .OrderBy(card => card.NextTimeSortKey)
             .ThenBy(card => card.ProfileName)
             .ThenBy(card => card.Name)
             .ThenBy(card => card.ScheduledTime));
     }
 
-    private static ProfileSummary? ResolveMainProfile(IReadOnlyList<ProfileSummary> profiles)
-    {
+    private static ProfileSummary? ResolveMainProfile(IReadOnlyList<ProfileSummary> profiles) {
         return profiles.FirstOrDefault(p => ProfileTypeMapper.IsMainUser(p.Type))
                ?? profiles.FirstOrDefault();
     }
 
-    private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
-    {
-        var note = NormalizeNote(medication.Notes);
+    private static IEnumerable<HomeMedicationCard> BuildHomeMedicationCards(UserMedicationDto medication,int remainingQuantity,DateOnly? expiresOn) {
+        var note = MedicationTextFormatter.NormalizeNote(medication.Notes);
         var todayDoses = (medication.TodayDoses ?? [])
             .OrderBy(d => d.ScheduledTime)
             .ToList();
 
-        if (todayDoses.Count > 0)
-        {
-            foreach (var dose in todayDoses)
-            {
+        if (todayDoses.Count > 0) {
+            foreach (var dose in todayDoses) {
                 yield return new HomeMedicationCard(
                     UserMedicationId: medication.Id,
-                    Name: BuildMedicationDisplayName(medication),
+                    Name: MedicationTextFormatter.BuildDisplayName(medication),
                     Note: note,
                     ExpiresOn: expiresOn,
                     ScheduledTime: dose.ScheduledTime,
                     TimeSlots: [dose.ScheduledTime],
                     RemainingQuantity: remainingQuantity,
                     Status: dose.Status,
-                    StatusLabel: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "Võetud",
-                        DoseStatusEnum.Missed => "Võtmata",
-                        DoseStatusEnum.Skipped => "Võtmata",
-                        _ => "Ootel"
-                    },
-                    StatusCss: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "status-done",
-                        DoseStatusEnum.Missed => "status-missed",
-                        DoseStatusEnum.Skipped => "status-missed",
-                        _ => "status-pending"
-                    },
-                    StatusBadgeCss: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "badge-done",
-                        DoseStatusEnum.Missed => "badge-missed",
-                        DoseStatusEnum.Skipped => "badge-missed",
-                        _ => "badge-pending"
-                    },
+                    StatusLabel: MedicationTextFormatter.GetDoseStatusLabel(dose.Status),
+                    StatusCss: MedicationTextFormatter.GetDoseStatusCss(dose.Status),
+                    StatusBadgeCss: MedicationTextFormatter.GetDoseStatusBadgeCss(dose.Status),
                     NextTimeSortKey: dose.ScheduledTime.ToTimeSpan()
                 );
             }
@@ -480,72 +422,49 @@ else
             yield break;
         }
 
-        if (medication.ScheduleUnit != MedicationScheduleUnit.Day)
-        {
+        if (medication.ScheduleUnit != MedicationScheduleUnit.Day) {
             yield break;
         }
 
-        foreach (var fallbackTime in medication.ScheduledTimes.OrderBy(t => t))
-        {
+        foreach (var fallbackTime in medication.ScheduledTimes.OrderBy(t => t)) {
             yield return new HomeMedicationCard(
                 UserMedicationId: medication.Id,
-                Name: BuildMedicationDisplayName(medication),
+                Name: MedicationTextFormatter.BuildDisplayName(medication),
                 Note: note,
                 ExpiresOn: expiresOn,
                 ScheduledTime: fallbackTime,
                 TimeSlots: [fallbackTime],
                 RemainingQuantity: remainingQuantity,
                 Status: DoseStatusEnum.Pending,
-                StatusLabel: "Ootel",
-                StatusCss: "status-pending",
-                StatusBadgeCss: "badge-pending",
+                StatusLabel: MedicationTextFormatter.GetDoseStatusLabel(DoseStatusEnum.Pending),
+                StatusCss: MedicationTextFormatter.GetDoseStatusCss(DoseStatusEnum.Pending),
+                StatusBadgeCss: MedicationTextFormatter.GetDoseStatusBadgeCss(DoseStatusEnum.Pending),
                 NextTimeSortKey: fallbackTime.ToTimeSpan()
             );
         }
     }
 
-    private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile, UserMedicationDto medication, int remainingQuantity, DateOnly? expiresOn)
-    {
-        var note = NormalizeNote(medication.Notes);
+    private static IEnumerable<FamilyMedicationCard> BuildFamilyMedicationCards(ProfileSummary profile,UserMedicationDto medication,int remainingQuantity,DateOnly? expiresOn) {
+        var note = MedicationTextFormatter.NormalizeNote(medication.Notes);
         var todayDoses = (medication.TodayDoses ?? [])
             .OrderBy(dose => dose.ScheduledTime)
             .ToList();
 
-        if (todayDoses.Count > 0)
-        {
-            foreach (var dose in todayDoses)
-            {
+        if (todayDoses.Count > 0) {
+            foreach (var dose in todayDoses) {
                 yield return new FamilyMedicationCard(
                     UserMedicationId: medication.Id,
                     ProfileName: profile.Name,
-                    Name: BuildMedicationDisplayName(medication),
+                    Name: MedicationTextFormatter.BuildDisplayName(medication),
                     Note: note,
                     ExpiresOn: expiresOn,
                     ScheduledTime: dose.ScheduledTime,
                     TimeSlots: [dose.ScheduledTime],
                     RemainingQuantity: remainingQuantity,
                     Status: dose.Status,
-                    StatusLabel: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "Võetud",
-                        DoseStatusEnum.Missed => "Võtmata",
-                        DoseStatusEnum.Skipped => "Võtmata",
-                        _ => "Ootel"
-                    },
-                    StatusCss: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "status-done",
-                        DoseStatusEnum.Missed => "status-missed",
-                        DoseStatusEnum.Skipped => "status-missed",
-                        _ => "status-pending"
-                    },
-                    StatusBadgeCss: dose.Status switch
-                    {
-                        DoseStatusEnum.Done => "badge-done",
-                        DoseStatusEnum.Missed => "badge-missed",
-                        DoseStatusEnum.Skipped => "badge-missed",
-                        _ => "badge-pending"
-                    },
+                    StatusLabel: MedicationTextFormatter.GetDoseStatusLabel(dose.Status),
+                    StatusCss: MedicationTextFormatter.GetDoseStatusCss(dose.Status),
+                    StatusBadgeCss: MedicationTextFormatter.GetDoseStatusBadgeCss(dose.Status),
                     NextTimeSortKey: dose.ScheduledTime.ToTimeSpan()
                 );
             }
@@ -553,103 +472,40 @@ else
             yield break;
         }
 
-        if (medication.ScheduleUnit != MedicationScheduleUnit.Day)
-        {
+        if (medication.ScheduleUnit != MedicationScheduleUnit.Day) {
             yield break;
         }
 
-        foreach (var fallbackTime in medication.ScheduledTimes.OrderBy(t => t))
-        {
+        foreach (var fallbackTime in medication.ScheduledTimes.OrderBy(t => t)) {
             yield return new FamilyMedicationCard(
                 UserMedicationId: medication.Id,
                 ProfileName: profile.Name,
-                Name: BuildMedicationDisplayName(medication),
+                Name: MedicationTextFormatter.BuildDisplayName(medication),
                 Note: note,
                 ExpiresOn: expiresOn,
                 ScheduledTime: fallbackTime,
                 TimeSlots: [fallbackTime],
                 RemainingQuantity: remainingQuantity,
                 Status: DoseStatusEnum.Pending,
-                StatusLabel: "Ootel",
-                StatusCss: "status-pending",
-                StatusBadgeCss: "badge-pending",
+                StatusLabel: MedicationTextFormatter.GetDoseStatusLabel(DoseStatusEnum.Pending),
+                StatusCss: MedicationTextFormatter.GetDoseStatusCss(DoseStatusEnum.Pending),
+                StatusBadgeCss: MedicationTextFormatter.GetDoseStatusBadgeCss(DoseStatusEnum.Pending),
                 NextTimeSortKey: fallbackTime.ToTimeSpan()
             );
         }
     }
 
-    private static string BuildMedicationDisplayName(UserMedicationDto medication)
-    {
-        if (string.IsNullOrWhiteSpace(medication.Strength) || medication.MedicationName.Contains(medication.Strength, StringComparison.OrdinalIgnoreCase))
-        {
-            return medication.MedicationName;
-        }
-
-        return $"{medication.MedicationName} {medication.Strength}";
+    private string GetInitials() {
+        return ProfileDisplayFormatter.BuildInitials(AuthService.CurrentUser?.FullName,"--");
     }
 
-    private static string? NormalizeNote(string? note)
-    {
-        return string.IsNullOrWhiteSpace(note) ? null : note.Trim();
-    }
-
-    private static string GetInitials(string? name)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return "--";
-        }
-
-        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 1)
-        {
-            return parts[0][..1].ToUpperInvariant();
-        }
-
-        return (parts[0][..1] + parts[^1][..1]).ToUpperInvariant();
-    }
-
-    private string GetInitials()
-    {
-        return GetInitials(AuthService.CurrentUser?.FullName);
-    }
-
-    private async Task StartScannerAsync()
-    {
-        var scanResult = await ScannerFlowService.ScanAsync();
-
-        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode))
-        {
-            var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}";
-            if (scanResult.ExpirationDate is DateOnly expirationDate)
-            {
-                route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
-            }
-            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber))
-            {
-                route += route.Contains('?')
-                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
-                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
-            }
-
-            Navigation.NavigateTo(route);
-        }
-        else if (scanResult.Status == BarcodeScanStatus.ManualSearch)
-        {
-            Navigation.NavigateTo("/home-pharmacy/search");
-        }
-    }
-
-    private void OpenMyMedicines()
-    {
+    private void OpenMyMedicines() {
         Navigation.NavigateTo("/home-pharmacy");
     }
 
-    private void OpenMyMainProfileSettings()
-    {
+    private void OpenMyMainProfileSettings() {
         var defaultProfileId = AuthService.CurrentUser?.DefaultProfileId;
-        if (defaultProfileId.HasValue)
-        {
+        if (defaultProfileId.HasValue) {
             Navigation.NavigateTo($"/settings/main-profile/{defaultProfileId.Value}");
             return;
         }
@@ -657,69 +513,59 @@ else
         Navigation.NavigateTo("/settings");
     }
 
-    private async Task OpenNotificationCenterAsync()
-    {
+    private async Task OpenNotificationCenterAsync() {
         _isNotificationCenterOpen = true;
         await LoadNotificationItemsAsync();
         await RefreshNotificationBadgeAsync();
     }
 
-    private void CloseNotificationCenter()
-    {
+    private void CloseNotificationCenter() {
         _isNotificationCenterOpen = false;
     }
 
-    private async Task LoadNotificationItemsAsync()
-    {
+    private async Task LoadNotificationItemsAsync() {
         _notificationItems = (await NotificationInboxService.GetHistoryAsync()).ToList();
     }
 
-    private async Task RefreshNotificationBadgeAsync()
-    {
+    private async Task RefreshNotificationBadgeAsync() {
         _hasUnrespondedNotifications = await NotificationInboxService.HasUnrespondedAsync();
     }
 
-    private static string GetNotificationTimeChipCss(NotificationInboxItem item)
-    {
-        return item.IsResponded && string.Equals(item.ResponseLabel, "Võetud", StringComparison.OrdinalIgnoreCase)
+    private static string GetNotificationTimeChipCss(NotificationInboxItem item) {
+        return item.IsResponded && string.Equals(item.ResponseLabel,"Võetud",StringComparison.OrdinalIgnoreCase)
             ? "done"
             : string.Empty;
     }
 
-        private void OpenDoseModal(HomeMedicationCard card)
-    {
+    private void OpenDoseModal(HomeMedicationCard card) {
         OpenDoseModalCore(
-            new SelectedDoseCard(card.UserMedicationId, card.Name, card.ScheduledTime, card.Status, card.RemainingQuantity),
+            new SelectedDoseCard(card.UserMedicationId,card.Name,card.ScheduledTime,card.Status,card.RemainingQuantity),
             card.ExpiresOn);
     }
 
-    private void OpenDoseModal(FamilyMedicationCard card)
-    {
+    private void OpenDoseModal(FamilyMedicationCard card) {
         OpenDoseModalCore(
-            new SelectedDoseCard(card.UserMedicationId, $"{card.ProfileName} - {card.Name}", card.ScheduledTime, card.Status, card.RemainingQuantity),
+            new SelectedDoseCard(card.UserMedicationId,$"{card.ProfileName} - {card.Name}",card.ScheduledTime,card.Status,card.RemainingQuantity),
             card.ExpiresOn);
     }
 
-    private void OpenDoseModalCore(SelectedDoseCard doseCard, DateOnly? expiresOn)
-    {
+    private void OpenDoseModalCore(SelectedDoseCard doseCard,DateOnly? expiresOn) {
         _selectedDoseCard = null;
         _modalErrorMessage = null;
         _modalInfoMessage = null;
         _showEarlyDoneConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
 
-        if (expiresOn is DateOnly expiryDate && IsExpiredDate(expiryDate))
-        {
+        if (expiresOn is DateOnly expiryDate && IsExpiredDate(expiryDate)) {
             _pendingDoseCard = doseCard;
-            _expiredDoseWarning = new ExpiredDoseWarning(doseCard.Name, expiryDate);
+            _expiredDoseWarning = new ExpiredDoseWarning(doseCard.Name,expiryDate);
             return;
         }
 
         _selectedDoseCard = doseCard;
     }
 
-    private void CloseDoseModal()
-    {
+    private void CloseDoseModal() {
         _selectedDoseCard = null;
         _pendingDoseCard = null;
         _modalErrorMessage = null;
@@ -728,11 +574,9 @@ else
         _earlyDoneMinutesRemaining = 0;
     }
 
-    private void CloseExpiredDoseWarning()
-    {
+    private void CloseExpiredDoseWarning() {
         _expiredDoseWarning = null;
-        if (_pendingDoseCard is null)
-        {
+        if (_pendingDoseCard is null) {
             return;
         }
 
@@ -744,31 +588,25 @@ else
         _earlyDoneMinutesRemaining = 0;
     }
 
-    private async Task UpdateDoseStatusFromModalAsync(DoseStatusEnum newStatus)
-    {
-        if (_selectedDoseCard is null || _isUpdatingDose)
-        {
+    private async Task UpdateDoseStatusFromModalAsync(DoseStatusEnum newStatus) {
+        if (_selectedDoseCard is null || _isUpdatingDose) {
             return;
         }
 
         _isUpdatingDose = true;
         _modalErrorMessage = null;
         _modalInfoMessage = null;
-        try
-        {
-            if (newStatus == DoseStatusEnum.Done)
-            {
+        try {
+            if (newStatus == DoseStatusEnum.Done) {
                 var minutesUntilDose = GetRemainingMinutesUntilDose(_selectedDoseCard.ScheduledTime);
-                if (minutesUntilDose > 0 && !_showEarlyDoneConfirmation)
-                {
+                if (minutesUntilDose > 0 && !_showEarlyDoneConfirmation) {
                     _showEarlyDoneConfirmation = true;
                     _showLastUnitConfirmation = false;
                     _earlyDoneMinutesRemaining = minutesUntilDose;
                     return;
                 }
 
-                if (!_showLastUnitConfirmation && _selectedDoseCard.RemainingQuantity == 1)
-                {
+                if (!_showLastUnitConfirmation && _selectedDoseCard.RemainingQuantity == 1) {
                     _showEarlyDoneConfirmation = false;
                     _showLastUnitConfirmation = true;
                     return;
@@ -776,25 +614,21 @@ else
             }
 
             var effectiveStatus = newStatus;
-            if (newStatus == DoseStatusEnum.Missed && GetRemainingMinutesUntilDose(_selectedDoseCard.ScheduledTime) > 0)
-            {
+            if (newStatus == DoseStatusEnum.Missed && GetRemainingMinutesUntilDose(_selectedDoseCard.ScheduledTime) > 0) {
                 effectiveStatus = DoseStatusEnum.Pending;
             }
 
-            var result = await MedicationService.UpdateStatusAsync(_selectedDoseCard.UserMedicationId, new UpdateMedicationStatusDto
-            {
+            var result = await MedicationService.UpdateStatusAsync(_selectedDoseCard.UserMedicationId,new UpdateMedicationStatusDto {
                 ScheduledTime = _selectedDoseCard.ScheduledTime,
                 Status = effectiveStatus
             });
 
-            if (result is null)
-            {
+            if (result is null) {
                 _modalErrorMessage = "Staatuse uuendamine ebaonnestus.";
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(result.StockWarning))
-            {
+            if (!string.IsNullOrWhiteSpace(result.StockWarning)) {
                 _modalInfoMessage = result.StockWarning;
             }
 
@@ -803,64 +637,49 @@ else
             _showEarlyDoneConfirmation = false;
             _showLastUnitConfirmation = false;
             _earlyDoneMinutesRemaining = 0;
-            if (string.IsNullOrWhiteSpace(result.StockWarning))
-            {
+            if (string.IsNullOrWhiteSpace(result.StockWarning)) {
                 CloseDoseModal();
             }
-        }
-        catch
-        {
+        } catch {
             _modalErrorMessage = "Staatuse uuendamine ebaonnestus.";
-        }
-        finally
-        {
+        } finally {
             _isUpdatingDose = false;
         }
     }
 
-    private string GetModalButtonCss(DoseStatusEnum targetStatus)
-    {
-        if (_selectedDoseCard is null)
-        {
+    private string GetModalButtonCss(DoseStatusEnum targetStatus) {
+        if (_selectedDoseCard is null) {
             return string.Empty;
         }
 
-        if (targetStatus == DoseStatusEnum.Missed && (_selectedDoseCard.Status == DoseStatusEnum.Missed || _selectedDoseCard.Status == DoseStatusEnum.Skipped))
-        {
+        if (targetStatus == DoseStatusEnum.Missed && (_selectedDoseCard.Status == DoseStatusEnum.Missed || _selectedDoseCard.Status == DoseStatusEnum.Skipped)) {
             return "active";
         }
 
         return _selectedDoseCard.Status == targetStatus ? "active" : string.Empty;
     }
 
-    private void OnMedicationStatusChanged(MedicationStatusChangedEvent payload)
-    {
+    private void OnMedicationStatusChanged(MedicationStatusChangedEvent payload) {
         _ = HandleMedicationStatusChangedAsync(payload);
     }
 
-    private async Task HandleMedicationStatusChangedAsync(MedicationStatusChangedEvent payload)
-    {
-        await InvokeAsync(async () =>
-        {
+    private async Task HandleMedicationStatusChangedAsync(MedicationStatusChangedEvent payload) {
+        await InvokeAsync(async () => {
             await LoadHomeDataAsync();
             await RefreshNotificationBadgeAsync();
             StateHasChanged();
         });
     }
 
-    private void OnNotificationInboxChanged()
-    {
+    private void OnNotificationInboxChanged() {
         _ = HandleNotificationInboxChangedAsync();
     }
 
-    private async Task HandleNotificationInboxChangedAsync()
-    {
-        await InvokeAsync(async () =>
-        {
+    private async Task HandleNotificationInboxChangedAsync() {
+        await InvokeAsync(async () => {
             await RefreshNotificationBadgeAsync();
 
-            if (_isNotificationCenterOpen)
-            {
+            if (_isNotificationCenterOpen) {
                 await LoadNotificationItemsAsync();
             }
 
@@ -868,61 +687,50 @@ else
         });
     }
 
-    private async Task ConfirmEarlyDoneAsync()
-    {
-        if (_selectedDoseCard is null)
-        {
+    private async Task ConfirmEarlyDoneAsync() {
+        if (_selectedDoseCard is null) {
             return;
         }
 
         await UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done);
     }
 
-    private async Task ConfirmLastUnitDoneAsync()
-    {
-        if (_selectedDoseCard is null)
-        {
+    private async Task ConfirmLastUnitDoneAsync() {
+        if (_selectedDoseCard is null) {
             return;
         }
 
         await UpdateDoseStatusFromModalAsync(DoseStatusEnum.Done);
     }
 
-    private void CancelEarlyDoneConfirmation()
-    {
+    private void CancelEarlyDoneConfirmation() {
         _showEarlyDoneConfirmation = false;
         _earlyDoneMinutesRemaining = 0;
     }
 
-    private void CancelLastUnitConfirmation()
-    {
+    private void CancelLastUnitConfirmation() {
         _showLastUnitConfirmation = false;
     }
 
-    private static int GetRemainingMinutesUntilDose(TimeOnly scheduledTime)
-    {
+    private static int GetRemainingMinutesUntilDose(TimeOnly scheduledTime) {
         var now = AppDate.Now;
         var scheduledAt = now.Date + scheduledTime.ToTimeSpan();
         var remaining = scheduledAt - now;
-        if (remaining <= TimeSpan.Zero)
-        {
+        if (remaining <= TimeSpan.Zero) {
             return 0;
         }
 
         return (int)Math.Ceiling(remaining.TotalMinutes);
     }
 
-    private static string FormatRemainingTime(int minutes)
-    {
-        if (minutes <= 60)
-        {
+    private static string FormatRemainingTime(int minutes) {
+        if (minutes <= 60) {
             return $"{minutes} min";
         }
 
         var hours = minutes / 60;
         var remainderMinutes = minutes % 60;
-        if (remainderMinutes == 0)
-        {
+        if (remainderMinutes == 0) {
             return $"{hours}h";
         }
 
@@ -930,12 +738,10 @@ else
     }
 
 
-    private static bool IsExpiredDate(DateOnly date)
-    {
+    private static bool IsExpiredDate(DateOnly date) {
         return AppDate.IsExpired(date);
     }
-    public void Dispose()
-    {
+    public void Dispose() {
         MedicationStatusEvents.Changed -= OnMedicationStatusChanged;
         NotificationInboxService.Changed -= OnNotificationInboxChanged;
     }
@@ -976,9 +782,5 @@ else
         DoseStatusEnum Status,
         int RemainingQuantity = 0);
 
-    private sealed record ExpiredDoseWarning(string MedicationName, DateOnly ExpiryDate);
+    private sealed record ExpiredDoseWarning(string MedicationName,DateOnly ExpiryDate);
 }
-
-
-
-

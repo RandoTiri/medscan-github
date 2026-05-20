@@ -1,6 +1,5 @@
 @inherits LayoutComponentBase
 @implements IDisposable
-@using MedScan.Shared.Models
 @inject IThemeService ThemeService
 @inject IInAppDoseAlertService InAppDoseAlertService
 @inject IMedicationService MedicationService
@@ -13,15 +12,13 @@
     </main>
     <NavMenu />
 
-    @if (InAppDoseAlertService.Current is not null)
-    {
+    @if (InAppDoseAlertService.Current is not null) {
         <div class="alert-backdrop"></div>
         <section class="dose-alert-modal" role="dialog" aria-modal="true" aria-label="Ravimi meeldetuletus">
             <h2>@InAppDoseAlertService.Current.ScheduledTime.ToString("HH:mm")</h2>
             <p class="dose-alert-med">@InAppDoseAlertService.Current.MedicationName</p>
             <p class="dose-alert-profile">@InAppDoseAlertService.Current.ProfileName</p>
-            @if (!string.IsNullOrWhiteSpace(InAppDoseAlertService.Current.Note))
-            {
+            @if (!string.IsNullOrWhiteSpace(InAppDoseAlertService.Current.Note)) {
                 <p class="dose-alert-note">@InAppDoseAlertService.Current.Note</p>
             }
             <div class="dose-alert-actions">
@@ -31,8 +28,7 @@
         </section>
     }
 
-    @if (_isExpiredWarningOpen && _expiredWarningDate is DateOnly warningDate)
-    {
+    @if (_isExpiredWarningOpen && _expiredWarningDate is DateOnly warningDate) {
         <div class="alert-backdrop"></div>
         <section class="expired-warning-modal" role="dialog" aria-modal="true" aria-label="Aegunud ravimi hoiatus">
             <h3>Tahelepanu!</h3>
@@ -52,10 +48,8 @@
     private bool _isExpiredWarningOpen;
     private DateOnly? _expiredWarningDate;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!firstRender) {
             return;
         }
 
@@ -64,108 +58,83 @@
         await ThemeService.InitializeAsync();
     }
 
-    private void HandleThemeChanged()
-    {
+    private void HandleThemeChanged() {
         InvokeAsync(StateHasChanged);
     }
 
-    private void HandleAlertChanged()
-    {
+    private void HandleAlertChanged() {
         InvokeAsync(StateHasChanged);
     }
 
-    private void DismissAlert()
-    {
+    private void DismissAlert() {
         InAppDoseAlertService.DismissCurrent();
     }
 
-    private void CloseExpiredWarning()
-    {
+    private void CloseExpiredWarning() {
         _isExpiredWarningOpen = false;
         _expiredWarningDate = null;
     }
 
-    private async Task TakeExpiredAnywayAsync()
-    {
+    private async Task TakeExpiredAnywayAsync() {
         await UpdateCurrentAlertStatusAsync(MedScan.Shared.Models.Enums.DoseStatusEnum.Done);
     }
 
-    private async Task DeclineExpiredDoseAsync()
-    {
+    private async Task DeclineExpiredDoseAsync() {
         await UpdateCurrentAlertStatusAsync(MedScan.Shared.Models.Enums.DoseStatusEnum.Missed);
     }
 
-    private async Task UpdateCurrentAlertStatusAsync(MedScan.Shared.Models.Enums.DoseStatusEnum status)
-    {
-        if (_isUpdatingFromPopup || InAppDoseAlertService.Current is null)
-        {
+    private async Task UpdateCurrentAlertStatusAsync(MedScan.Shared.Models.Enums.DoseStatusEnum status) {
+        if (_isUpdatingFromPopup || InAppDoseAlertService.Current is null) {
             return;
         }
 
         _isUpdatingFromPopup = true;
-        try
-        {
-            await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId, new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto
-            {
+        try {
+            await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId,new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto {
                 ScheduledTime = InAppDoseAlertService.Current.ScheduledTime,
                 Status = status
             });
 
             InAppDoseAlertService.DismissCurrent();
             CloseExpiredWarning();
-        }
-        catch
-        {
+        } catch {
             // Popup action is best effort.
-        }
-        finally
-        {
+        } finally {
             _isUpdatingFromPopup = false;
         }
     }
 
-    private async Task MarkDoneFromAlertAsync()
-    {
-        if (_isUpdatingFromPopup || InAppDoseAlertService.Current is null)
-        {
+    private async Task MarkDoneFromAlertAsync() {
+        if (_isUpdatingFromPopup || InAppDoseAlertService.Current is null) {
             return;
         }
 
         _isUpdatingFromPopup = true;
         var shouldDismissAlert = true;
-        try
-        {
+        try {
             var medication = await MedicationService.GetByIdAsync(InAppDoseAlertService.Current.UserMedicationId);
-            if (medication?.ExpiresOn is DateOnly expiryDate && AppDate.IsExpired(expiryDate))
-            {
+            if (medication?.ExpiresOn is DateOnly expiryDate && AppDate.IsExpired(expiryDate)) {
                 _expiredWarningDate = expiryDate;
                 _isExpiredWarningOpen = true;
                 shouldDismissAlert = false;
                 return;
             }
 
-            await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId, new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto
-            {
+            await MedicationService.UpdateStatusAsync(InAppDoseAlertService.Current.UserMedicationId,new MedScan.Shared.DTOs.Medication.UpdateMedicationStatusDto {
                 ScheduledTime = InAppDoseAlertService.Current.ScheduledTime,
                 Status = MedScan.Shared.Models.Enums.DoseStatusEnum.Done
             });
-        }
-        catch
-        {
+        } catch {
             // Popup action is best effort.
-        }
-        finally
-        {
+        } finally {
             _isUpdatingFromPopup = false;
-            if (shouldDismissAlert)
-            {
+            if (shouldDismissAlert) {
                 InAppDoseAlertService.DismissCurrent();
             }
         }
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         ThemeService.OnChanged -= HandleThemeChanged;
         InAppDoseAlertService.Changed -= HandleAlertChanged;
     }

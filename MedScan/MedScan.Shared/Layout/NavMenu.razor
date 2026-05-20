@@ -1,7 +1,6 @@
+﻿@inherits MedScan.Shared.Pages.Medication.MedicationScannerComponentBase
 @implements IDisposable
-@inject NavigationManager Navigation
 @inject IAuthService AuthService
-@inject IScannerFlowService ScannerFlowService
 
 @if (AuthService.IsLoggedIn) {
     <nav class="bottom-nav">
@@ -64,26 +63,6 @@
 
     private void NavigateTo(string url) {
         Navigation.NavigateTo(url);
-    }
-
-    private async Task StartScannerAsync() {
-        var scanResult = await ScannerFlowService.ScanAsync();
-
-        if (scanResult.Status == BarcodeScanStatus.Success && !string.IsNullOrWhiteSpace(scanResult.Barcode)) {
-            var route = $"/home-pharmacy/save-medication/{Uri.EscapeDataString(scanResult.Barcode)}";
-            if (scanResult.ExpirationDate is DateOnly expirationDate) {
-                route += $"?exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
-            }
-            if (!string.IsNullOrWhiteSpace(scanResult.BatchNumber)) {
-                route += route.Contains('?')
-                    ? $"&lot={Uri.EscapeDataString(scanResult.BatchNumber)}"
-                    : $"?lot={Uri.EscapeDataString(scanResult.BatchNumber)}";
-            }
-
-            Navigation.NavigateTo(route);
-        } else if (scanResult.Status == BarcodeScanStatus.ManualSearch) {
-            Navigation.NavigateTo("/home-pharmacy/search");
-        }
     }
 
     public void Dispose() {

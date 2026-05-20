@@ -18,4 +18,17 @@ public static class ProfileDisplayFormatter {
         var age = patient.Age > 0 ? $"{patient.Age} a" : MissingAge;
         return $"{age} · {NormalizeGender(patient.Gender)}";
     }
+
+    public static string BuildInitials(string? name,string fallback = "U") {
+        if (string.IsNullOrWhiteSpace(name)) {
+            return fallback;
+        }
+
+        var parts = name.Split(' ',StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) {
+            return parts[0][..1].ToUpperInvariant();
+        }
+
+        return (parts[0][..1] + parts[^1][..1]).ToUpperInvariant();
+    }
 }

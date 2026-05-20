@@ -144,9 +144,9 @@ else
     private List<Patient> CareReceivers = [];
     private int _mainProfileId;
     private Patient? _mainUserProfile;
-    private readonly List<int> _days = Enumerable.Range(1, 31).ToList();
-    private readonly List<int> _months = Enumerable.Range(1, 12).ToList();
-    private readonly List<int> _years = Enumerable.Range(1900, AppDate.CurrentYear - 1900 + 1).Reverse().ToList();
+    private readonly IReadOnlyList<int> _days = BirthDatePickerOptions.Days;
+    private readonly IReadOnlyList<int> _months = BirthDatePickerOptions.Months;
+    private readonly IReadOnlyList<int> _years = BirthDatePickerOptions.Years;
 
     private bool isAdding = false;
     private Patient newPatient = new Patient();
@@ -232,14 +232,7 @@ else
             return Task.CompletedTask;
         }
 
-        if (int.TryParse(_birthDay, out var day))
-        {
-            var maxDay = DateTime.DaysInMonth(year, month);
-            if (day > maxDay)
-            {
-                _birthDay = maxDay.ToString();
-            }
-        }
+        BirthDatePickerOptions.TryClampDay(_birthYear, _birthMonth, ref _birthDay);
 
         ApplyBirthDateFromPicker();
         return Task.CompletedTask;
@@ -317,18 +310,6 @@ else
 
     private string GetInitials()
     {
-        var fullName = AuthService.CurrentUser?.FullName;
-
-        if (string.IsNullOrWhiteSpace(fullName))
-        {
-            return "U";
-        }
-
-        var parts = fullName
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Take(2)
-            .Select(p => char.ToUpperInvariant(p[0]));
-
-        return string.Concat(parts);
+        return ProfileDisplayFormatter.BuildInitials(AuthService.CurrentUser?.FullName);
     }
 }

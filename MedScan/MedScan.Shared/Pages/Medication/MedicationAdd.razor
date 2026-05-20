@@ -241,8 +241,8 @@ else
 
         try
         {
-            _expiresOn = ParseExpirationQuery(ExpirationQuery);
-            _batchNumber = ParseBatchQuery(BatchQuery);
+            _expiresOn = MedicationScanQueryParser.ParseExpiration(ExpirationQuery);
+            _batchNumber = MedicationScanQueryParser.ParseBatch(BatchQuery);
             _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
             if (_medication is null)
             {
@@ -552,21 +552,6 @@ else
     private void GoBack()
     {
         Navigation.NavigateTo($"/home-pharmacy/save-medication/{Uri.EscapeDataString(Barcode)}?profileId={_selectedProfileId}");
-    }
-
-    private static DateOnly? ParseExpirationQuery(string? query)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return null;
-        }
-
-        return DateOnly.TryParse(query, out var parsed) ? parsed : null;
-    }
-
-    private static string? ParseBatchQuery(string? query)
-    {
-        return string.IsNullOrWhiteSpace(query) ? null : query.Trim();
     }
 
     private static int ResolveInitialQuantity(string? packSize)
