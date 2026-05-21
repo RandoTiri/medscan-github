@@ -86,70 +86,11 @@
                 </section>
             }
 
-            @if (_isEditing && _isPatientProfile) {
-                <div class="confirm-overlay edit-overlay" @onclick="CloseEdit">
-                    <div class="edit-dialog" @onclick:stopPropagation="true">
-                        <div class="auth-input-group">
-                            <label for="edit-name">Nimi</label>
-                            <div class="input-wrapper">
-                                <div class="input-icon">
-                                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </div>
-                                <input id="edit-name" type="text" @bind="_editModel.Name" />
-                            </div>
-                        </div>
-
-                        <div class="auth-input-group">
-                            <label for="edit-gender">Sugu</label>
-                            <div class="input-wrapper">
-                                <div class="input-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gender-ambiguous" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z" />
-                                    </svg>
-                                </div>
-                                <select id="edit-gender" @bind="_editModel.Gender">
-                                    <option value="Mees">Mees</option>
-                                    <option value="Naine">Naine</option>
-                                    <option value="Määramata">Määramata</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="auth-input-group">
-                            <label for="edit-birthdate">Sünnikuupäev</label>
-                            <div id="edit-birthdate" class="birth-grid">
-                                <select class="birth-select" @bind="_birthDay">
-                                    <option value="">Päev</option>
-                                    @foreach (var day in _days) {
-                                        <option value="@day">@day</option>
-                                    }
-                                </select>
-
-                                <select class="birth-select" @bind="_birthMonth">
-                                    <option value="">Kuu</option>
-                                    @foreach (var month in _months) {
-                                        <option value="@month">@month</option>
-                                    }
-                                </select>
-
-                                <select class="birth-select" @bind="_birthYear">
-                                    <option value="">Aasta</option>
-                                    @foreach (var year in _years) {
-                                        <option value="@year">@year</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="edit-actions">
-                            <button class="save-btn" @onclick="SaveChangesAsync">Salvesta</button>
-                            <button class="cancel-btn" @onclick="CloseEdit">Sulge</button>
-                        </div>
-                    </div>
-                </div>
+            @if (_isPatientProfile) {
+                <PatientProfileEditDialog IsOpen="_isEditing"
+                                          Model="_editModel"
+                                          OnSave="SaveChangesAsync"
+                                          OnCancel="CloseEdit" />
             }
 
             @if (_showDeleteConfirm && _patient is not null && _isPatientProfile) {
@@ -215,12 +156,6 @@
     private Patient? _patient;
     private readonly List<DoseEntry> _entries = [];
     private readonly List<UserMedicationDto> _profileMedications = [];
-    private readonly IReadOnlyList<int> _days = BirthDatePickerOptions.Days;
-    private readonly IReadOnlyList<int> _months = BirthDatePickerOptions.Months;
-    private readonly IReadOnlyList<int> _years = BirthDatePickerOptions.Years;
-    private string _birthDay = string.Empty;
-    private string _birthMonth = string.Empty;
-    private string _birthYear = string.Empty;
     private CreatePatientProfileRequest _editModel = new();
     private bool _isManualSearchOpen;
     private bool _isManualSearchBusy;
@@ -332,10 +267,6 @@
 
         _errorMessage = null;
 
-        if (!ApplyBirthDateFromPicker()) {
-            return;
-        }
-
         try {
             var updated = await ProfileService.UpdatePatientProfileAsync(ProfileId,_editModel);
             if (updated is null) {
@@ -382,16 +313,6 @@
                 Gender = _patient.Gender,
                 BirthDate = _patient.BirthDate
             };
-
-            if (_editModel.BirthDate.HasValue) {
-                _birthDay = _editModel.BirthDate.Value.Day.ToString();
-                _birthMonth = _editModel.BirthDate.Value.Month.ToString();
-                _birthYear = _editModel.BirthDate.Value.Year.ToString();
-            } else {
-                _birthDay = string.Empty;
-                _birthMonth = string.Empty;
-                _birthYear = string.Empty;
-            }
         }
     }
 
@@ -401,15 +322,6 @@
         }
 
         ToggleEdit();
-    }
-
-    private bool ApplyBirthDateFromPicker() {
-        return BirthDateRules.TryApplyOptionalFromParts(
-            _birthDay,
-            _birthMonth,
-            _birthYear,
-            birthDate => _editModel.BirthDate = birthDate,
-            errorMessage => _errorMessage = errorMessage);
     }
 
     private void GoBack() => Navigation.NavigateTo("/profile");

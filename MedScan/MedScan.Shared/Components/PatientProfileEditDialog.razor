@@ -1,0 +1,140 @@
+@if (IsOpen) {
+    <div class="confirm-overlay" @onclick="HandleCancelAsync">
+        <div class="edit-dialog" @onclick:stopPropagation="true">
+
+            @if (!string.IsNullOrWhiteSpace(_validationError)) {
+                <div class="input-error-message dialog-error">@_validationError</div>
+            }
+
+            <div class="auth-input-group">
+                <label for="patient-edit-name">Nimi</label>
+                <div class="input-wrapper">
+                    <div class="input-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <input id="patient-edit-name" type="text" placeholder="@NamePlaceholder" @bind="Model.Name" />
+                </div>
+            </div>
+
+            <div class="auth-input-group">
+                <label for="patient-edit-gender">Sugu</label>
+                <div class="input-wrapper">
+                    <div class="input-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gender-ambiguous" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z" />
+                        </svg>
+                    </div>
+                    <select id="patient-edit-gender" @bind="Model.Gender">
+                        <option value="">Vali sugu...</option>
+                        <option value="Mees">Mees</option>
+                        <option value="Naine">Naine</option>
+                        <option value="Määramata">Määramata</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="auth-input-group">
+                <label for="patient-edit-birthdate">Sünnikuupäev</label>
+                <div id="patient-edit-birthdate" class="birth-grid">
+                    <select class="birth-select" @bind="_birthDay" @bind:after="OnBirthDatePartChanged">
+                        <option value="">Päev</option>
+                        @foreach (var day in BirthDatePickerOptions.Days) {
+                            <option value="@day">@day</option>
+                        }
+                    </select>
+
+                    <select class="birth-select" @bind="_birthMonth" @bind:after="OnBirthDatePartChanged">
+                        <option value="">Kuu</option>
+                        @foreach (var month in BirthDatePickerOptions.Months) {
+                            <option value="@month">@month</option>
+                        }
+                    </select>
+
+                    <select class="birth-select" @bind="_birthYear" @bind:after="OnBirthDatePartChanged">
+                        <option value="">Aasta</option>
+                        @foreach (var year in BirthDatePickerOptions.Years) {
+                            <option value="@year">@year</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="edit-actions">
+                <button type="button" class="save-btn" @onclick="HandleSaveAsync">@SaveLabel</button>
+                <button type="button" class="cancel-btn" @onclick="HandleCancelAsync">@CancelLabel</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public bool IsOpen { get; set; }
+
+    [Parameter, EditorRequired]
+    public CreatePatientProfileRequest Model { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public string SaveLabel { get; set; } = "Salvesta";
+
+    [Parameter]
+    public string CancelLabel { get; set; } = "Sulge";
+
+    [Parameter]
+    public string NamePlaceholder { get; set; } = string.Empty;
+
+    private bool _wasOpen;
+    private string _birthDay = string.Empty;
+    private string _birthMonth = string.Empty;
+    private string _birthYear = string.Empty;
+    private string? _validationError;
+
+    protected override void OnParametersSet() {
+        if (IsOpen && !_wasOpen) {
+            BirthDatePickerOptions.ApplyParts(Model.BirthDate, (day, month, year) => {
+                _birthDay = day;
+                _birthMonth = month;
+                _birthYear = year;
+            });
+            _validationError = null;
+        }
+        _wasOpen = IsOpen;
+    }
+
+    private void OnBirthDatePartChanged() {
+        BirthDatePickerOptions.TryClampDay(_birthYear, _birthMonth, ref _birthDay);
+    }
+
+    private async Task HandleSaveAsync() {
+        _validationError = null;
+
+        var valid = BirthDateRules.TryApplyOptionalFromParts(
+            _birthDay,
+            _birthMonth,
+            _birthYear,
+            birthDate => Model.BirthDate = birthDate,
+            errorMessage => _validationError = errorMessage);
+
+        if (!valid) {
+            return;
+        }
+
+        Model.Gender = ProfileDisplayFormatter.NormalizeGender(Model.Gender);
+
+        await OnSave.InvokeAsync();
+    }
+
+    private async Task HandleCancelAsync() {
+        _validationError = null;
+        await OnCancel.InvokeAsync();
+    }
+}
