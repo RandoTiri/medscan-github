@@ -35,25 +35,6 @@
         width: 56px;
     }
 
-    .back-link {
-        display: inline-flex;
-        align-items: center;
-        border: none;
-        background: transparent;
-        color: #277863;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        padding: 10px 0;
-        text-decoration: none;
-    }
-
-    .back-link svg {
-        margin-right: 8px;
-        width: 24px;
-        height: 24px;
-    }
-
     .content-scroll {
         background: var(--ms-bg);
         padding: 16px;

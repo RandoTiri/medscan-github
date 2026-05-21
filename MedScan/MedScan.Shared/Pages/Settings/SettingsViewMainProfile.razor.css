@@ -18,22 +18,9 @@
         margin: 0 auto;
     }
 
-    .back-link {
-        display: inline-flex;
-        align-items: center;
-        border: none;
-        background: transparent;
-        color: var(--ms-accent);
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        padding: 10px 0;
-        margin-bottom: 20px;
+    ::deep .back-button {
         margin-top: 20px;
-    }
-
-    .back-link svg {
-        margin-right: 8px;
+        margin-bottom: 20px;
     }
 
     .profile-summary-card {

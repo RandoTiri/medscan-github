@@ -1,0 +1,23 @@
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    border: none;
+    background: transparent;
+    color: var(--ms-accent, #277863);
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 10px 0;
+}
+
+    .back-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .back-button svg {
+        margin-right: 8px;
+        width: 24px;
+        height: 24px;
+    }

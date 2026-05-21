@@ -1,0 +1,25 @@
+<button type="button"
+        class="back-button @CssClass"
+        disabled="@Disabled"
+        @onclick="OnClick">
+    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor"
+         stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    @Text
+</button>
+
+@code {
+    [Parameter, EditorRequired]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public string Text { get; set; } = "Tagasi";
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+}

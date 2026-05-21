@@ -28,22 +28,9 @@
         display: flex;
         flex-direction: column;
     }
-    .back-button {
-        display: inline-flex;
-        align-items: center;
-        color: #267863;
-        font-size: 16px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        padding: 10px 0;
-        margin-bottom: 20px;
+    ::deep .back-button {
         margin-top: 20px;
-        background: none;
-        border: none;
-    }
-    .back-button svg {
-        margin-right: 8px;
+        margin-bottom: 20px;
     }
     .icon-container {
         display: none;

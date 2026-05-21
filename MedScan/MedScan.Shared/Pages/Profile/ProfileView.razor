@@ -14,26 +14,14 @@
 } else if (_patient is null) {
     <div class="profile-view-page">
         <div class="profile-view-content">
-            <button class="back-link" @onclick="GoBack">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Tagasi
-            </button>
+            <BackButton OnClick="GoBack" />
             <div class="empty-box">Profiili ei leitud.</div>
         </div>
     </div>
 } else {
     <div class="profile-view-page">
         <div class="profile-view-content">
-            <button class="back-link" @onclick="GoBack">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                Tagasi
-            </button>
+            <BackButton OnClick="GoBack" />
 
             <section class="profile-summary-card @(_isPatientProfile ? "patient-card-view" : "main-card-view")">
                 <div class="profile-avatar @(_isPatientProfile ? "patient-avatar-view" : "main-avatar-view")">@_patient.Initials</div>

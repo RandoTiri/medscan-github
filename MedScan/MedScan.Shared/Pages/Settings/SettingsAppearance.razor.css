@@ -41,22 +41,6 @@
         width: 56px;
     }
 
-    .back-link {
-        display: inline-flex;
-        align-items: center;
-        border: none;
-        background: transparent;
-        color: var(--ms-accent);
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        padding: 10px 0;
-    }
-
-    .back-link svg {
-        margin-right: 8px;
-    }
-
     .settings-card {
         background: var(--ms-surface);
         border-radius: 15px;

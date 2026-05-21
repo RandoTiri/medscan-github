@@ -2,8 +2,6 @@
     .medicine-header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: 6px 16px 14px 16px; background: var(--ms-bg); border-bottom: 1px solid var(--ms-divider); }
     .medicine-header h1 { margin: 0; font-size: 24px; color: #1A2E29; font-weight: 800; text-align: center; }
     .header-spacer { width: 56px; }
-    .back-link { display: inline-flex; align-items: center; border: none; background: transparent; color: #277863; font-size: 16px; font-weight: 700; cursor: pointer; padding: 10px 0; }
-    .back-link svg { margin-right: 8px; width: 24px; height: 24px; }
     .content-scroll { background: var(--ms-bg); padding: 16px; display: flex; flex-direction: column; gap: 16px; }
     .header-card,.info-card { background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 16px; padding: 16px; }
     .schedule-card { background: var(--ms-surface); border: 1px solid var(--ms-divider); border-radius: 14px; padding: 14px; }

@@ -37,25 +37,6 @@
         width: 56px;
     }
 
-    .back-link {
-        display: inline-flex;
-        align-items: center;
-        border: none;
-        background: transparent;
-        color: #277863;
-        font-size: 16px;
-        font-weight: 700;
-        text-decoration: none;
-        cursor: pointer;
-        padding: 10px 0;
-    }
-
-    .back-link svg {
-        margin-right: 8px;
-        width: 24px;
-        height: 24px;
-    }
-
     .search-card {
         background: var(--ms-surface);
         border: 1px solid var(--ms-divider);
