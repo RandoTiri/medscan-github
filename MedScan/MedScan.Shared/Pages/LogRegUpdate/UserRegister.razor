@@ -1,17 +1,12 @@
 ﻿@page "/register"
 @layout MedScan.Shared.Layout.AuthLayout
-@using MedScan.Shared.Models
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>Registreeru</PageTitle>
 
-
-
 <div class="login-container">
-    @if (RegistrationSuccessful)
-    {
+    @if (RegistrationSuccessful) {
         <div class="success-container">
             <div class="success-icon">
                 <svg viewBox="0 0 24 24" width="80" height="80" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -22,9 +17,7 @@
             <div class="success-message">Olete edukalt kasutaja loonud!</div>
             <div class="redirect-message">Suuname avalehele...</div>
         </div>
-    }
-    else
-    {
+    } else {
         <div class="header-section">
             <div class="logo-container">
                 <svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -36,8 +29,7 @@
             <p class="brand-subtitle">Loo endale MedScan konto.</p>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-        {
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage)) {
             <div class="auth-error">@ErrorMessage</div>
         }
 
@@ -79,18 +71,14 @@
                     </div>
                     <input id="password" type="@PasswordInputType" placeholder="••••••••" @bind="Password" disabled="@IsBusy" />
                     <div class="input-action" @onclick="TogglePasswordVisibility">
-                        @if (ShowPassword)
-                        {
+                        @if (ShowPassword) {
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                        }
-                        else
-                        {
+                        } else {
                             <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         }
                     </div>
                 </div>
-                @if (ShowPasswordValidationError)
-                {
+                @if (ShowPasswordValidationError) {
                     <div class="input-error-message">@PasswordRequirementsText</div>
                 }
             </div>
@@ -100,7 +88,7 @@
                 <div class="input-wrapper">
                     <div class="input-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gender-ambiguous" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z"/>
+                            <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z" />
                         </svg>
                     </div>
                     <select id="gender" @bind="Gender" disabled="@IsBusy" class="@(string.IsNullOrEmpty(Gender) ? "empty-select" : "")">
@@ -117,28 +105,25 @@
                 <div class="birth-grid">
                     <select class="birth-select @(string.IsNullOrEmpty(_birthDay) ? "empty-select" : "")" @bind="_birthDay" disabled="@IsBusy">
                         <option value="">Päev</option>
-                        @for (var day = 1; day <= 31; day++)
-                        {
+                        @for (var day = 1; day <= 31; day++) {
                             <option value="@day">@day</option>
                         }
                     </select>
                     <select class="birth-select @(string.IsNullOrEmpty(_birthMonth) ? "empty-select" : "")" @bind="_birthMonth" disabled="@IsBusy">
                         <option value="">Kuu</option>
-                        @for (var month = 1; month <= 12; month++)
-                        {
+                        @for (var month = 1; month <= 12; month++) {
                             <option value="@month">@month</option>
                         }
                     </select>
                     <select class="birth-select @(string.IsNullOrEmpty(_birthYear) ? "empty-select" : "")" @bind="_birthYear" disabled="@IsBusy">
                         <option value="">Aasta</option>
-                        @for (var year = AppDate.CurrentYear; year >= 1900; year--)
-                        {
+                        @for (var year = AppDate.CurrentYear; year >= 1900; year--) {
                             <option value="@year">@year</option>
                         }
                     </select>
                 </div>
             </div>
-            
+
             <div class="empty-space"></div>
 
             <button class="btn-primary" @onclick="HandleRegister" disabled="@IsBusy">
@@ -195,20 +180,18 @@
                 return;
             }
 
-            var birthDateResult = BirthDateRules.BuildFromParts(_birthDay, _birthMonth, _birthYear, isRequired: true);
-            if (!birthDateResult.Success || birthDateResult.BirthDate is not DateOnly birthDate)
-            {
+            var birthDateResult = BirthDateRules.BuildFromParts(_birthDay,_birthMonth,_birthYear,isRequired: true);
+            if (!birthDateResult.Success || birthDateResult.BirthDate is not DateOnly birthDate) {
                 ErrorMessage = "Sisesta korrektne sünnikuupäev.";
                 return;
             }
 
-            if (!PasswordRules.IsValid(Password))
-            {
+            if (!PasswordRules.IsValid(Password)) {
                 ErrorMessage = PasswordRequirementsText;
                 return;
             }
 
-            var result = await AuthService.RegisterAsync(FullName, normalizedEmail, Password, Gender, birthDate);
+            var result = await AuthService.RegisterAsync(FullName,normalizedEmail,Password,Gender,birthDate);
 
             if (result.Success) {
                 RegistrationSuccessful = true;
@@ -219,11 +202,9 @@
             }
 
             ErrorMessage = result.ErrorMessage;
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             ErrorMessage = ex.ToString();
-        }
-        finally {
+        } finally {
             IsBusy = false;
         }
     }
@@ -235,7 +216,4 @@
     private void TogglePasswordVisibility() {
         ShowPassword = !ShowPassword;
     }
-
 }
-
-

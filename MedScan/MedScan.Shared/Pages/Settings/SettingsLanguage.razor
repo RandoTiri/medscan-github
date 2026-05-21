@@ -1,16 +1,12 @@
 @page "/settings/language"
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>Keel</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="settings-subpage">
         <div class="settings-subpage-content">
             <div class="medicine-header">
@@ -40,16 +36,12 @@ else
     </div>
 }
 
-
-
 @code {
     private bool _isReady;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }

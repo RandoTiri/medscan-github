@@ -1,17 +1,13 @@
 @page "/settings/support"
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IExternalNavigationService ExternalNavigationService
 @inject NavigationManager Navigation
 
 <PageTitle>Abi ja tugi</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="support-page">
         <div class="support-content">
             <div class="medicine-header">
@@ -52,17 +48,13 @@ else
     </div>
 }
 
-
-
 @code {
     private bool _isReady;
     private const string SupportEmail = "medscan.loputoo@gmail.com";
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -70,11 +62,9 @@ else
         _isReady = true;
     }
 
-    private async Task OpenEmailAsync()
-    {
-        await ExternalNavigationService.OpenEmailAsync(SupportEmail, "MediScan abi");
+    private async Task OpenEmailAsync() {
+        await ExternalNavigationService.OpenEmailAsync(SupportEmail,"MediScan abi");
     }
 
     private void GoBack() => Navigation.NavigateTo("/settings");
 }
-

@@ -3,19 +3,15 @@
 @using MedScan.Shared.DTOs.Medication
 @using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
 
 <PageTitle>Profiili vaade</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else if (_patient is null)
-{
+} else if (_patient is null) {
     <div class="profile-view-page">
         <div class="profile-view-content">
             <button class="back-link" @onclick="GoBack">
@@ -28,9 +24,7 @@ else if (_patient is null)
             <div class="empty-box">Profiili ei leitud.</div>
         </div>
     </div>
-}
-else
-{
+} else {
     <div class="profile-view-page">
         <div class="profile-view-content">
             <button class="back-link" @onclick="GoBack">
@@ -49,13 +43,11 @@ else
                 </div>
             </section>
 
-            @if (!string.IsNullOrWhiteSpace(_errorMessage))
-            {
+            @if (!string.IsNullOrWhiteSpace(_errorMessage)) {
                 <div class="error-box">@_errorMessage</div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(_medicationCheckMessage))
-            {
+            @if (!string.IsNullOrWhiteSpace(_medicationCheckMessage)) {
                 <div class="@(_medicationCheckIsSuccess ? "success-box" : "error-box")">@_medicationCheckMessage</div>
             }
 
@@ -77,32 +69,27 @@ else
                 </section>
 
                 <section class="schedule-panel">
-                <h2 class="section-title">Tänane raviskeem</h2>
-                <section class="dose-list">
-                    @if (_entries.Count == 0)
-                    {
-                        <div class="empty-box">Sellel profiilil pole tänaseid ravikirjeid.</div>
-                    }
-                    else
-                    {
-                        @foreach (var entry in _entries)
-                        {
-                            var status = GetStatusView(entry.Status);
+                    <h2 class="section-title">Tänane raviskeem</h2>
+                    <section class="dose-list">
+                        @if (_entries.Count == 0) {
+                            <div class="empty-box">Sellel profiilil pole tänaseid ravikirjeid.</div>
+                        } else {
+                            @foreach (var entry in _entries) {
+                                var status = GetStatusView(entry.Status);
 
-                            <article class="dose-card">
-                                <div class="dose-title-row">
-                                    <span class="status-pill @status.CssClass">@status.Label</span>
-                                    <strong>@entry.Time.ToString("HH:mm") – @entry.DisplayName</strong>
-                                </div>
-                            </article>
+                                <article class="dose-card">
+                                    <div class="dose-title-row">
+                                        <span class="status-pill @status.CssClass">@status.Label</span>
+                                        <strong>@entry.Time.ToString("HH:mm") – @entry.DisplayName</strong>
+                                    </div>
+                                </article>
+                            }
                         }
-                    }
-                </section>
+                    </section>
                 </section>
             </section>
 
-            @if (_isPatientProfile)
-            {
+            @if (_isPatientProfile) {
                 <section class="crud-panel patient-action-panel">
                     <button class="patient-edit-btn" @onclick="ToggleEdit">
                         Muuda hooldatava andmeid
@@ -111,8 +98,7 @@ else
                 </section>
             }
 
-            @if (_isEditing && _isPatientProfile)
-            {
+            @if (_isEditing && _isPatientProfile) {
                 <div class="confirm-overlay edit-overlay" @onclick="CloseEdit">
                     <div class="edit-dialog" @onclick:stopPropagation="true">
                         <div class="auth-input-group">
@@ -133,7 +119,7 @@ else
                             <div class="input-wrapper">
                                 <div class="input-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gender-ambiguous" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z"/>
+                                        <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z" />
                                     </svg>
                                 </div>
                                 <select id="edit-gender" @bind="_editModel.Gender">
@@ -149,24 +135,21 @@ else
                             <div id="edit-birthdate" class="birth-grid">
                                 <select class="birth-select" @bind="_birthDay">
                                     <option value="">Päev</option>
-                                    @foreach (var day in _days)
-                                    {
+                                    @foreach (var day in _days) {
                                         <option value="@day">@day</option>
                                     }
                                 </select>
 
                                 <select class="birth-select" @bind="_birthMonth">
                                     <option value="">Kuu</option>
-                                    @foreach (var month in _months)
-                                    {
+                                    @foreach (var month in _months) {
                                         <option value="@month">@month</option>
                                     }
                                 </select>
 
                                 <select class="birth-select" @bind="_birthYear">
                                     <option value="">Aasta</option>
-                                    @foreach (var year in _years)
-                                    {
+                                    @foreach (var year in _years) {
                                         <option value="@year">@year</option>
                                     }
                                 </select>
@@ -181,8 +164,7 @@ else
                 </div>
             }
 
-            @if (_showDeleteConfirm && _patient is not null && _isPatientProfile)
-            {
+            @if (_showDeleteConfirm && _patient is not null && _isPatientProfile) {
                 <div class="confirm-overlay">
                     <div class="confirm-dialog">
                         <p>Kas soovite @_patient.Name ära kustutada?</p>
@@ -194,14 +176,12 @@ else
                 </div>
             }
 
-            @if (_isManualSearchOpen)
-            {
+            @if (_isManualSearchOpen) {
                 <div class="confirm-overlay" @onclick="CloseManualSearch">
                     <div class="confirm-dialog manual-search-dialog" @onclick:stopPropagation="true">
                         <p>Otsi ravim käsitsi</p>
 
-                        @if (!string.IsNullOrWhiteSpace(_manualSearchMessage))
-                        {
+                        @if (!string.IsNullOrWhiteSpace(_manualSearchMessage)) {
                             <div class="error-box">@_manualSearchMessage</div>
                         }
 
@@ -212,11 +192,9 @@ else
                             </button>
                         </div>
 
-                        @if (_manualSearchResults.Count > 0)
-                        {
+                        @if (_manualSearchResults.Count > 0) {
                             <div class="manual-search-results">
-                                @foreach (var item in _manualSearchResults)
-                                {
+                                @foreach (var item in _manualSearchResults) {
                                     <button class="manual-search-result" @onclick="() => SelectManualSearchResultAsync(item)">
                                         <strong>@item.Name</strong>
                                         <span>@item.ActiveIngredient</span>
@@ -235,10 +213,9 @@ else
     </div>
 }
 
-
-
 @code {
-    [Parameter] public int ProfileId { get; set; }
+    [Parameter] 
+    public int ProfileId { get; set; }
 
     private bool _isReady;
     private bool _isEditing;
@@ -263,11 +240,9 @@ else
     private string? _manualSearchMessage;
     private IReadOnlyList<MedicationLookupResult> _manualSearchResults = [];
 
-    protected override async Task OnParametersSetAsync()
-    {
+    protected override async Task OnParametersSetAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -275,16 +250,13 @@ else
         await LoadAsync();
     }
 
-    private async Task LoadAsync()
-    {
+    private async Task LoadAsync() {
         _isReady = false;
         _errorMessage = null;
 
-        try
-        {
+        try {
             var profile = await ProfileService.GetByIdAsync(ProfileId);
-            if (profile is null)
-            {
+            if (profile is null) {
                 _patient = null;
                 _entries.Clear();
                 return;
@@ -292,16 +264,14 @@ else
 
             _isPatientProfile = ProfileTypeMapper.IsPatient(profile.Type);
 
-            _patient = new Patient
-            {
+            _patient = new Patient {
                 Id = profile.Id,
                 Name = profile.Name,
                 Gender = ProfileDisplayFormatter.NormalizeGender(profile.Gender),
                 BirthDate = profile.BirthDate
             };
 
-            _editModel = new CreatePatientProfileRequest
-            {
+            _editModel = new CreatePatientProfileRequest {
                 Name = _patient.Name,
                 Gender = _patient.Gender,
                 BirthDate = _patient.BirthDate
@@ -316,41 +286,31 @@ else
 
             _entries.Clear();
             _entries.AddRange(BuildEntries(medications));
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Profiili laadimine ebaõnnestus.";
-        }
-        finally
-        {
+        } finally {
             _isReady = true;
         }
     }
 
-    private void PromptDelete()
-    {
+    private void PromptDelete() {
         _showDeleteConfirm = true;
     }
 
-    private void CancelDelete()
-    {
+    private void CancelDelete() {
         _showDeleteConfirm = false;
     }
 
-    private async Task ConfirmDeleteAsync()
-    {
+    private async Task ConfirmDeleteAsync() {
         _showDeleteConfirm = false;
         await DeleteAsync();
     }
 
-    private static IEnumerable<DoseEntry> BuildEntries(IEnumerable<UserMedicationDto> medications)
-    {
+    private static IEnumerable<DoseEntry> BuildEntries(IEnumerable<UserMedicationDto> medications) {
         return medications
             .Where(m => m.IsActive)
-            .SelectMany(m =>
-            {
-                if (m.TodayDoses.Count > 0)
-                {
+            .SelectMany(m => {
+                if (m.TodayDoses.Count > 0) {
                     return m.TodayDoses.Select(dose => new DoseEntry(
                         dose.ScheduledTime,
                         MedicationTextFormatter.BuildDisplayName(m),
@@ -358,8 +318,7 @@ else
                         dose.Status));
                 }
 
-                if (m.ScheduleUnit != MedicationScheduleUnit.Day)
-                {
+                if (m.ScheduleUnit != MedicationScheduleUnit.Day) {
                     return Enumerable.Empty<DoseEntry>();
                 }
 
@@ -374,30 +333,24 @@ else
             .ToList();
     }
 
-    private static StatusView GetStatusView(DoseStatusEnum? status)
-    {
+    private static StatusView GetStatusView(DoseStatusEnum? status) {
         return new StatusView(MedicationTextFormatter.GetDoseStatusLabel(status),MedicationTextFormatter.GetDoseStatusCss(status),string.Empty);
     }
 
-    private async Task SaveChangesAsync()
-    {
-        if (_patient is null || string.IsNullOrWhiteSpace(_editModel.Name))
-        {
+    private async Task SaveChangesAsync() {
+        if (_patient is null || string.IsNullOrWhiteSpace(_editModel.Name)) {
             return;
         }
 
         _errorMessage = null;
 
-        if (!ApplyBirthDateFromPicker())
-        {
+        if (!ApplyBirthDateFromPicker()) {
             return;
         }
 
-        try
-        {
-            var updated = await ProfileService.UpdatePatientProfileAsync(ProfileId, _editModel);
-            if (updated is null)
-            {
+        try {
+            var updated = await ProfileService.UpdatePatientProfileAsync(ProfileId,_editModel);
+            if (updated is null) {
                 _errorMessage = "Profiili uuendamine ebaõnnestus.";
                 return;
             }
@@ -406,61 +359,47 @@ else
             _patient.Gender = ProfileDisplayFormatter.NormalizeGender(updated.Gender);
             _patient.BirthDate = updated.BirthDate;
             _isEditing = false;
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Profiili uuendamine ebaõnnestus.";
         }
     }
 
-    private async Task DeleteAsync()
-    {
-        if (_patient is null)
-        {
+    private async Task DeleteAsync() {
+        if (_patient is null) {
             return;
         }
 
         _errorMessage = null;
 
-        try
-        {
+        try {
             var deleted = await ProfileService.DeletePatientProfileAsync(ProfileId);
-            if (!deleted)
-            {
+            if (!deleted) {
                 _errorMessage = "Hooldatava kustutamine ebaõnnestus.";
                 return;
             }
 
             Navigation.NavigateTo("/profile");
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Hooldatava kustutamine ebaõnnestus.";
         }
     }
 
-    private void ToggleEdit()
-    {
+    private void ToggleEdit() {
         _isEditing = !_isEditing;
         _errorMessage = null;
 
-        if (_isEditing && _patient is not null)
-        {
-            _editModel = new CreatePatientProfileRequest
-            {
+        if (_isEditing && _patient is not null) {
+            _editModel = new CreatePatientProfileRequest {
                 Name = _patient.Name,
                 Gender = _patient.Gender,
                 BirthDate = _patient.BirthDate
             };
 
-            if (_editModel.BirthDate.HasValue)
-            {
+            if (_editModel.BirthDate.HasValue) {
                 _birthDay = _editModel.BirthDate.Value.Day.ToString();
                 _birthMonth = _editModel.BirthDate.Value.Month.ToString();
                 _birthYear = _editModel.BirthDate.Value.Year.ToString();
-            }
-            else
-            {
+            } else {
                 _birthDay = string.Empty;
                 _birthMonth = string.Empty;
                 _birthYear = string.Empty;
@@ -468,18 +407,15 @@ else
         }
     }
 
-    private void CloseEdit()
-    {
-        if (!_isEditing)
-        {
+    private void CloseEdit() {
+        if (!_isEditing) {
             return;
         }
 
         ToggleEdit();
     }
 
-    private bool ApplyBirthDateFromPicker()
-    {
+    private bool ApplyBirthDateFromPicker() {
         return BirthDateRules.TryApplyOptionalFromParts(
             _birthDay,
             _birthMonth,
@@ -490,97 +426,79 @@ else
 
     private void GoBack() => Navigation.NavigateTo("/profile");
 
-    protected override Task OnBeforeScannerAsync()
-    {
+    protected override Task OnBeforeScannerAsync() {
         _errorMessage = null;
         _medicationCheckMessage = null;
 
         return Task.CompletedTask;
     }
 
-    protected override async Task OnSuccessfulScanAsync(BarcodeScanResult scanResult, int? targetProfileId, bool replace)
-    {
+    protected override async Task OnSuccessfulScanAsync(BarcodeScanResult scanResult,int? targetProfileId,bool replace) {
         await VerifyMedicationByBarcodeAsync(scanResult.Barcode ?? string.Empty);
     }
 
-    protected override Task OnManualSearchScanAsync(int? targetProfileId, bool replace)
-    {
+    protected override Task OnManualSearchScanAsync(int? targetProfileId,bool replace) {
         OpenManualSearch();
         return Task.CompletedTask;
     }
 
-    protected override Task OnPermissionDeniedScanAsync()
-    {
+    protected override Task OnPermissionDeniedScanAsync() {
         _errorMessage = "Skänneri kasutamiseks on vaja kaameraluba.";
         return Task.CompletedTask;
     }
 
-    private void OpenTodayOverview()
-    {
+    private void OpenTodayOverview() {
         Navigation.NavigateTo($"/profile/view/{ProfileId}/history");
     }
 
-    private async Task VerifyMedicationByBarcodeAsync(string barcode)
-    {
-        try
-        {
+    private async Task VerifyMedicationByBarcodeAsync(string barcode) {
+        try {
             var medication = await ScannerFlowService.FindByBarcodeAsync(barcode);
-            if (medication is null)
-            {
-                SetMedicationCheckResult(false, "Tuvastatud ravimit ei leitud andmebaasist.");
+            if (medication is null) {
+                SetMedicationCheckResult(false,"Tuvastatud ravimit ei leitud andmebaasist.");
                 return;
             }
 
             ApplyMedicationCheckResult(medication);
-        }
-        catch
-        {
-            SetMedicationCheckResult(false, "Ravimi kontroll ebaõnnestus.");
+        } catch {
+            SetMedicationCheckResult(false,"Ravimi kontroll ebaõnnestus.");
         }
     }
 
-    private void ApplyMedicationCheckResult(MedicationLookupResult medication)
-    {
+    private void ApplyMedicationCheckResult(MedicationLookupResult medication) {
         var isInSchedule = _profileMedications.Any(item => item.MedicationId == medication.Id);
-        if (isInSchedule)
-        {
-            SetMedicationCheckResult(true, $"{medication.Name} on kasutaja raviskeemis.");
+        if (isInSchedule) {
+            SetMedicationCheckResult(true,$"{medication.Name} on kasutaja raviskeemis.");
             return;
         }
 
-        SetMedicationCheckResult(false, $"{medication.Name} ei kuulu kasutaja raviskeemi.");
+        SetMedicationCheckResult(false,$"{medication.Name} ei kuulu kasutaja raviskeemi.");
     }
 
-    private void SetMedicationCheckResult(bool isSuccess, string message)
-    {
+    private void SetMedicationCheckResult(bool isSuccess,string message) {
         _medicationCheckIsSuccess = isSuccess;
         _medicationCheckMessage = message;
     }
 
-    private void OpenManualSearch()
-    {
+    private void OpenManualSearch() {
         _isManualSearchOpen = true;
         _manualSearchQuery = string.Empty;
         _manualSearchMessage = null;
         _manualSearchResults = [];
     }
 
-    private void CloseManualSearch()
-    {
+    private void CloseManualSearch() {
         _isManualSearchOpen = false;
         _manualSearchMessage = null;
         _manualSearchResults = [];
     }
 
-    private async Task SearchMedicationAsync()
-    {
-        if (_isManualSearchBusy)
-        {
+    private async Task SearchMedicationAsync() {
+        if (_isManualSearchBusy) {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(_manualSearchQuery))
-        {
+        if (string.IsNullOrWhiteSpace(_manualSearchQuery)) {
             _manualSearchMessage = "Sisesta ravimi nimi.";
             _manualSearchResults = [];
             return;
@@ -590,35 +508,24 @@ else
         _manualSearchMessage = null;
         _manualSearchResults = [];
 
-        try
-        {
-            _manualSearchResults = await ScannerFlowService.SearchByNameAsync(_manualSearchQuery, 20);
-            if (_manualSearchResults.Count == 0)
-            {
+        try {
+            _manualSearchResults = await ScannerFlowService.SearchByNameAsync(_manualSearchQuery,20);
+            if (_manualSearchResults.Count == 0) {
                 _manualSearchMessage = "Vastavaid ravimeid ei leitud.";
             }
-        }
-        catch
-        {
+        } catch {
             _manualSearchMessage = "Otsing ebaõnnestus.";
-        }
-        finally
-        {
+        } finally {
             _isManualSearchBusy = false;
         }
     }
 
-    private Task SelectManualSearchResultAsync(MedicationLookupResult medication)
-    {
+    private Task SelectManualSearchResultAsync(MedicationLookupResult medication) {
         ApplyMedicationCheckResult(medication);
         CloseManualSearch();
         return Task.CompletedTask;
     }
 
-    private sealed record DoseEntry(TimeOnly Time, string DisplayName, UserMedicationDto Source, DoseStatusEnum Status);
-    private sealed record StatusView(string Label, string CssClass, string Detail);
+    private sealed record DoseEntry(TimeOnly Time,string DisplayName,UserMedicationDto Source,DoseStatusEnum Status);
+    private sealed record StatusView(string Label,string CssClass,string Detail);
 }
-
-
-
-

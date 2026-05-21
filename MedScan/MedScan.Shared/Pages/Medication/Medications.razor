@@ -1,10 +1,7 @@
 @page "/home-pharmacy"
 @inherits MedScan.Shared.Pages.Medication.MedicationScannerComponentBase
 @using MedScan.Shared.DTOs.HomePharmacy
-@using MedScan.Shared.Models
 @using MedScan.Shared.DTOs.Medication
-@using MedScan.Shared.Models.Enums
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IHomePharmacyService HomePharmacyService
@@ -12,12 +9,9 @@
 
 <PageTitle>Ravimid</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="medicine-screen">
         <div class="medicine-header">
             <span class="header-spacer"></span>
@@ -25,14 +19,12 @@ else
             <button class="add-med-btn" @onclick="OpenAddPageAsync">+ Lisa</button>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(_errorMessage))
-        {
+        @if (!string.IsNullOrWhiteSpace(_errorMessage)) {
             <div class="error-box">@_errorMessage</div>
         }
 
         <div class="profiles-row">
-            @foreach (var profile in _profiles)
-            {
+            @foreach (var profile in _profiles) {
                 var active = profile.Id == _selectedProfileId;
                 <button class="profile-chip @(active ? "active" : null)" @onclick="() => SelectProfileAsync(profile.Id)">
                     <span>@profile.Name</span>
@@ -41,13 +33,15 @@ else
             }
         </div>
 
-        @if (_selectedProfileId > 0)
-        {
+        @if (_selectedProfileId > 0) {
             <div class="schedule-toggle-container">
                 <button class="schedule-toggle-btn @(_showSchedule ? "active" : "")" @onclick="ToggleScheduleView">
                     <span class="icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
                     </span>
                     Raviskeem
@@ -55,8 +49,7 @@ else
             </div>
         }
 
-        @if (_isLoading)
-        {
+        @if (_isLoading) {
             <div class="redirect-loading-container">
                 <div class="spinner-wrap" aria-label="Laadimine">
                     <div class="spinner-ring"></div>
@@ -70,18 +63,12 @@ else
                 <p>Laen koduapteegi ravimeid...</p>
             </div>
 
-        }
-        else if (_showSchedule)
-        {
-            if (_scheduledMedications.Count == 0)
-            {
+        } else if (_showSchedule) {
+            if (_scheduledMedications.Count == 0) {
                 <div class="empty-state">Sellel profiilil pole aktiivset raviskeemi.</div>
-            }
-            else
-            {
+            } else {
                 <div class="medicine-cards">
-                    @foreach (var med in _scheduledMedications)
-                    {
+                    @foreach (var med in _scheduledMedications) {
                         <button class="medicine-card schedule-card" @onclick="() => OpenScheduledMedicationDetails(med)">
                             <div class="left-icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -94,8 +81,7 @@ else
                                     <h2>@med.MedicationName</h2>
                                 </div>
                                 <p class="meta-line">@MedicationTextFormatter.FormatSchedule(med)</p>
-                                @if (!string.IsNullOrWhiteSpace(med.Notes))
-                                {
+                                @if (!string.IsNullOrWhiteSpace(med.Notes)) {
                                     <p class="note-line">@med.Notes</p>
                                 }
                             </div>
@@ -108,16 +94,11 @@ else
                     }
                 </div>
             }
-        }
-        else if (_selectedItems.Count == 0)
-        {
+        } else if (_selectedItems.Count == 0) {
             <div class="empty-state">Selles profiilis pole veel koduapteegi ravimeid.</div>
-        }
-        else
-        {
+        } else {
             <div class="medicine-cards">
-                @foreach (var item in _selectedItems)
-                {
+                @foreach (var item in _selectedItems) {
                     <button class="medicine-card" @onclick="() => OpenDetails(item)">
                         <div class="left-icon @(IsExpired(item.ExpiresOn) ? "expired" : null)">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -131,22 +112,17 @@ else
                                 <h2>@item.MedicationName</h2>
                             </div>
 
-                            @if (!string.IsNullOrWhiteSpace(item.ActiveIngredient))
-                            {
+                            @if (!string.IsNullOrWhiteSpace(item.ActiveIngredient)) {
                                 <p class="meta-line">@item.ActiveIngredient @(string.IsNullOrWhiteSpace(item.Strength) ? string.Empty : $"· {item.Strength}")</p>
-                            }
-                            else if (!string.IsNullOrWhiteSpace(item.Strength))
-                            {
+                            } else if (!string.IsNullOrWhiteSpace(item.Strength)) {
                                 <p class="meta-line">@item.Strength</p>
                             }
 
                             <p class="quantity-line">@MedicationTextFormatter.FormatShelfLife(item.ExpiresOn)</p>
 
-                            @if (item.PackageNumber is not null)
-                            {
+                            @if (item.PackageNumber is not null) {
                                 <p class="meta-line">
-                                    @if (item.PackageNumber is not null)
-                                    {
+                                    @if (item.PackageNumber is not null) {
                                         <span>Karp #@item.PackageNumber</span>
                                     }
                                 </p>
@@ -175,26 +151,24 @@ else
     private bool _showSchedule;
     private string? _errorMessage;
     private int _selectedProfileId;
-    
+
     private readonly List<ProfileSummary> _profiles = [];
-    private readonly Dictionary<int, List<HomePharmacyItemDto>> _itemsByProfile = [];
-    private readonly Dictionary<int, List<UserMedicationDto>> _medicationsByProfile = [];
+    private readonly Dictionary<int,List<HomePharmacyItemDto>> _itemsByProfile = [];
+    private readonly Dictionary<int,List<UserMedicationDto>> _medicationsByProfile = [];
 
     private List<HomePharmacyItemDto> _selectedItems =>
-        _selectedProfileId != 0 && _itemsByProfile.TryGetValue(_selectedProfileId, out var items)
+        _selectedProfileId != 0 && _itemsByProfile.TryGetValue(_selectedProfileId,out var items)
             ? items.Where(item => item.Quantity > 0).ToList()
             : [];
 
     private List<UserMedicationDto> _scheduledMedications =>
-        _selectedProfileId != 0 && _medicationsByProfile.TryGetValue(_selectedProfileId, out var meds)
+        _selectedProfileId != 0 && _medicationsByProfile.TryGetValue(_selectedProfileId,out var meds)
             ? meds.Where(m => m.IsActive).ToList()
             : [];
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -203,12 +177,10 @@ else
         await LoadAsync();
     }
 
-    private async Task LoadAsync()
-    {
+    private async Task LoadAsync() {
         _errorMessage = null;
 
-        try
-        {
+        try {
             var profiles = await ProfileService.GetMyProfilesAsync();
             _profiles.Clear();
             _profiles.AddRange(profiles.OrderBy(p => p.Id));
@@ -216,135 +188,106 @@ else
             _medicationsByProfile.Clear();
 
             _selectedProfileId = ResolveDefaultProfileId();
-            if (_profiles.Count != 0)
-            {
+            if (_profiles.Count != 0) {
                 await LoadAllProfileItemsAsync();
             }
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Koduapteegi laadimine ebaonnestus.";
         }
     }
 
-    private async Task LoadAllProfileItemsAsync()
-    {
+    private async Task LoadAllProfileItemsAsync() {
         _isLoading = true;
         var hasLoadError = false;
 
-        try
-        {
-            var loadTasks = _profiles.Select(async profile =>
-            {
-                try
-                {
+        try {
+            var loadTasks = _profiles.Select(async profile => {
+                try {
                     var itemsTask = HomePharmacyService.GetByProfileIdAsync(profile.Id);
                     var medsTask = MedicationService.GetScheduleAsync(profile.Id);
-                    await Task.WhenAll(itemsTask, medsTask);
+                    await Task.WhenAll(itemsTask,medsTask);
 
-                    return (profile.Id, Items: itemsTask.Result.ToList(), Meds: medsTask.Result.ToList(), HasError: false);
-                }
-                catch
-                {
-                    return (profile.Id, Items: new List<HomePharmacyItemDto>(), Meds: new List<UserMedicationDto>(), HasError: true);
+                    return (profile.Id,Items: itemsTask.Result.ToList(),Meds: medsTask.Result.ToList(),HasError: false);
+                } catch {
+                    return (profile.Id,Items: new List<HomePharmacyItemDto>(),Meds: new List<UserMedicationDto>(),HasError: true);
                 }
             });
 
             var results = await Task.WhenAll(loadTasks);
 
-            foreach (var result in results)
-            {
+            foreach (var result in results) {
                 _itemsByProfile[result.Id] = result.Items;
                 _medicationsByProfile[result.Id] = result.Meds;
                 hasLoadError |= result.HasError;
             }
 
-            if (hasLoadError)
-            {
+            if (hasLoadError) {
                 _errorMessage = "Koduapteegi laadimine ebaonnestus.";
             }
-        }
-        finally
-        {
+        } finally {
             _isLoading = false;
         }
     }
 
-    private int ResolveDefaultProfileId()
-    {
-        if (RequestedProfileId is int requestedProfileId && _profiles.Any(profile => profile.Id == requestedProfileId))
-        {
+    private int ResolveDefaultProfileId() {
+        if (RequestedProfileId is int requestedProfileId && _profiles.Any(profile => profile.Id == requestedProfileId)) {
             return requestedProfileId;
         }
 
         if (AuthService.CurrentUser?.DefaultProfileId is int defaultProfileId &&
-            _profiles.Any(profile => profile.Id == defaultProfileId))
-        {
+            _profiles.Any(profile => profile.Id == defaultProfileId)) {
             return defaultProfileId;
         }
 
         return _profiles.FirstOrDefault()?.Id ?? 0;
     }
 
-    private async Task SelectProfileAsync(int profileId)
-    {
-        if (_selectedProfileId == profileId)
-        {
+    private async Task SelectProfileAsync(int profileId) {
+        if (_selectedProfileId == profileId) {
             return;
         }
 
         _selectedProfileId = profileId;
         _showSchedule = false;
 
-        if (!_itemsByProfile.ContainsKey(profileId) || !_medicationsByProfile.ContainsKey(profileId))
-        {
+        if (!_itemsByProfile.ContainsKey(profileId) || !_medicationsByProfile.ContainsKey(profileId)) {
             await LoadProfileItemsAsync(profileId);
         }
     }
 
-    private async Task LoadProfileItemsAsync(int profileId)
-    {
+    private async Task LoadProfileItemsAsync(int profileId) {
         _isLoading = true;
         _errorMessage = null;
 
-        try
-        {
+        try {
             var itemsTask = HomePharmacyService.GetByProfileIdAsync(profileId);
             var medsTask = MedicationService.GetScheduleAsync(profileId);
 
-            await Task.WhenAll(itemsTask, medsTask);
+            await Task.WhenAll(itemsTask,medsTask);
 
             _itemsByProfile[profileId] = itemsTask.Result.ToList();
             _medicationsByProfile[profileId] = medsTask.Result.ToList();
-        }
-        catch
-        {
+        } catch {
             _itemsByProfile[profileId] = [];
             _medicationsByProfile[profileId] = [];
             _errorMessage = "Koduapteegi laadimine ebaonnestus.";
-        }
-        finally
-        {
+        } finally {
             _isLoading = false;
         }
     }
 
-    private int GetProfileCount(int profileId)
-    {
-        return _itemsByProfile.TryGetValue(profileId, out var items)
+    private int GetProfileCount(int profileId) {
+        return _itemsByProfile.TryGetValue(profileId,out var items)
             ? items.Count(item => item.Quantity > 0)
             : 0;
     }
 
-    private async Task OpenAddPageAsync()
-    {
+    private async Task OpenAddPageAsync() {
         await RunMedicationScannerAsync(_selectedProfileId > 0 ? _selectedProfileId : null);
     }
 
-    private void OpenDetails(HomePharmacyItemDto item)
-    {
-        if (IsExpired(item.ExpiresOn))
-        {
+    private void OpenDetails(HomePharmacyItemDto item) {
+        if (IsExpired(item.ExpiresOn)) {
             Navigation.NavigateTo($"/home-pharmacy/details/{item.Id}?expiredNotice=1");
             return;
         }
@@ -352,29 +295,23 @@ else
         Navigation.NavigateTo($"/home-pharmacy/details/{item.Id}");
     }
 
-    private void OpenScheduledMedicationDetails(UserMedicationDto medication)
-    {
-        if (_selectedProfileId == 0 || !_itemsByProfile.TryGetValue(_selectedProfileId, out var items))
-        {
+    private void OpenScheduledMedicationDetails(UserMedicationDto medication) {
+        if (_selectedProfileId == 0 || !_itemsByProfile.TryGetValue(_selectedProfileId,out var items)) {
             return;
         }
 
         var matchingItem = items.FirstOrDefault(item => item.MedicationId == medication.MedicationId);
-        if (matchingItem is not null)
-        {
+        if (matchingItem is not null) {
             OpenDetails(matchingItem);
         }
     }
 
-    private void ToggleScheduleView()
-    {
+    private void ToggleScheduleView() {
         _showSchedule = !_showSchedule;
     }
 
-    private static bool IsExpired(DateOnly? expiresOn)
-    {
-        if (expiresOn is not DateOnly expiryDate)
-        {
+    private static bool IsExpired(DateOnly? expiresOn) {
+        if (expiresOn is not DateOnly expiryDate) {
             return false;
         }
 

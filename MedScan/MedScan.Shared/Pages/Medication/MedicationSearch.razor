@@ -1,20 +1,13 @@
 ﻿@page "/home-pharmacy/search"
 @inherits MedScan.Shared.Pages.Medication.MedicationScannerComponentBase
-@using MedScan.Shared.DTOs.HomePharmacy
-@using MedScan.Shared.Models
-@using MedScan.Shared.Services
-@using Microsoft.AspNetCore.Components.Forms
 @inject IAuthService AuthService
 @inject IHomePharmacyService HomePharmacyService
 
 <PageTitle>Lisa ravim</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="medicine-screen">
         <div class="medicine-header">
             <button class="back-link" @onclick="BackToScannerAsync">
@@ -28,8 +21,7 @@ else
             <span class="header-spacer"></span>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(_message))
-        {
+        @if (!string.IsNullOrWhiteSpace(_message)) {
             <div class="error-box">@_message</div>
         }
 
@@ -46,11 +38,9 @@ else
                 </button>
             </div>
 
-            @if (_suggestions.Count > 0)
-            {
+            @if (_suggestions.Count > 0) {
                 <div class="search-suggestions">
-                    @foreach (var item in _suggestions)
-                    {
+                    @foreach (var item in _suggestions) {
                         <button class="manual-result-item" @onclick="() => SelectMedication(item)">
                             <div class="manual-result-text">
                                 <strong>@item.Name</strong>
@@ -62,11 +52,9 @@ else
                 </div>
             }
 
-            @if (_results.Count > 0)
-            {
+            @if (_results.Count > 0) {
                 <div class="manual-results">
-                    @foreach (var item in _results)
-                    {
+                    @foreach (var item in _results) {
                         <button class="manual-result-item" @onclick="() => SelectMedication(item)">
                             <div class="manual-result-text">
                                 <strong>@item.Name</strong>
@@ -82,7 +70,8 @@ else
 }
 
 @code {
-    [SupplyParameterFromQuery] public int? ProfileId { get; set; }
+    [SupplyParameterFromQuery] 
+    public int? ProfileId { get; set; }
 
     private bool _isReady;
     private bool _isBusy;
@@ -93,43 +82,35 @@ else
     private IReadOnlyList<MedicationLookupResult> _suggestions = [];
     private IReadOnlyList<MedicationLookupResult> _results = [];
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
 
         _targetProfileId = ResolveTargetProfileId();
-        if (_targetProfileId <= 0)
-        {
+        if (_targetProfileId <= 0) {
             _message = "Vaikimisi profiili ei leitud.";
         }
 
         _isReady = true;
     }
 
-    private int ResolveTargetProfileId()
-    {
-        if (ProfileId is int routeProfileId && routeProfileId > 0)
-        {
+    private int ResolveTargetProfileId() {
+        if (ProfileId is int routeProfileId && routeProfileId > 0) {
             return routeProfileId;
         }
 
         return AuthService.CurrentUser?.DefaultProfileId ?? 0;
     }
 
-    private async Task SearchAsync()
-    {
-        if (_isBusy)
-        {
+    private async Task SearchAsync() {
+        if (_isBusy) {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(_query))
-        {
+        if (string.IsNullOrWhiteSpace(_query)) {
             _message = "Sisesta ravimi nimi.";
             _suggestions = [];
             _results = [];
@@ -141,63 +122,48 @@ else
         _suggestions = [];
         _results = [];
 
-        try
-        {
-            _results = await ScannerFlowService.SearchByNameAsync(_query, 20);
-            if (_results.Count == 0)
-            {
+        try {
+            _results = await ScannerFlowService.SearchByNameAsync(_query,20);
+            if (_results.Count == 0) {
                 _message = "Vastavaid ravimeid ei leitud.";
             }
-        }
-        catch
-        {
+        } catch {
             _message = "Otsing ebaonnestus.";
-        }
-        finally
-        {
+        } finally {
             _isBusy = false;
         }
     }
 
-    private async Task OnQueryInputAsync(ChangeEventArgs args)
-    {
+    private async Task OnQueryInputAsync(ChangeEventArgs args) {
         _query = args.Value?.ToString() ?? string.Empty;
         _message = null;
 
-        if (_query.Trim().Length < 3)
-        {
+        if (_query.Trim().Length < 3) {
             _suggestions = [];
             return;
         }
 
         var requestId = ++_suggestionRequestId;
-        try
-        {
-            var lookupResults = await ScannerFlowService.SearchByNameAsync(_query, 8);
-            if (requestId != _suggestionRequestId)
-            {
+        try {
+            var lookupResults = await ScannerFlowService.SearchByNameAsync(_query,8);
+            if (requestId != _suggestionRequestId) {
                 return;
             }
 
             _suggestions = lookupResults;
-        }
-        catch
-        {
-            if (requestId == _suggestionRequestId)
-            {
+        } catch {
+            if (requestId == _suggestionRequestId) {
                 _suggestions = [];
             }
         }
     }
 
-    private void SelectMedication(MedicationLookupResult medication)
-    {
+    private void SelectMedication(MedicationLookupResult medication) {
         _suggestions = [];
         Navigation.NavigateTo($"/home-pharmacy/save-medication/{Uri.EscapeDataString(medication.Barcode)}?ProfileId={_targetProfileId}");
     }
 
-    private async Task BackToScannerAsync()
-    {
+    private async Task BackToScannerAsync() {
         await RunMedicationScannerAsync(
             _targetProfileId > 0 ? _targetProfileId : null,
             replace: true,

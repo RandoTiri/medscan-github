@@ -2,11 +2,10 @@ using MedScan.Shared.DTOs.Profile;
 
 namespace MedScan.Shared.Services.Profiles;
 
-public interface IProfileService
-{
+public interface IProfileService {
     Task<IReadOnlyList<ProfileSummary>> GetMyProfilesAsync(CancellationToken cancellationToken = default);
-    Task<ProfileSummary?> GetByIdAsync(int profileId, CancellationToken cancellationToken = default);
-    Task<ProfileSummary> CreatePatientProfileAsync(CreatePatientProfileRequest request, CancellationToken cancellationToken = default);
-    Task<ProfileSummary?> UpdatePatientProfileAsync(int profileId, CreatePatientProfileRequest request, CancellationToken cancellationToken = default);
-    Task<bool> DeletePatientProfileAsync(int profileId, CancellationToken cancellationToken = default);
+    Task<ProfileSummary?> GetByIdAsync(int profileId,CancellationToken cancellationToken = default);
+    Task<ProfileSummary> CreatePatientProfileAsync(CreatePatientProfileRequest request,CancellationToken cancellationToken = default);
+    Task<ProfileSummary?> UpdatePatientProfileAsync(int profileId,CreatePatientProfileRequest request,CancellationToken cancellationToken = default);
+    Task<bool> DeletePatientProfileAsync(int profileId,CancellationToken cancellationToken = default);
 }

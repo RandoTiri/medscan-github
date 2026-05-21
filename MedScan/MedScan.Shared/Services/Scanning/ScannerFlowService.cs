@@ -12,37 +12,29 @@ public sealed class ScannerFlowService(
     IAuthService authService,
     IBarcodeScannerService barcodeScannerService,
     IMedicationCatalogClient medicationCatalogClient,
-    IMedicationService medicationService) : IScannerFlowService
-{
-    private readonly SemaphoreSlim _scanGate = new(1, 1);
+    IMedicationService medicationService) : IScannerFlowService {
+    private readonly SemaphoreSlim _scanGate = new(1,1);
 
-    public async Task<BarcodeScanResult> ScanAsync(CancellationToken cancellationToken = default)
-    {
+    public async Task<BarcodeScanResult> ScanAsync(CancellationToken cancellationToken = default) {
         await _scanGate.WaitAsync(cancellationToken);
 
-        try
-        {
+        try {
             return await barcodeScannerService.ScanAsync(cancellationToken);
-        }
-        finally
-        {
+        } finally {
             _scanGate.Release();
         }
     }
 
-    public Task<MedicationLookupResult?> FindByBarcodeAsync(string barcode, CancellationToken cancellationToken = default)
-    {
-        return medicationCatalogClient.FindByBarcodeAsync(barcode, cancellationToken);
+    public Task<MedicationLookupResult?> FindByBarcodeAsync(string barcode,CancellationToken cancellationToken = default) {
+        return medicationCatalogClient.FindByBarcodeAsync(barcode,cancellationToken);
     }
 
-    public Task OpenAppSettingsAsync()
-    {
+    public Task OpenAppSettingsAsync() {
         return barcodeScannerService.OpenAppSettingsAsync();
     }
 
-    public Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query, int limit = MedicationCatalogClient.DefaultSearchLimit, CancellationToken cancellationToken = default)
-    {
-        return medicationCatalogClient.SearchByNameAsync(query, limit, cancellationToken);
+    public Task<IReadOnlyList<MedicationLookupResult>> SearchByNameAsync(string query,int limit = MedicationCatalogClient.DefaultSearchLimit,CancellationToken cancellationToken = default) {
+        return medicationCatalogClient.SearchByNameAsync(query,limit,cancellationToken);
     }
 
     public async Task<AddMedicationToScheduleResult> AddMedicationToDefaultProfileAsync(
@@ -52,41 +44,33 @@ public sealed class ScannerFlowService(
         bool remindersEnabled,
         string? notes,
         DateOnly? expiresOn = null,
-        CancellationToken cancellationToken = default)
-    {
-        if (medicationId <= 0)
-        {
+        CancellationToken cancellationToken = default) {
+        if (medicationId <= 0) {
             return new AddMedicationToScheduleResult { Message = "Ravimi ID on vigane." };
         }
 
-        if (frequencyPerDay < MedicationScheduleDefaults.MinDailyFrequency || frequencyPerDay > MedicationScheduleDefaults.MaxDailyFrequency)
-        {
-            return new AddMedicationToScheduleResult
-            {
+        if (frequencyPerDay < MedicationScheduleDefaults.MinDailyFrequency || frequencyPerDay > MedicationScheduleDefaults.MaxDailyFrequency) {
+            return new AddMedicationToScheduleResult {
                 Message = $"Sagedus peab olema vahemikus {MedicationScheduleDefaults.MinDailyFrequency}-{MedicationScheduleDefaults.MaxDailyFrequency}."
             };
         }
 
-        if (scheduledTimes.Count == 0)
-        {
+        if (scheduledTimes.Count == 0) {
             return new AddMedicationToScheduleResult { Message = "Lisa vahemalt uks manustamise aeg." };
         }
 
-        if (scheduledTimes.Count != frequencyPerDay)
-        {
+        if (scheduledTimes.Count != frequencyPerDay) {
             return new AddMedicationToScheduleResult { Message = "Meeldetuletuse aegade arv peab vastama paevasele sagedusele." };
         }
 
         await authService.InitializeAsync();
 
-        if (!authService.IsLoggedIn)
-        {
+        if (!authService.IsLoggedIn) {
             return new AddMedicationToScheduleResult { Message = "Palun logi sisse." };
         }
 
         var profileId = authService.CurrentUser?.DefaultProfileId;
-        if (!profileId.HasValue)
-        {
+        if (!profileId.HasValue) {
             return new AddMedicationToScheduleResult { Message = "Vaikimisi profiili ei leitud." };
         }
 
@@ -95,33 +79,27 @@ public sealed class ScannerFlowService(
             .OrderBy(t => t)
             .ToList();
 
-        var dto = new AddMedicationDto
-        {
+        var dto = new AddMedicationDto {
             ProfileId = profileId.Value,
             MedicationId = medicationId,
-            FrequencyPerDay = Math.Clamp(frequencyPerDay, MedicationScheduleDefaults.MinDailyFrequency, MedicationScheduleDefaults.MaxDailyFrequency),
+            FrequencyPerDay = Math.Clamp(frequencyPerDay,MedicationScheduleDefaults.MinDailyFrequency,MedicationScheduleDefaults.MaxDailyFrequency),
             ScheduledTimes = normalizedTimes,
             ExpiresOn = expiresOn,
             RemindersEnabled = remindersEnabled,
             Notes = string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
         };
 
-        try
-        {
+        try {
             var saved = await medicationService.AddToScheduleAsync(dto);
 
-            return new AddMedicationToScheduleResult
-            {
+            return new AddMedicationToScheduleResult {
                 Success = true,
                 Message = "Ravim lisati raviplaani.",
                 UserMedicationId = saved.Id
             };
-        }
-        catch (Exception ex)
-        {
-            SharedDiagnostics.Log("SCANNER ADD MEDICATION", ex);
-            return new AddMedicationToScheduleResult
-            {
+        } catch (Exception ex) {
+            SharedDiagnostics.Log("SCANNER ADD MEDICATION",ex);
+            return new AddMedicationToScheduleResult {
                 Message = "Ravimi lisamine ebaonnestus. Proovi uuesti."
             };
         }

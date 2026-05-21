@@ -1,6 +1,5 @@
 @page "/settings"
 @using MedScan.Shared.Models
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IExternalNavigationService ExternalNavigationService
@@ -8,12 +7,9 @@
 
 <PageTitle>Seaded</PageTitle>
 
-@if (!AuthService.IsLoggedIn)
-{
+@if (!AuthService.IsLoggedIn) {
     <p>Suunan sisselogimislehele...</p>
-}
-else
-{
+} else {
     <div class="mobile-container">
         <div class="settings-content">
             <div class="settings-header">
@@ -90,20 +86,9 @@ else
             <div class="settings-section">
                 <span class="section-label">Andmed</span>
                 <div class="settings-card">
-                    @* <div class="settings-item" @onclick="GoToMyMedicine">
-                        <div class="icon-wrapper">
-                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 20.5l-6-6a4.95 4.95 0 1 1 7-7l6 6a4.95 4.95 0 1 1-7 7z"></path><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"></line></svg>
-                        </div>
-                        <div class="item-text">
-                            <h3>Minu ravimid</h3>
-                            <p>Ava koduapteegi vaade</p>
-                        </div>
-                        <div class="right-arrow">›</div>
-                    </div>
-                    <div class="item-divider"></div> *@
                     <div class="settings-item" @onclick="OpenRavimiregisterAsync">
                         <div class="icon-wrapper">
-                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path><path d="m8.5 8.5 7 7"></path></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#258d6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path><path d="m8.5 8.5 7 7"></path></svg>
                         </div>
                         <div class="item-text">
                             <h3>Ravimiregister</h3>
@@ -139,7 +124,7 @@ else
                 </span>
                 Logi välja
             </button>
-            
+
             <div class="version-info">
                 MedScan v1.0.0 • © 2026
             </div>
@@ -151,12 +136,10 @@ else
     private int _mainProfileId;
     private Patient? _mainUserProfile;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        
-        if (!AuthService.IsLoggedIn)
-        {
+
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -164,8 +147,7 @@ else
         await LoadMainProfileAsync();
     }
 
-    private async Task LoadMainProfileAsync()
-    {
+    private async Task LoadMainProfileAsync() {
         var profiles = await ProfileService.GetMyProfilesAsync();
 
         _mainProfileId = AuthService.CurrentUser?.DefaultProfileId
@@ -177,8 +159,7 @@ else
 
         _mainUserProfile = profile is null
             ? null
-            : new Patient
-            {
+            : new Patient {
                 Id = profile.Id,
                 Name = profile.Name,
                 BirthDate = profile.BirthDate,
@@ -186,53 +167,41 @@ else
             };
     }
 
-    private string GetMainUserDetails()
-    {
+    private string GetMainUserDetails() {
         return ProfileDisplayFormatter.BuildDetails(_mainUserProfile);
     }
-    private void OpenMainProfileView()
-    {
-        if (_mainProfileId > 0)
-        {
+    private void OpenMainProfileView() {
+        if (_mainProfileId > 0) {
             Navigation.NavigateTo($"/settings/main-profile/{_mainProfileId}");
         }
     }
 
-    private void OpenReminderSettings()
-    {
+    private void OpenReminderSettings() {
         Navigation.NavigateTo("/settings/notifications");
     }
 
-    private void OpenAppearanceSettings()
-    {
+    private void OpenAppearanceSettings() {
         Navigation.NavigateTo("/settings/appearance");
     }
 
-    private void OpenLanguageSettings()
-    {
+    private void OpenLanguageSettings() {
         Navigation.NavigateTo("/settings/language");
     }
 
-    private async Task OpenRavimiregisterAsync()
-    {
+    private async Task OpenRavimiregisterAsync() {
         await ExternalNavigationService.OpenUrlAsync("https://www.ravimiregister.ee/");
     }
 
-    private void OpenSupportSettings()
-    {
+    private void OpenSupportSettings() {
         Navigation.NavigateTo("/settings/support");
     }
 
-    private string GetInitials()
-    {
+    private string GetInitials() {
         return ProfileDisplayFormatter.BuildInitials(AuthService.CurrentUser?.FullName,"NA");
     }
 
-    private async Task Logout()
-    {
+    private async Task Logout() {
         await AuthService.LogoutAsync();
-        Navigation.NavigateTo("/login", true);
+        Navigation.NavigateTo("/login",true);
     }
-
 }
-

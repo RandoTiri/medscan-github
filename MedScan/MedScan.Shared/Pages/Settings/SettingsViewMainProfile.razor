@@ -1,18 +1,14 @@
 ﻿@page "/settings/main-profile/{ProfileId:int}"
 @using MedScan.Shared.Models
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject NavigationManager Navigation
 
 <PageTitle>Põhikasutaja seaded</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else if (_profile is null)
-{
+} else if (_profile is null) {
     <div class="main-profile-page">
         <div class="main-profile-content">
             <button class="back-link" @onclick="GoBack">
@@ -25,9 +21,7 @@ else if (_profile is null)
             <div class="error-box">Põhiprofiili ei leitud.</div>
         </div>
     </div>
-}
-else
-{
+} else {
     <div class="main-profile-page">
         <div class="main-profile-content">
             <button class="back-link" @onclick="GoBack">
@@ -46,13 +40,11 @@ else
                 </div>
             </section>
 
-            @if (!string.IsNullOrWhiteSpace(_errorMessage))
-            {
+            @if (!string.IsNullOrWhiteSpace(_errorMessage)) {
                 <div class="error-box">@_errorMessage</div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(_successMessage))
-            {
+            @if (!string.IsNullOrWhiteSpace(_successMessage)) {
                 <div class="success-box">@_successMessage</div>
             }
 
@@ -72,8 +64,7 @@ else
                 <button class="delete-btn main-profile-delete" @onclick="PromptDeleteAccount">Kustuta kasutaja</button>
             </section>
 
-            @if (_isEditing)
-            {
+            @if (_isEditing) {
                 <div class="confirm-overlay" @onclick="CloseEdit">
                     <div class="edit-dialog" @onclick:stopPropagation="true">
                         <div class="auth-input-group">
@@ -94,7 +85,7 @@ else
                             <div class="input-wrapper">
                                 <div class="input-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gender-ambiguous" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z"/>
+                                        <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z" />
                                     </svg>
                                 </div>
                                 <select id="edit-gender" @bind="_editModel.Gender">
@@ -110,24 +101,21 @@ else
                             <div id="edit-birthdate" class="birth-grid">
                                 <select class="birth-select" @bind="_birthDay">
                                     <option value="">Päev</option>
-                                    @foreach (var day in _days)
-                                    {
+                                    @foreach (var day in _days) {
                                         <option value="@day">@day</option>
                                     }
                                 </select>
 
                                 <select class="birth-select" @bind="_birthMonth">
                                     <option value="">Kuu</option>
-                                    @foreach (var month in _months)
-                                    {
+                                    @foreach (var month in _months) {
                                         <option value="@month">@month</option>
                                     }
                                 </select>
 
                                 <select class="birth-select" @bind="_birthYear">
                                     <option value="">Aasta</option>
-                                    @foreach (var year in _years)
-                                    {
+                                    @foreach (var year in _years) {
                                         <option value="@year">@year</option>
                                     }
                                 </select>
@@ -142,8 +130,7 @@ else
                 </div>
             }
 
-            @if (_isChangingPassword)
-            {
+            @if (_isChangingPassword) {
                 <div class="confirm-overlay" @onclick="ClosePasswordForm">
                     <div class="edit-dialog" @onclick:stopPropagation="true">
                         <div class="auth-input-group">
@@ -184,8 +171,7 @@ else
                                 </div>
                                 <input id="confirm-password" type="password" @bind="_confirmNewPassword" />
                             </div>
-                            @if (ShowConfirmNewPasswordMismatchError)
-                            {
+                            @if (ShowConfirmNewPasswordMismatchError) {
                                 <div class="input-error-message">Paroolid peavad kattuma.</div>
                             }
                         </div>
@@ -198,8 +184,7 @@ else
                 </div>
             }
 
-            @if (_showDeleteConfirm)
-            {
+            @if (_showDeleteConfirm) {
                 <div class="confirm-overlay">
                     <div class="confirm-dialog">
                         <p>Kas soovite kasutaja ära kustutada?</p>
@@ -213,8 +198,6 @@ else
         </div>
     </div>
 }
-
-
 
 @code {
     [Parameter] public int ProfileId { get; set; }
@@ -238,14 +221,12 @@ else
     private const string PasswordRequirementsText = PasswordRules.RequirementsText;
     private bool ShowConfirmNewPasswordMismatchError =>
         !string.IsNullOrEmpty(_confirmNewPassword) &&
-        !string.Equals(_newPassword, _confirmNewPassword, StringComparison.Ordinal);
+        !string.Equals(_newPassword,_confirmNewPassword,StringComparison.Ordinal);
     private CreatePatientProfileRequest _editModel = new();
 
-    protected override async Task OnParametersSetAsync()
-    {
+    protected override async Task OnParametersSetAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -253,73 +234,58 @@ else
         await LoadAsync();
     }
 
-    private async Task LoadAsync()
-    {
+    private async Task LoadAsync() {
         _isReady = false;
         _errorMessage = null;
 
-        try
-        {
+        try {
             var profile = await ProfileService.GetByIdAsync(ProfileId);
-            if (profile is null)
-            {
+            if (profile is null) {
                 _profile = null;
                 return;
             }
 
-            _profile = new Patient
-            {
+            _profile = new Patient {
                 Id = profile.Id,
                 Name = profile.Name,
                 Gender = ProfileDisplayFormatter.NormalizeGender(profile.Gender),
                 BirthDate = profile.BirthDate
             };
 
-            _editModel = new CreatePatientProfileRequest
-            {
+            _editModel = new CreatePatientProfileRequest {
                 Name = _profile.Name,
                 Gender = _profile.Gender,
                 BirthDate = _profile.BirthDate
             };
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Profiili laadimine ebaõnnestus.";
-        }
-        finally
-        {
+        } finally {
             _isReady = true;
         }
     }
 
-    private void ToggleEdit()
-    {
+    private void ToggleEdit() {
         _isEditing = !_isEditing;
         _errorMessage = null;
         _successMessage = null;
 
-        if (_isEditing && _profile is not null)
-        {
+        if (_isEditing && _profile is not null) {
             _isChangingPassword = false;
             _currentPassword = string.Empty;
             _newPassword = string.Empty;
             _confirmNewPassword = string.Empty;
 
-            _editModel = new CreatePatientProfileRequest
-            {
+            _editModel = new CreatePatientProfileRequest {
                 Name = _profile.Name,
                 Gender = _profile.Gender,
                 BirthDate = _profile.BirthDate
             };
 
-            if (_editModel.BirthDate.HasValue)
-            {
+            if (_editModel.BirthDate.HasValue) {
                 _birthDay = _editModel.BirthDate.Value.Day.ToString();
                 _birthMonth = _editModel.BirthDate.Value.Month.ToString();
                 _birthYear = _editModel.BirthDate.Value.Year.ToString();
-            }
-            else
-            {
+            } else {
                 _birthDay = string.Empty;
                 _birthMonth = string.Empty;
                 _birthYear = string.Empty;
@@ -327,36 +293,29 @@ else
         }
     }
 
-    private void CloseEdit()
-    {
-        if (!_isEditing)
-        {
+    private void CloseEdit() {
+        if (!_isEditing) {
             return;
         }
 
         ToggleEdit();
     }
 
-    private async Task SaveProfileAsync()
-    {
-        if (_profile is null || string.IsNullOrWhiteSpace(_editModel.Name))
-        {
+    private async Task SaveProfileAsync() {
+        if (_profile is null || string.IsNullOrWhiteSpace(_editModel.Name)) {
             return;
         }
 
         _errorMessage = null;
         _successMessage = null;
 
-        if (!ApplyBirthDateFromPicker())
-        {
+        if (!ApplyBirthDateFromPicker()) {
             return;
         }
 
-        try
-        {
-            var updated = await ProfileService.UpdatePatientProfileAsync(ProfileId, _editModel);
-            if (updated is null)
-            {
+        try {
+            var updated = await ProfileService.UpdatePatientProfileAsync(ProfileId,_editModel);
+            if (updated is null) {
                 _errorMessage = "Kasutaja andmete uuendamine ebaõnnestus.";
                 return;
             }
@@ -366,15 +325,12 @@ else
             _profile.BirthDate = updated.BirthDate;
             _isEditing = false;
             _successMessage = "Kasutaja andmed salvestatud.";
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Kasutaja andmete uuendamine ebaõnnestus.";
         }
     }
 
-    private bool ApplyBirthDateFromPicker()
-    {
+    private bool ApplyBirthDateFromPicker() {
         return BirthDateRules.TryApplyOptionalFromParts(
             _birthDay,
             _birthMonth,
@@ -383,14 +339,12 @@ else
             errorMessage => _errorMessage = errorMessage);
     }
 
-    private void TogglePasswordForm()
-    {
+    private void TogglePasswordForm() {
         _isChangingPassword = !_isChangingPassword;
         _errorMessage = null;
         _successMessage = null;
 
-        if (!_isChangingPassword)
-        {
+        if (!_isChangingPassword) {
             _currentPassword = string.Empty;
             _newPassword = string.Empty;
             _confirmNewPassword = string.Empty;
@@ -400,42 +354,35 @@ else
         _isEditing = false;
     }
 
-    private void ClosePasswordForm()
-    {
-        if (!_isChangingPassword)
-        {
+    private void ClosePasswordForm() {
+        if (!_isChangingPassword) {
             return;
         }
 
         TogglePasswordForm();
     }
 
-    private async Task ChangePasswordAsync()
-    {
+    private async Task ChangePasswordAsync() {
         _errorMessage = null;
         _successMessage = null;
 
-        if (string.IsNullOrWhiteSpace(_currentPassword) || string.IsNullOrWhiteSpace(_newPassword) || string.IsNullOrWhiteSpace(_confirmNewPassword))
-        {
+        if (string.IsNullOrWhiteSpace(_currentPassword) || string.IsNullOrWhiteSpace(_newPassword) || string.IsNullOrWhiteSpace(_confirmNewPassword)) {
             _errorMessage = "Kõik parooli väljad on kohustuslikud.";
             return;
         }
 
-        if (_newPassword != _confirmNewPassword)
-        {
+        if (_newPassword != _confirmNewPassword) {
             _errorMessage = "Uued paroolid ei kattu.";
             return;
         }
 
-        if (!PasswordRules.IsValid(_newPassword))
-        {
+        if (!PasswordRules.IsValid(_newPassword)) {
             _errorMessage = PasswordRequirementsText;
             return;
         }
 
-        var result = await AuthService.ChangePasswordAsync(_currentPassword, _newPassword);
-        if (!result.Success)
-        {
+        var result = await AuthService.ChangePasswordAsync(_currentPassword,_newPassword);
+        if (!result.Success) {
             _errorMessage = result.ErrorMessage;
             return;
         }
@@ -447,34 +394,26 @@ else
         _successMessage = "Parool edukalt muudetud.";
     }
 
-    private void PromptDeleteAccount()
-    {
+    private void PromptDeleteAccount() {
         _showDeleteConfirm = true;
         _errorMessage = null;
         _successMessage = null;
     }
 
-    private void CancelDeleteAccount()
-    {
+    private void CancelDeleteAccount() {
         _showDeleteConfirm = false;
     }
 
-    private async Task ConfirmDeleteAccountAsync()
-    {
+    private async Task ConfirmDeleteAccountAsync() {
         _showDeleteConfirm = false;
 
         var result = await AuthService.DeleteAccountAsync();
-        if (!result.Success)
-        {
+        if (!result.Success) {
             _errorMessage = result.ErrorMessage;
             return;
         }
 
-        Navigation.NavigateTo("/login", true);
+        Navigation.NavigateTo("/login",true);
     }
-
     private void GoBack() => Navigation.NavigateTo("/settings");
-
 }
-
-

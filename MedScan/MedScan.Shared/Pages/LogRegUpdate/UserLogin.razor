@@ -1,12 +1,9 @@
 @page "/login"
 @layout MedScan.Shared.Layout.AuthLayout
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>MedScan - Logi sisse</PageTitle>
-
-
 
 <div class="login-container">
     <div class="header-section">
@@ -20,8 +17,7 @@
         <p class="brand-subtitle">Sinu ravimite usaldusväärne kaaslane</p>
     </div>
 
-    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-    {
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage)) {
         <div class="auth-error">@ErrorMessage</div>
     }
 
@@ -50,15 +46,12 @@
                 </div>
                 <input id="password" type="@PasswordInputType" placeholder="••••••••" @bind="Password" disabled="@IsBusy" />
                 <div class="input-action" @onclick="TogglePasswordVisibility">
-                    @if (ShowPassword)
-                    {
+                    @if (ShowPassword) {
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                             <line x1="1" y1="1" x2="23" y2="23"></line>
                         </svg>
-                    }
-                    else
-                    {
+                    } else {
                         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                             <circle cx="12" cy="12" r="3"></circle>
@@ -94,62 +87,47 @@
     private bool ShowPassword = false;
     private string PasswordInputType => ShowPassword ? "text" : "password";
 
-    private void TogglePasswordVisibility()
-    {
+    private void TogglePasswordVisibility() {
         ShowPassword = !ShowPassword;
     }
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
 
-        if (AuthService.IsLoggedIn)
-        {
+        if (AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/");
         }
     }
 
-    private async Task HandleLogin()
-    {
-        if (IsBusy)
-        {
+    private async Task HandleLogin() {
+        if (IsBusy) {
             return;
         }
 
         IsBusy = true;
         ErrorMessage = string.Empty;
 
-        try
-        {
-            var result = await AuthService.LoginAsync(Email, Password);
+        try {
+            var result = await AuthService.LoginAsync(Email,Password);
 
-            if (result.Success)
-            {
+            if (result.Success) {
                 Navigation.NavigateTo("/");
                 return;
             }
 
             ErrorMessage = result.ErrorMessage;
-        }
-        catch (Exception)
-        {
+        } catch (Exception) {
             ErrorMessage = "Sisselogimine ebaõnnestus. Proovi uuesti.";
-        }
-        finally
-        {
+        } finally {
             IsBusy = false;
         }
     }
 
-    private void GoToRegister()
-    {
+    private void GoToRegister() {
         Navigation.NavigateTo("/register");
     }
 
-    private void GoToSendVerificationCode()
-    {
+    private void GoToSendVerificationCode() {
         Navigation.NavigateTo("/send-verification-code");
     }
 }
-
-

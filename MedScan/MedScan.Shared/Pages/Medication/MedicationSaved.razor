@@ -11,37 +11,29 @@
     </div>
 </div>
 
-
-
 @code {
     [SupplyParameterFromQuery(Name = "medicationName")]
     public string? MedicationNameQuery { get; set; }
-
     [SupplyParameterFromQuery(Name = "profileName")]
     public string? ProfileNameQuery { get; set; }
-
     [SupplyParameterFromQuery(Name = "profileId")]
     public int? ProfileId { get; set; }
 
     private string MedicationName => string.IsNullOrWhiteSpace(MedicationNameQuery) ? "-" : MedicationNameQuery!;
     private string ProfileName => string.IsNullOrWhiteSpace(ProfileNameQuery) ? "-" : ProfileNameQuery!;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!firstRender) {
             return;
         }
 
         await Task.Delay(2000);
 
-        if (ProfileId is int profileId && profileId > 0)
-        {
-            Navigation.NavigateTo($"/home-pharmacy?profileId={profileId}", replace: true);
+        if (ProfileId is int profileId && profileId > 0) {
+            Navigation.NavigateTo($"/home-pharmacy?profileId={profileId}",replace: true);
             return;
         }
 
-        Navigation.NavigateTo("/home-pharmacy", replace: true);
+        Navigation.NavigateTo("/home-pharmacy",replace: true);
     }
 }
-

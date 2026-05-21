@@ -1,26 +1,17 @@
 ﻿@page "/home-pharmacy/save-medication/{Barcode}"
-@using MedScan.Shared.Models
-@using MedScan.Shared.Services
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
 @inject IScannerFlowService ScannerFlowService
 
 <PageTitle>Liiguta apteeki - @_medication?.Name</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else if (_isLoading)
-{
+} else if (_isLoading) {
     <p><em>Laadin ravimi andmeid...</em></p>
-}
-else if (_medication is null)
-{
+} else if (_medication is null) {
     <p><em>Ravimit ei leitud.</em></p>
-}
-else
-{
+} else {
     <div class="medicine-screen">
         <div class="medicine-header">
             <button class="back-link" @onclick="BackToSearch">
@@ -34,8 +25,7 @@ else
             <span class="header-spacer"></span>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(_message))
-        {
+        @if (!string.IsNullOrWhiteSpace(_message)) {
             <div class="error-box">@_message</div>
         }
 
@@ -57,15 +47,13 @@ else
                     <span class="label">Toimeaine</span>
                     <span class="val">@_medication.ActiveIngredient</span>
                 </div>
-                @if (!string.IsNullOrWhiteSpace(_medication.MedicationForm))
-                {
+                @if (!string.IsNullOrWhiteSpace(_medication.MedicationForm)) {
                     <div class="info-row">
                         <span class="label">Ravimivorm</span>
                         <span class="val">@_medication.MedicationForm</span>
                     </div>
                 }
-                @if (!string.IsNullOrWhiteSpace(_medication.Strength))
-                {
+                @if (!string.IsNullOrWhiteSpace(_medication.Strength)) {
                     <div class="info-row">
                         <span class="label">Tugevus</span>
                         <span class="val">@_medication.Strength</span>
@@ -75,8 +63,7 @@ else
                     <span class="label">Pakendi kogus</span>
                     <span class="val">@MedicationTextFormatter.FormatPackSize(_medication.PackSize)</span>
                 </div>
-                @if (!string.IsNullOrWhiteSpace(_medication.ShortDescription))
-                {
+                @if (!string.IsNullOrWhiteSpace(_medication.ShortDescription)) {
                     <div class="info-row">
                         <span class="label">Näidustus</span>
                         <span class="val">@_medication.ShortDescription</span>
@@ -88,8 +75,7 @@ else
                 </div>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(_medication.Warnings))
-            {
+            @if (!string.IsNullOrWhiteSpace(_medication.Warnings)) {
                 <div class="warnings-card">
                     <div class="card-title warning-title">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -100,8 +86,7 @@ else
                         Hoiatused
                     </div>
                     <div class="warning-list">
-                        @foreach (var warning in MedicationTextFormatter.SplitWarnings(_medication.Warnings))
-                        {
+                        @foreach (var warning in MedicationTextFormatter.SplitWarnings(_medication.Warnings)) {
                             <div class="warning-item">
                                 <span class="warning-icon">&#9888;</span>
                                 <span>@warning</span>
@@ -130,8 +115,6 @@ else
     </div>
 }
 
-
-
 @code {
     [Parameter] public string Barcode { get; set; } = string.Empty;
     [SupplyParameterFromQuery(Name = "profileId")] public int? ProfileId { get; set; }
@@ -141,83 +124,64 @@ else
     private bool _isReady;
     private bool _isLoading;
     private int _targetProfileId;
-    
     private MedicationLookupResult? _medication;
     private string? _message;
     private DateOnly? _expirationDate;
     private string? _batchNumber;
     private string ShelfLifeDisplay => _expirationDate?.ToString("dd.MM.yyyy") ?? "Puudub";
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
 
         _targetProfileId = ResolveTargetProfileId();
-        if (_targetProfileId <= 0)
-        {
+        if (_targetProfileId <= 0) {
             _message = "Vaikimisi profiili ei leitud.";
         }
 
         _isReady = true;
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (_isReady)
-        {
+    protected override async Task OnParametersSetAsync() {
+        if (_isReady) {
             _isLoading = true;
-            try
-            {
+            try {
                 _expirationDate = MedicationScanQueryParser.ParseExpiration(ExpirationQuery);
                 _batchNumber = MedicationScanQueryParser.ParseBatch(BatchQuery);
                 _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
-                if (_medication == null)
-                {
+                if (_medication == null) {
                     _message = "Ravimit ei leitud.";
                 }
-            }
-            catch
-            {
+            } catch {
                 _message = "Ravimi andmete laadimine ebaõnnestus.";
-            }
-            finally
-            {
+            } finally {
                 _isLoading = false;
             }
         }
     }
 
-    private int ResolveTargetProfileId()
-    {
-        if (ProfileId is int routeProfileId && routeProfileId > 0)
-        {
+    private int ResolveTargetProfileId() {
+        if (ProfileId is int routeProfileId && routeProfileId > 0) {
             return routeProfileId;
         }
 
         return AuthService.CurrentUser?.DefaultProfileId ?? 0;
     }
 
-    private void OpenAddMedicationPage()
-    {
-        if (_medication is null)
-        {
+    private void OpenAddMedicationPage() {
+        if (_medication is null) {
             return;
         }
 
-        if (_targetProfileId > 0)
-        {
+        if (_targetProfileId > 0) {
             var route = $"/home-pharmacy/add-medication/{Uri.EscapeDataString(_medication.Barcode)}?profileId={_targetProfileId}";
-            if (_expirationDate is DateOnly expirationDate)
-            {
+            if (_expirationDate is DateOnly expirationDate) {
                 route += $"&exp={Uri.EscapeDataString(expirationDate.ToString("yyyy-MM-dd"))}";
             }
-            if (!string.IsNullOrWhiteSpace(_batchNumber))
-            {
+            if (!string.IsNullOrWhiteSpace(_batchNumber)) {
                 route += $"&lot={Uri.EscapeDataString(_batchNumber)}";
             }
 
@@ -226,12 +190,10 @@ else
         }
 
         var fallbackRoute = $"/home-pharmacy/add-medication/{Uri.EscapeDataString(_medication.Barcode)}";
-        if (_expirationDate is DateOnly fallbackExpirationDate)
-        {
+        if (_expirationDate is DateOnly fallbackExpirationDate) {
             fallbackRoute += $"?exp={Uri.EscapeDataString(fallbackExpirationDate.ToString("yyyy-MM-dd"))}";
         }
-        if (!string.IsNullOrWhiteSpace(_batchNumber))
-        {
+        if (!string.IsNullOrWhiteSpace(_batchNumber)) {
             fallbackRoute += fallbackRoute.Contains('?')
                 ? $"&lot={Uri.EscapeDataString(_batchNumber)}"
                 : $"?lot={Uri.EscapeDataString(_batchNumber)}";
@@ -240,24 +202,16 @@ else
         Navigation.NavigateTo(fallbackRoute);
     }
 
-    private void OpenPdfAsync()
-    {
-        if (_medication is null || string.IsNullOrWhiteSpace(_medication.PdfUrl))
-        {
+    private void OpenPdfAsync() {
+        if (_medication is null || string.IsNullOrWhiteSpace(_medication.PdfUrl)) {
             _message = "Ametlik infoleht puudub.";
             return;
         }
 
-        Navigation.NavigateTo(_medication.PdfUrl, true);
+        Navigation.NavigateTo(_medication.PdfUrl,true);
     }
 
-    private void BackToSearch()
-    {
+    private void BackToSearch() {
         Navigation.NavigateTo($"/home-pharmacy/search?ProfileId={ProfileId}");
     }
-
 }
-
-
-
-

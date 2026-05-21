@@ -1,20 +1,14 @@
 @page "/profile"
 @using MedScan.Shared.Models
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject NavigationManager Navigation
 
-
-
 <PageTitle>Profiilid</PageTitle>
 
-@if (!AuthService.IsLoggedIn)
-{
+@if (!AuthService.IsLoggedIn) {
     <p>Suunan loginisse...</p>
-}
-else
-{
+} else {
     <div class="page-container">
         <div class="content-wrapper">
             <div class="profile-header">
@@ -38,14 +32,12 @@ else
 
             <div class="section-header">
                 <h2 class="section-title">Hoolealune</h2>
-                @if (!isAdding)
-                {
+                @if (!isAdding) {
                     <button class="btn-add" @onclick="ToggleAddForm">+ Lisa</button>
                 }
             </div>
 
-            @if (isAdding)
-            {
+            @if (isAdding) {
                 <div class="confirm-overlay" @onclick="ToggleAddForm">
                     <div class="edit-dialog" @onclick:stopPropagation="true">
                         <div class="auth-input-group">
@@ -66,7 +58,7 @@ else
                             <div class="input-wrapper">
                                 <div class="input-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-gender-ambiguous" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z"/>
+                                        <path fill-rule="evenodd" d="M11.5 1a.5.5 0 0 1 0-1h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V1.707l-3.45 3.45A4 4 0 0 1 8.5 10.97V13H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V14H6a.5.5 0 0 1 0-1h1.5v-2.03a4 4 0 1 1 3.471-6.648L14.293 1H11.5zm-.997 4.046a3 3 0 1 0-5.006 3.09 3 3 0 0 0 5.006-3.09z" />
                                     </svg>
                                 </div>
                                 <select id="edit-gender" @bind="newPatient.Gender">
@@ -82,24 +74,21 @@ else
                             <div id="edit-birthdate" class="birth-grid">
                                 <select class="birth-select" @bind="_birthDay" @bind:after="OnBirthDatePartChanged">
                                     <option value="">Päev</option>
-                                    @foreach (var day in _days)
-                                    {
+                                    @foreach (var day in _days) {
                                         <option value="@day">@day</option>
                                     }
                                 </select>
 
                                 <select class="birth-select" @bind="_birthMonth" @bind:after="OnBirthDatePartChanged">
                                     <option value="">Kuu</option>
-                                    @foreach (var month in _months)
-                                    {
+                                    @foreach (var month in _months) {
                                         <option value="@month">@month</option>
                                     }
                                 </select>
 
                                 <select class="birth-select" @bind="_birthYear" @bind:after="OnBirthDatePartChanged">
                                     <option value="">Aasta</option>
-                                    @foreach (var year in _years)
-                                    {
+                                    @foreach (var year in _years) {
                                         <option value="@year">@year</option>
                                     }
                                 </select>
@@ -115,10 +104,8 @@ else
             }
 
             <div class="patients-list">
-                @if (CareReceivers.Any())
-                {
-                    @foreach (var patient in CareReceivers)
-                    {
+                @if (CareReceivers.Any()) {
+                    @foreach (var patient in CareReceivers) {
                         <div class="patient-card" @onclick="() => OpenProfileView(patient.Id)">
                             <div class="patient-avatar">
                                 @patient.Initials
@@ -147,19 +134,16 @@ else
     private readonly IReadOnlyList<int> _days = BirthDatePickerOptions.Days;
     private readonly IReadOnlyList<int> _months = BirthDatePickerOptions.Months;
     private readonly IReadOnlyList<int> _years = BirthDatePickerOptions.Years;
-
     private bool isAdding = false;
     private Patient newPatient = new Patient();
     private string _birthDay = string.Empty;
     private string _birthMonth = string.Empty;
     private string _birthYear = string.Empty;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
 
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -167,11 +151,9 @@ else
         await LoadPatientsAsync();
     }
 
-    private void ToggleAddForm()
-    {
+    private void ToggleAddForm() {
         isAdding = !isAdding;
-        if (isAdding)
-        {
+        if (isAdding) {
             newPatient = new Patient();
             _birthDay = string.Empty;
             _birthMonth = string.Empty;
@@ -179,28 +161,23 @@ else
         }
     }
 
-    private async Task SavePatientAsync()
-    {
-        if (string.IsNullOrWhiteSpace(newPatient.Name))
-        {
+    private async Task SavePatientAsync() {
+        if (string.IsNullOrWhiteSpace(newPatient.Name)) {
             return;
         }
 
-        if (!ApplyBirthDateFromPicker())
-        {
+        if (!ApplyBirthDateFromPicker()) {
             return;
         }
 
-        var request = new CreatePatientProfileRequest
-        {
+        var request = new CreatePatientProfileRequest {
             Name = newPatient.Name,
             Gender = ProfileDisplayFormatter.NormalizeGender(newPatient.Gender),
             BirthDate = newPatient.BirthDate
         };
 
         var createdProfile = await ProfileService.CreatePatientProfileAsync(request);
-        CareReceivers.Add(new Patient
-        {
+        CareReceivers.Add(new Patient {
             Id = createdProfile.Id,
             Name = createdProfile.Name,
             BirthDate = createdProfile.BirthDate,
@@ -214,32 +191,28 @@ else
         _birthYear = string.Empty;
     }
 
-    private Task OnBirthDatePartChanged()
-    {
+    private Task OnBirthDatePartChanged() {
         var hasAll = !string.IsNullOrWhiteSpace(_birthDay)
             && !string.IsNullOrWhiteSpace(_birthMonth)
             && !string.IsNullOrWhiteSpace(_birthYear);
 
-        if (!hasAll)
-        {
+        if (!hasAll) {
             newPatient.BirthDate = null;
             return Task.CompletedTask;
         }
 
-        if (!int.TryParse(_birthYear, out var year) || !int.TryParse(_birthMonth, out var month))
-        {
+        if (!int.TryParse(_birthYear,out var year) || !int.TryParse(_birthMonth,out var month)) {
             newPatient.BirthDate = null;
             return Task.CompletedTask;
         }
 
-        BirthDatePickerOptions.TryClampDay(_birthYear, _birthMonth, ref _birthDay);
+        BirthDatePickerOptions.TryClampDay(_birthYear,_birthMonth,ref _birthDay);
 
         ApplyBirthDateFromPicker();
         return Task.CompletedTask;
     }
 
-    private bool ApplyBirthDateFromPicker()
-    {
+    private bool ApplyBirthDateFromPicker() {
         return BirthDateRules.TryApplyOptionalFromParts(
             _birthDay,
             _birthMonth,
@@ -247,8 +220,7 @@ else
             birthDate => newPatient.BirthDate = birthDate);
     }
 
-    private async Task LoadPatientsAsync()
-    {
+    private async Task LoadPatientsAsync() {
         var profiles = await ProfileService.GetMyProfilesAsync();
 
         _mainProfileId = AuthService.CurrentUser?.DefaultProfileId
@@ -260,8 +232,7 @@ else
 
         _mainUserProfile = mainProfile is null
             ? null
-            : new Patient
-            {
+            : new Patient {
                 Id = mainProfile.Id,
                 Name = mainProfile.Name,
                 BirthDate = mainProfile.BirthDate,
@@ -270,8 +241,7 @@ else
 
         CareReceivers = profiles
             .Where(p => ProfileTypeMapper.IsPatient(p.Type))
-            .Select(p => new Patient
-            {
+            .Select(p => new Patient {
                 Id = p.Id,
                 Name = p.Name,
                 BirthDate = p.BirthDate,
@@ -280,36 +250,29 @@ else
             .ToList();
     }
 
-    private static string GetPatientDetails(Patient patient)
-    {
+    private static string GetPatientDetails(Patient patient) {
         return ProfileDisplayFormatter.BuildDetails(patient);
     }
 
-    private string GetMainUserDetails()
-    {
-        if (_mainUserProfile is null)
-        {
+    private string GetMainUserDetails() {
+        if (_mainUserProfile is null) {
             return ProfileDisplayFormatter.BuildDetails(null);
         }
 
         return GetPatientDetails(_mainUserProfile);
     }
 
-    private void OpenProfileView(int profileId)
-    {
+    private void OpenProfileView(int profileId) {
         Navigation.NavigateTo($"/profile/view/{profileId}");
     }
 
-    private void OpenMainProfileView()
-    {
-        if (_mainProfileId > 0)
-        {
+    private void OpenMainProfileView() {
+        if (_mainProfileId > 0) {
             Navigation.NavigateTo($"/profile/view/{_mainProfileId}");
         }
     }
 
-    private string GetInitials()
-    {
+    private string GetInitials() {
         return ProfileDisplayFormatter.BuildInitials(AuthService.CurrentUser?.FullName);
     }
 }

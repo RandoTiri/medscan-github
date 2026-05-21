@@ -1,9 +1,7 @@
 @page "/home-pharmacy/add-medication/{Barcode}"
 @using MedScan.Shared.DTOs.HomePharmacy
 @using MedScan.Shared.DTOs.Medication
-@using MedScan.Shared.Models
 @using MedScan.Shared.Models.Enums
-@using MedScan.Shared.Services
 @inject NavigationManager Navigation
 @inject IAuthService AuthService
 @inject IScannerFlowService ScannerFlowService
@@ -13,23 +11,15 @@
 
 <PageTitle>Lisa nimekirja</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else if (_isLoading)
-{
+} else if (_isLoading) {
     <p><em>Laadin ravimi andmeid...</em></p>
-}
-else if (_medication is null)
-{
+} else if (_medication is null) {
     <p><em>Ravimit ei leitud.</em></p>
-}
-else
-{
+} else {
     <div class="add-med-screen">
-        @if (_takeMode is null)
-        {
+        @if (_takeMode is null) {
             <div class="decision-overlay">
                 <div class="decision-modal">
                     <h2>Kuidas soovid seda ravimit kasutada?</h2>
@@ -54,8 +44,7 @@ else
             <span class="header-spacer"></span>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(_message))
-        {
+        @if (!string.IsNullOrWhiteSpace(_message)) {
             <div class="error-box">@_message</div>
         }
 
@@ -70,21 +59,18 @@ else
             <section class="section-card quick-add-card">
                 <div class="section-title profile-title">Kellele?</div>
                 <div class="profile-segment">
-                    @foreach (var profile in _profiles)
-                    {
+                    @foreach (var profile in _profiles) {
                         var active = profile.Id == _selectedProfileId;
                         <button class="profile-chip @(active ? "active" : null)" @onclick="() => SelectProfile(profile.Id)">@profile.Name</button>
                     }
                 </div>
             </section>
 
-            @if (_takeMode == MedicationTakeMode.Regular)
-            {
+            @if (_takeMode == MedicationTakeMode.Regular) {
                 <section class="section-card">
                     <div class="section-title">Manustamissagedus</div>
                     <div class="frequency-grid">
-                        @foreach (var option in _frequencyOptions)
-                        {
+                        @foreach (var option in _frequencyOptions) {
                             var active = _frequencyPerDay == option;
                             <button class="frequency-btn @(active ? "active" : null)" @onclick="() => SetFrequency(option)">@option x</button>
                         }
@@ -98,15 +84,12 @@ else
                     </div>
 
                     <div class="section-title time-title">Kellaajad</div>
-                    @for (var i = 0; i < _scheduledTimeTexts.Count; i++)
-                    {
+                    @for (var i = 0; i < _scheduledTimeTexts.Count; i++) {
                         var index = i;
                         <div class="time-row @(ShowWeeklyDaySelector ? "with-day" : "without-day")">
-                            @if (ShowWeeklyDaySelector)
-                            {
-                                <select class="day-select" value="@GetWeeklyDayValue(index)" @onchange="args => OnWeeklyDayChanged(index, args)">
-                                    @foreach (var day in _weekdayOptions)
-                                    {
+                            @if (ShowWeeklyDaySelector) {
+                                <select class="day-select" value="@GetWeeklyDayValue(index)" @onchange="args => OnWeeklyDayChanged(index,args)">
+                                    @foreach (var day in _weekdayOptions) {
                                         <option value="@day.Value">@day.Label</option>
                                     }
                                 </select>
@@ -114,9 +97,8 @@ else
                             <div class="time-controls">
                                 <span class="clock-icon">◷</span>
                                 <div class="time-wheel-box">
-                                    <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index, args)">
-                                        @for (var hour = 0; hour < 24; hour++)
-                                        {
+                                    <select class="time-wheel-part" value="@GetHourPart(index)" @onchange="args => OnHourChanged(index,args)">
+                                        @for (var hour = 0; hour < 24; hour++) {
                                             var hourText = hour.ToString("D2");
                                             <option value="@hourText">@hourText</option>
                                         }
@@ -124,9 +106,8 @@ else
                                 </div>
                                 <span class="time-separator">:</span>
                                 <div class="time-wheel-box">
-                                    <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index, args)">
-                                        @for (var minute = 0; minute < 60; minute++)
-                                        {
+                                    <select class="time-wheel-part" value="@GetMinutePart(index)" @onchange="args => OnMinuteChanged(index,args)">
+                                        @for (var minute = 0; minute < 60; minute++) {
                                             var minuteText = minute.ToString("D2");
                                             <option value="@minuteText">@minuteText</option>
                                         }
@@ -138,8 +119,7 @@ else
                 </section>
             }
 
-            @if (_takeMode == MedicationTakeMode.Regular)
-            {
+            @if (_takeMode == MedicationTakeMode.Regular) {
                 <section class="section-card toggle-card">
                     <div>
                         <div class="section-title">Meeldetuletused</div>
@@ -164,16 +144,14 @@ else
     </div>
 }
 
-
-
 @code {
     [Parameter] public string Barcode { get; set; } = string.Empty;
     [SupplyParameterFromQuery(Name = "profileId")] public int? ProfileId { get; set; }
     [SupplyParameterFromQuery(Name = "exp")] public string? ExpirationQuery { get; set; }
     [SupplyParameterFromQuery(Name = "lot")] public string? BatchQuery { get; set; }
 
-    private static readonly int[] _frequencyOptions = [1, 2, 3, 4];
-    private static readonly (int Value, string Label)[] _weekdayOptions =
+    private static readonly int[] _frequencyOptions = [1,2,3,4];
+    private static readonly (int Value,string Label)[] _weekdayOptions =
     [
         ((int)DayOfWeek.Monday, "Esmaspäev"),
         ((int)DayOfWeek.Tuesday, "Teisipäev"),
@@ -201,110 +179,87 @@ else
     private DateOnly? _expiresOn;
     private string? _batchNumber;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
 
-        try
-        {
+        try {
             var profiles = await ProfileService.GetMyProfilesAsync();
             _profiles.Clear();
             _profiles.AddRange(profiles.OrderBy(p => p.Id));
             _selectedProfileId = ResolveTargetProfileId();
-            if (_selectedProfileId <= 0)
-            {
+            if (_selectedProfileId <= 0) {
                 _message = "Profiili ei leitud.";
             }
-        }
-        catch
-        {
+        } catch {
             _message = "Profiilide laadimine ebaõnnestus.";
         }
 
         _isReady = true;
     }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        if (!_isReady)
-        {
+    protected override async Task OnParametersSetAsync() {
+        if (!_isReady) {
             return;
         }
 
         _isLoading = true;
         _message = null;
 
-        try
-        {
+        try {
             _expiresOn = MedicationScanQueryParser.ParseExpiration(ExpirationQuery);
             _batchNumber = MedicationScanQueryParser.ParseBatch(BatchQuery);
             _medication = await ScannerFlowService.FindByBarcodeAsync(Barcode);
-            if (_medication is null)
-            {
+            if (_medication is null) {
                 _message = "Ravimit ei leitud.";
                 return;
             }
-        }
-        catch
-        {
+        } catch {
             _message = "Ravimi andmete laadimine ebaõnnestus.";
-        }
-        finally
-        {
+        } finally {
             _isLoading = false;
         }
     }
 
     private bool ShowWeeklyDaySelector => _scheduleUnit == MedicationScheduleUnit.Week && _frequencyPerDay > 1;
 
-    private int ResolveTargetProfileId()
-    {
-        if (ProfileId is int routeProfileId && _profiles.Any(profile => profile.Id == routeProfileId))
-        {
+    private int ResolveTargetProfileId() {
+        if (ProfileId is int routeProfileId && _profiles.Any(profile => profile.Id == routeProfileId)) {
             return routeProfileId;
         }
 
-        if (AuthService.CurrentUser?.DefaultProfileId is int defaultProfileId && _profiles.Any(profile => profile.Id == defaultProfileId))
-        {
+        if (AuthService.CurrentUser?.DefaultProfileId is int defaultProfileId && _profiles.Any(profile => profile.Id == defaultProfileId)) {
             return defaultProfileId;
         }
 
         return _profiles.FirstOrDefault()?.Id ?? 0;
     }
 
-    private void SelectProfile(int profileId)
-    {
+    private void SelectProfile(int profileId) {
         _selectedProfileId = profileId;
     }
 
-    private void SetFrequency(int frequency)
-    {
+    private void SetFrequency(int frequency) {
         _frequencyPerDay = frequency;
         var targetTimeCount = GetVisibleTimeCount();
-        var defaults = MedicationScheduleDefaults.BuildDefaultTimes(Math.Max(frequency, targetTimeCount));
+        var defaults = MedicationScheduleDefaults.BuildDefaultTimes(Math.Max(frequency,targetTimeCount));
 
-        if (_scheduledTimeTexts.Count > targetTimeCount)
-        {
+        if (_scheduledTimeTexts.Count > targetTimeCount) {
             _scheduledTimeTexts = _scheduledTimeTexts.Take(targetTimeCount).ToList();
         }
 
-        while (_scheduledTimeTexts.Count < targetTimeCount)
-        {
+        while (_scheduledTimeTexts.Count < targetTimeCount) {
             _scheduledTimeTexts.Add(defaults[_scheduledTimeTexts.Count]);
         }
 
         SyncWeeklyDays();
     }
 
-    private void OnScheduleUnitChanged(ChangeEventArgs args)
-    {
-        if (!Enum.TryParse<MedicationScheduleUnit>(args.Value?.ToString(), out var parsed))
-        {
+    private void OnScheduleUnitChanged(ChangeEventArgs args) {
+        if (!Enum.TryParse<MedicationScheduleUnit>(args.Value?.ToString(),out var parsed)) {
             parsed = MedicationScheduleUnit.Day;
         }
 
@@ -313,67 +268,55 @@ else
         SyncWeeklyDays();
     }
 
-    private int GetVisibleTimeCount()
-    {
+    private int GetVisibleTimeCount() {
         return _scheduleUnit == MedicationScheduleUnit.Month
             ? 1
             : _frequencyPerDay;
     }
 
-    private void EnsureVisibleTimeCount()
-    {
+    private void EnsureVisibleTimeCount() {
         var targetTimeCount = GetVisibleTimeCount();
-        var defaults = MedicationScheduleDefaults.BuildDefaultTimes(Math.Max(_frequencyPerDay, targetTimeCount));
+        var defaults = MedicationScheduleDefaults.BuildDefaultTimes(Math.Max(_frequencyPerDay,targetTimeCount));
 
-        if (_scheduledTimeTexts.Count > targetTimeCount)
-        {
+        if (_scheduledTimeTexts.Count > targetTimeCount) {
             _scheduledTimeTexts = _scheduledTimeTexts.Take(targetTimeCount).ToList();
         }
 
-        while (_scheduledTimeTexts.Count < targetTimeCount)
-        {
+        while (_scheduledTimeTexts.Count < targetTimeCount) {
             _scheduledTimeTexts.Add(defaults[_scheduledTimeTexts.Count]);
         }
     }
 
-    private void SyncWeeklyDays()
-    {
-        if (!ShowWeeklyDaySelector)
-        {
+    private void SyncWeeklyDays() {
+        if (!ShowWeeklyDaySelector) {
             _weeklyDays = [];
             return;
         }
 
         var defaults = MedicationScheduleDefaults.BuildDefaultWeeklyDays(_frequencyPerDay);
-        if (_weeklyDays.Count > _frequencyPerDay)
-        {
+        if (_weeklyDays.Count > _frequencyPerDay) {
             _weeklyDays = _weeklyDays.Take(_frequencyPerDay).ToList();
         }
 
-        while (_weeklyDays.Count < _frequencyPerDay)
-        {
+        while (_weeklyDays.Count < _frequencyPerDay) {
             _weeklyDays.Add(defaults[_weeklyDays.Count]);
         }
 
         ReorderWeeklyPairs();
     }
 
-    private string GetWeeklyDayValue(int index)
-    {
+    private string GetWeeklyDayValue(int index) {
         return index < _weeklyDays.Count
             ? _weeklyDays[index].ToString()
             : ((int)DayOfWeek.Monday).ToString();
     }
 
-    private void OnWeeklyDayChanged(int index, ChangeEventArgs args)
-    {
-        if (!int.TryParse(args.Value?.ToString(), out var parsedDay))
-        {
+    private void OnWeeklyDayChanged(int index,ChangeEventArgs args) {
+        if (!int.TryParse(args.Value?.ToString(),out var parsedDay)) {
             return;
         }
 
-        while (_weeklyDays.Count <= index)
-        {
+        while (_weeklyDays.Count <= index) {
             _weeklyDays.Add((int)DayOfWeek.Monday);
         }
 
@@ -381,15 +324,13 @@ else
         ReorderWeeklyPairs();
     }
 
-    private void ReorderWeeklyPairs()
-    {
-        if (!ShowWeeklyDaySelector || _weeklyDays.Count != _scheduledTimeTexts.Count)
-        {
+    private void ReorderWeeklyPairs() {
+        if (!ShowWeeklyDaySelector || _weeklyDays.Count != _scheduledTimeTexts.Count) {
             return;
         }
 
         var orderedPairs = _weeklyDays
-            .Select((day, index) => new { Day = day, Time = _scheduledTimeTexts[index], Index = index })
+            .Select((day,index) => new { Day = day,Time = _scheduledTimeTexts[index],Index = index })
             .OrderBy(pair => MedicationScheduleDefaults.GetMondayBasedWeekdayOrder(pair.Day))
             .ThenBy(pair => pair.Index)
             .ToList();
@@ -398,56 +339,46 @@ else
         _scheduledTimeTexts = orderedPairs.Select(pair => pair.Time).ToList();
     }
 
-    private void OnHourChanged(int index, ChangeEventArgs args)
-    {
+    private void OnHourChanged(int index,ChangeEventArgs args) {
         var hour = args.Value?.ToString() ?? "00";
         var minute = GetMinutePart(index);
         _scheduledTimeTexts[index] = $"{hour}:{minute}";
     }
 
-    private void OnMinuteChanged(int index, ChangeEventArgs args)
-    {
+    private void OnMinuteChanged(int index,ChangeEventArgs args) {
         var hour = GetHourPart(index);
         var minute = args.Value?.ToString() ?? "00";
         _scheduledTimeTexts[index] = $"{hour}:{minute}";
     }
 
-    private string GetHourPart(int index)
-    {
+    private string GetHourPart(int index) {
         var value = _scheduledTimeTexts[index];
         return value.Length >= 2 ? value[..2] : "00";
     }
 
-    private string GetMinutePart(int index)
-    {
+    private string GetMinutePart(int index) {
         var value = _scheduledTimeTexts[index];
-        return value.Length >= 5 ? value.Substring(3, 2) : "00";
+        return value.Length >= 5 ? value.Substring(3,2) : "00";
     }
 
-    private async Task SaveAsync()
-    {
-        if (_isSaving || _medication is null)
-        {
+    private async Task SaveAsync() {
+        if (_isSaving || _medication is null) {
             return;
         }
 
-        if (_takeMode is null)
-        {
+        if (_takeMode is null) {
             _message = "Vali esmalt ravimi kasutusviis.";
             return;
         }
 
-        if (_selectedProfileId <= 0)
-        {
+        if (_selectedProfileId <= 0) {
             _message = "Vali profiil.";
             return;
         }
 
         var parsedTimes = new List<TimeOnly>();
-        foreach (var text in _scheduledTimeTexts)
-        {
-            if (!TimeOnly.TryParse(text, out var parsed))
-            {
+        foreach (var text in _scheduledTimeTexts) {
+            if (!TimeOnly.TryParse(text,out var parsed)) {
                 _message = "Sisesta kõik kellaajad korrektselt.";
                 return;
             }
@@ -455,25 +386,20 @@ else
             parsedTimes.Add(parsed);
         }
 
-        if (_takeMode == MedicationTakeMode.Regular)
-        {
+        if (_takeMode == MedicationTakeMode.Regular) {
             var expectedTimeCount = GetVisibleTimeCount();
-            if (parsedTimes.Count != expectedTimeCount)
-            {
+            if (parsedTimes.Count != expectedTimeCount) {
                 _message = "Kellaaegade arv peab vastama manustamissagedusele.";
                 return;
             }
 
-            if (ShowWeeklyDaySelector)
-            {
-                if (_weeklyDays.Count != _frequencyPerDay)
-                {
+            if (ShowWeeklyDaySelector) {
+                if (_weeklyDays.Count != _frequencyPerDay) {
                     _message = "Vali igale nädalasele korrale päev.";
                     return;
                 }
 
-                if (_weeklyDays.Distinct().Count() != _weeklyDays.Count)
-                {
+                if (_weeklyDays.Distinct().Count() != _weeklyDays.Count) {
                     _message = "Vali igale nädalasele korrale erinev päev.";
                     return;
                 }
@@ -483,12 +409,9 @@ else
         _isSaving = true;
         _message = null;
 
-        try
-        {
-            if (_takeMode == MedicationTakeMode.Regular)
-            {
-                await MedicationService.AddToScheduleAsync(new AddMedicationDto
-                {
+        try {
+            if (_takeMode == MedicationTakeMode.Regular) {
+                await MedicationService.AddToScheduleAsync(new AddMedicationDto {
                     ProfileId = _selectedProfileId,
                     MedicationId = _medication.Id,
                     FrequencyPerDay = _frequencyPerDay,
@@ -502,8 +425,7 @@ else
                 });
             }
 
-            await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto
-            {
+            await HomePharmacyService.AddAsync(new AddHomePharmacyItemDto {
                 ProfileId = _selectedProfileId,
                 MedicationId = _medication.Id,
                 BatchNumber = _batchNumber,
@@ -512,18 +434,15 @@ else
                 Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim()
             });
 
-            if (_takeMode == MedicationTakeMode.OneTimeNow)
-            {
-                var oneTimeResult = await MedicationService.TakeOnceAsync(_medication.Id, new TakeMedicationOnceDto
-                {
+            if (_takeMode == MedicationTakeMode.OneTimeNow) {
+                var oneTimeResult = await MedicationService.TakeOnceAsync(_medication.Id,new TakeMedicationOnceDto {
                     ProfileId = _selectedProfileId,
                     Quantity = 1,
                     Notes = string.IsNullOrWhiteSpace(_notes) ? null : _notes.Trim(),
                     ConfirmLastUnit = true
                 });
 
-                if (!oneTimeResult.Success)
-                {
+                if (!oneTimeResult.Success) {
                     _message = string.IsNullOrWhiteSpace(oneTimeResult.Message)
                         ? "Ühekordse võtmise salvestamine ebaõnnestus."
                         : oneTimeResult.Message;
@@ -533,45 +452,35 @@ else
 
             var profileName = _profiles.FirstOrDefault(p => p.Id == _selectedProfileId)?.Name ?? "kasutaja";
             Navigation.NavigateTo($"/home-pharmacy/saved-medication?medicationName={Uri.EscapeDataString(_medication.Name)}&profileName={Uri.EscapeDataString(profileName)}&profileId={_selectedProfileId}");
-        }
-        catch
-        {
+        } catch {
             _message = "Ravimi salvestamine ebaõnnestus.";
-        }
-        finally
-        {
+        } finally {
             _isSaving = false;
         }
     }
 
-    private void SetTakeMode(MedicationTakeMode mode)
-    {
+    private void SetTakeMode(MedicationTakeMode mode) {
         _takeMode = mode;
     }
 
-    private void GoBack()
-    {
+    private void GoBack() {
         Navigation.NavigateTo($"/home-pharmacy/save-medication/{Uri.EscapeDataString(Barcode)}?profileId={_selectedProfileId}");
     }
 
-    private static int ResolveInitialQuantity(string? packSize)
-    {
-        if (string.IsNullOrWhiteSpace(packSize))
-        {
+    private static int ResolveInitialQuantity(string? packSize) {
+        if (string.IsNullOrWhiteSpace(packSize)) {
             return 1;
         }
 
         var digits = new string(packSize.Where(char.IsDigit).ToArray());
-        return int.TryParse(digits, out var parsed) && parsed > 0
+        return int.TryParse(digits,out var parsed) && parsed > 0
             ? parsed
             : 1;
     }
 
-    private enum MedicationTakeMode
-    {
+    private enum MedicationTakeMode {
         Regular,
         OneTimeNow,
         StorageOnly
     }
 }
-

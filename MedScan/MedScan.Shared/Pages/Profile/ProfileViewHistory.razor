@@ -1,20 +1,13 @@
 @page "/profile/view/{ProfileId:int}/history"
-@using MedScan.Shared.DTOs.Medication
-@using MedScan.Shared.Models
-@using MedScan.Shared.Models.Enums
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IMedicationService MedicationService
 @inject NavigationManager Navigation
 
 <PageTitle>Manustamise logi</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="history-page">
         <div class="history-content">
             <div class="history-header">
@@ -29,8 +22,7 @@ else
                 <span class="header-spacer"></span>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(_errorMessage))
-            {
+            @if (!string.IsNullOrWhiteSpace(_errorMessage)) {
                 <div class="error-box">@_errorMessage</div>
             }
 
@@ -40,8 +32,7 @@ else
                     <div class="birth-field">
                         <label>Päev</label>
                         <select class="birth-select" @bind="_selectedDay" @bind:after="OnDateChangedAsync">
-                            @foreach (var day in _days)
-                            {
+                            @foreach (var day in _days) {
                                 <option value="@day">@day</option>
                             }
                         </select>
@@ -50,8 +41,7 @@ else
                     <div class="birth-field">
                         <label>Kuu</label>
                         <select class="birth-select" @bind="_selectedMonth" @bind:after="OnDateChangedAsync">
-                            @foreach (var month in _months)
-                            {
+                            @foreach (var month in _months) {
                                 <option value="@month">@month</option>
                             }
                         </select>
@@ -60,8 +50,7 @@ else
                     <div class="birth-field">
                         <label>Aasta</label>
                         <select class="birth-select" @bind="_selectedYear" @bind:after="OnDateChangedAsync">
-                            @foreach (var year in _years)
-                            {
+                            @foreach (var year in _years) {
                                 <option value="@year">@year</option>
                             }
                         </select>
@@ -69,15 +58,11 @@ else
                 </div>
             </section>
 
-            @if (_historyItems.Count == 0)
-            {
+            @if (_historyItems.Count == 0) {
                 <div class="empty-box">Selle kuupäeva kohta manustamise kirjeid ei leitud.</div>
-            }
-            else
-            {
+            } else {
                 <section class="history-list">
-                    @foreach (var item in _historyItems)
-                    {
+                    @foreach (var item in _historyItems) {
                         <article class="history-card">
                             <div class="history-title-row">
                                 <div>
@@ -94,10 +79,9 @@ else
     </div>
 }
 
-
-
 @code {
-    [Parameter] public int ProfileId { get; set; }
+    [Parameter] 
+    public int ProfileId { get; set; }
 
     private bool _isReady;
     private string? _errorMessage;
@@ -109,11 +93,9 @@ else
     private int _selectedYear = AppDate.Today.Year;
     private readonly List<HistoryItem> _historyItems = [];
 
-    protected override async Task OnParametersSetAsync()
-    {
+    protected override async Task OnParametersSetAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -122,22 +104,19 @@ else
         await LoadHistoryAsync();
     }
 
-    private async Task LoadHistoryAsync()
-    {
+    private async Task LoadHistoryAsync() {
         _errorMessage = null;
         _historyItems.Clear();
 
-        try
-        {
-            var selectedDate = new DateOnly(_selectedYear, _selectedMonth, _selectedDay);
-            var history = await MedicationService.GetHistoryAsync(ProfileId, selectedDate);
+        try {
+            var selectedDate = new DateOnly(_selectedYear,_selectedMonth,_selectedDay);
+            var history = await MedicationService.GetHistoryAsync(ProfileId,selectedDate);
 
             _historyItems.AddRange(history
-                .Select(entry =>
-                {
+                .Select(entry => {
                     var localTime = entry.ScheduledTime.ToLocalTime();
                     return new HistoryItem(
-                        DisplayName: MedicationTextFormatter.BuildDisplayName(entry.MedicationName, entry.Strength),
+                        DisplayName: MedicationTextFormatter.BuildDisplayName(entry.MedicationName,entry.Strength),
                         ScheduleText: $"{selectedDate:dd.MM.yyyy} · {localTime:HH:mm}",
                         StatusLabel: MedicationTextFormatter.GetDoseStatusLabel(entry.Status),
                         StatusCss: MedicationTextFormatter.GetDoseStatusCss(entry.Status),
@@ -145,23 +124,18 @@ else
                 })
                 .OrderBy(item => item.SortKey)
                 .ThenBy(item => item.DisplayName));
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Manustamise logi laadimine ebaõnnestus.";
         }
     }
 
-    private void GoBack()
-    {
+    private void GoBack() {
         Navigation.NavigateTo($"/profile/view/{ProfileId}");
     }
 
-    private Task OnDateChangedAsync()
-    {
-        var maxDay = DateTime.DaysInMonth(_selectedYear, _selectedMonth);
-        if (_selectedDay > maxDay)
-        {
+    private Task OnDateChangedAsync() {
+        var maxDay = DateTime.DaysInMonth(_selectedYear,_selectedMonth);
+        if (_selectedDay > maxDay) {
             _selectedDay = maxDay;
         }
 
@@ -175,6 +149,3 @@ else
         string StatusCss,
         TimeSpan SortKey);
 }
-
-
-

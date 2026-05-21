@@ -1,6 +1,5 @@
 @page "/settings/notifications"
 @using MedScan.Shared.DTOs.Medication
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IProfileService ProfileService
 @inject IMedicationService MedicationService
@@ -8,12 +7,9 @@
 
 <PageTitle>Meeldetuletused</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="settings-subpage">
         <div class="settings-subpage-content">
             <div class="medicine-header">
@@ -28,13 +24,11 @@ else
                 <span class="header-spacer"></span>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(_errorMessage))
-            {
+            @if (!string.IsNullOrWhiteSpace(_errorMessage)) {
                 <div class="error-box">@_errorMessage</div>
             }
 
-            @if (!string.IsNullOrWhiteSpace(_successMessage))
-            {
+            @if (!string.IsNullOrWhiteSpace(_successMessage)) {
                 <div class="success-box">@_successMessage</div>
             }
 
@@ -42,7 +36,7 @@ else
                 <div class="settings-item">
                     <div class="item-text">
                         <h3>Teavitused</h3>
-                        <p>@(_notificationsEnabled ? "Teavitused sees" : "Teavitused v\u00E4ljas")</p>
+                        <p>@(_notificationsEnabled ? "Teavitused sees" : "Teavitused väljas")</p>
                     </div>
                     <label class="toggle-switch" aria-label="Teavitused">
                         <input type="checkbox"
@@ -57,8 +51,6 @@ else
     </div>
 }
 
-
-
 @code {
     private bool _isReady;
     private bool _isSaving;
@@ -66,11 +58,9 @@ else
     private string? _errorMessage;
     private string? _successMessage;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -79,16 +69,13 @@ else
         _isReady = true;
     }
 
-    private async Task LoadNotificationStateAsync()
-    {
+    private async Task LoadNotificationStateAsync() {
         var medications = await GetAllUserMedicationsAsync();
         _notificationsEnabled = medications.Any(m => m.RemindersEnabled);
     }
 
-    private async Task OnNotificationsToggleChanged(ChangeEventArgs args)
-    {
-        if (_isSaving)
-        {
+    private async Task OnNotificationsToggleChanged(ChangeEventArgs args) {
+        if (_isSaving) {
             return;
         }
 
@@ -99,18 +86,14 @@ else
         await SetNotificationsEnabledAsync(enabled);
     }
 
-    private async Task SetNotificationsEnabledAsync(bool enabled)
-    {
+    private async Task SetNotificationsEnabledAsync(bool enabled) {
         _isSaving = true;
 
-        try
-        {
+        try {
             var medications = await GetAllUserMedicationsAsync();
 
-            foreach (var medication in medications.Where(m => m.RemindersEnabled != enabled))
-            {
-                var update = new AddMedicationDto
-                {
+            foreach (var medication in medications.Where(m => m.RemindersEnabled != enabled)) {
+                var update = new AddMedicationDto {
                     ProfileId = medication.ProfileId,
                     MedicationId = medication.MedicationId,
                     FrequencyPerDay = medication.FrequencyPerDay,
@@ -122,29 +105,23 @@ else
                     Notes = medication.Notes
                 };
 
-                await MedicationService.UpdateScheduleAsync(medication.Id, update);
+                await MedicationService.UpdateScheduleAsync(medication.Id,update);
             }
 
             _notificationsEnabled = enabled;
             _successMessage = enabled ? "Teavitused on sisse lülitatud." : "Teavitused on välja lülitatud.";
-        }
-        catch
-        {
+        } catch {
             _errorMessage = "Teavituste seadistamine ebaõnnestus.";
-        }
-        finally
-        {
+        } finally {
             _isSaving = false;
         }
     }
 
-    private async Task<List<UserMedicationDto>> GetAllUserMedicationsAsync()
-    {
+    private async Task<List<UserMedicationDto>> GetAllUserMedicationsAsync() {
         var profiles = await ProfileService.GetMyProfilesAsync();
         var medications = new List<UserMedicationDto>();
 
-        foreach (var profile in profiles)
-        {
+        foreach (var profile in profiles) {
             var schedule = await MedicationService.GetScheduleAsync(profile.Id);
             medications.AddRange(schedule);
         }

@@ -89,16 +89,11 @@
                     <button type="button" class="med-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
                         <div class="status-box @card.StatusCss">
                             <div class="med-icon">
-                                @if (card.Status == DoseStatusEnum.Done)
-                                {
+                                @if (card.Status == DoseStatusEnum.Done) {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-                                }
-                                else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
-                                {
+                                } else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped) {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
-                                }
-                                else
-                                {
+                                } else {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
                                 }
                             </div>
@@ -113,8 +108,7 @@
                                 <p class="med-note">💬 @card.Note</p>
                             }
                             <div class="time-chip-row">
-                                @foreach (var slot in card.TimeSlots)
-                                {
+                                @foreach (var slot in card.TimeSlots) {
                                     <span class="time-chip @card.StatusCss">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="9"></circle>
@@ -145,16 +139,11 @@
                     <button type="button" class="family-dose-card @card.StatusCss" @onclick="() => OpenDoseModal(card)">
                         <div class="status-box @card.StatusCss">
                             <div class="med-icon">
-                                @if (card.Status == DoseStatusEnum.Done)
-                                {
+                                @if (card.Status == DoseStatusEnum.Done) {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
-                                }
-                                else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped)
-                                {
+                                } else if (card.Status == DoseStatusEnum.Missed || card.Status == DoseStatusEnum.Skipped) {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5"></path><path d="M12 16h.01"></path></svg>
-                                }
-                                else
-                                {
+                                } else {
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
                                 }
                             </div>
@@ -170,8 +159,7 @@
                                 <p class="family-note">💬 @card.Note</p>
                             }
                             <div class="time-chip-row">
-                                @foreach (var slot in card.TimeSlots)
-                                {
+                                @foreach (var slot in card.TimeSlots) {
                                     <span class="time-chip @card.StatusCss">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <circle cx="12" cy="12" r="9"></circle>
@@ -223,7 +211,8 @@
                     </div>
                 } else if (_showLastUnitConfirmation) {
                     <div class="confirm-box">
-                        <strong>See on viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.
+                        <strong>
+                            See on viimane ravim, pärast tehtud märkimist kustub ravim sinu raviskeemist ning ravimite nimekirjast.
                         </strong> Kui jätkad ravimi võtmist, siis skänneri uus karp ja lisa see oma raviskeemi.
                         <div class="confirm-box-actions">
                             <button type="button" class="confirm-yes" disabled="@_isUpdatingDose" @onclick="ConfirmLastUnitDoneAsync">Jah</button>

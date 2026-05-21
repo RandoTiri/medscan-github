@@ -1,17 +1,13 @@
 @page "/settings/appearance"
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject IThemeService ThemeService
 @inject NavigationManager Navigation
 
 <PageTitle>Välimus</PageTitle>
 
-@if (!_isReady)
-{
+@if (!_isReady) {
     <p><em>Laen...</em></p>
-}
-else
-{
+} else {
     <div class="settings-subpage">
         <div class="settings-subpage-content">
             <div class="medicine-header">
@@ -44,17 +40,13 @@ else
     </div>
 }
 
-
-
 @code {
     private bool _isReady;
     private bool _darkModeEnabled;
 
-    protected override async Task OnInitializedAsync()
-    {
+    protected override async Task OnInitializedAsync() {
         await AuthService.InitializeAsync();
-        if (!AuthService.IsLoggedIn)
-        {
+        if (!AuthService.IsLoggedIn) {
             Navigation.NavigateTo("/login");
             return;
         }
@@ -62,10 +54,8 @@ else
         _isReady = true;
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (!firstRender) {
             return;
         }
 
@@ -74,8 +64,7 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task OnThemeToggleChanged(ChangeEventArgs args)
-    {
+    private async Task OnThemeToggleChanged(ChangeEventArgs args) {
         _darkModeEnabled = args.Value is bool value && value;
         await ThemeService.SetDarkModeAsync(_darkModeEnabled);
     }

@@ -1,12 +1,9 @@
 @page "/send-verification-code"
 @layout MedScan.Shared.Layout.AuthLayout
-@using MedScan.Shared.Services
 @inject IAuthService AuthService
 @inject NavigationManager Navigation
 
 <PageTitle>MedScan - Unustasin parooli</PageTitle>
-
-
 
 <div class="forgot-container">
     <div class="header-section">
@@ -23,45 +20,42 @@
     </div>
 
     <div class="form-section">
-        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-    {
-        <div class="auth-error">@ErrorMessage</div>
-    }
-    @if (!string.IsNullOrWhiteSpace(SuccessMessage))
-    {
-        <div class="success-message">@SuccessMessage</div>
-    }
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage)) {
+            <div class="auth-error">@ErrorMessage</div>
+        }
+        @if (!string.IsNullOrWhiteSpace(SuccessMessage)) {
+            <div class="success-message">@SuccessMessage</div>
+        }
 
-    <div class="auth-input-group">
-        <label for="email">E-mail</label>
-        <div class="input-wrapper">
-            <div class="input-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                    <polyline points="22,6 12,13 2,6"></polyline>
-                </svg>
-            </div>
-            <input id="email" type="email" placeholder="sinuemail@gmail.com" @bind="Email" disabled="@IsBusy" />
-        </div>
-    </div>
-
-    <button class="btn-primary" @onclick="SendCode" disabled="@IsBusy">
-        @(IsBusy ? "Saadab..." : "Saada kood")
-    </button>
-
-    @if (CodeSent)
-    {
-        <div class="auth-input-group verification-code-group">
-            <label for="code">Sisesta kood</label>
+        <div class="auth-input-group">
+            <label for="email">E-mail</label>
             <div class="input-wrapper">
-                <input id="code" type="text" placeholder="123456" @bind="VerificationCode" maxlength="6" disabled="@IsVerifying" />
+                <div class="input-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </div>
+                <input id="email" type="email" placeholder="sinuemail@gmail.com" @bind="Email" disabled="@IsBusy" />
             </div>
         </div>
 
-        <button class="btn-primary" @onclick="VerifyCode" disabled="@IsVerifying">
-            @(IsVerifying ? "Kontrollib..." : "Sisesta kood")
+        <button class="btn-primary" @onclick="SendCode" disabled="@IsBusy">
+            @(IsBusy ? "Saadab..." : "Saada kood")
         </button>
-    }
+
+        @if (CodeSent) {
+            <div class="auth-input-group verification-code-group">
+                <label for="code">Sisesta kood</label>
+                <div class="input-wrapper">
+                    <input id="code" type="text" placeholder="123456" @bind="VerificationCode" maxlength="6" disabled="@IsVerifying" />
+                </div>
+            </div>
+
+            <button class="btn-primary" @onclick="VerifyCode" disabled="@IsVerifying">
+                @(IsVerifying ? "Kontrollib..." : "Sisesta kood")
+            </button>
+        }
     </div>
 </div>
 
@@ -74,15 +68,12 @@
     private bool IsVerifying;
     private bool CodeSent;
 
-    private void GoBack()
-    {
+    private void GoBack() {
         Navigation.NavigateTo("/login");
     }
 
-    private async Task SendCode()
-    {
-        if (IsBusy)
-        {
+    private async Task SendCode() {
+        if (IsBusy) {
             return;
         }
 
@@ -90,40 +81,29 @@
         ErrorMessage = string.Empty;
         SuccessMessage = string.Empty;
 
-        try
-        {
-            if (string.IsNullOrWhiteSpace(Email))
-            {
+        try {
+            if (string.IsNullOrWhiteSpace(Email)) {
                 ErrorMessage = "Palun sisesta email.";
                 return;
             }
 
             var result = await AuthService.ForgotPasswordAsync(Email);
 
-            if (result.Success)
-            {
+            if (result.Success) {
                 CodeSent = true;
                 SuccessMessage = $"Saatsime emailile {Email} 6-kohalise koodi.";
-            }
-            else
-            {
+            } else {
                 ErrorMessage = result.ErrorMessage;
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             ErrorMessage = $"Tehniline viga: {ex.Message}";
-        }
-        finally
-        {
+        } finally {
             IsBusy = false;
         }
     }
 
-    private async Task VerifyCode()
-    {
-        if (IsVerifying)
-        {
+    private async Task VerifyCode() {
+        if (IsVerifying) {
             return;
         }
 
@@ -131,40 +111,28 @@
         ErrorMessage = string.Empty;
         SuccessMessage = string.Empty;
 
-        try
-        {
-            if (string.IsNullOrWhiteSpace(Email))
-            {
+        try {
+            if (string.IsNullOrWhiteSpace(Email)) {
                 ErrorMessage = "Palun sisesta email.";
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(VerificationCode))
-            {
+            if (string.IsNullOrWhiteSpace(VerificationCode)) {
                 ErrorMessage = "Palun sisesta kood.";
                 return;
             }
 
-            var result = await AuthService.VerifyCodeAsync(Email, VerificationCode);
+            var result = await AuthService.VerifyCodeAsync(Email,VerificationCode);
 
-            if (result.Success)
-            {
-                // Suunab parooli uuendamise lehele
+            if (result.Success) {
                 Navigation.NavigateTo($"/update-password?email={Uri.EscapeDataString(Email)}&code={Uri.EscapeDataString(VerificationCode)}");
-            }
-            else
-            {
+            } else {
                 ErrorMessage = result.ErrorMessage;
             }
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             ErrorMessage = $"Tehniline viga: {ex.Message}";
-        }
-        finally
-        {
+        } finally {
             IsVerifying = false;
         }
     }
 }
-

@@ -2,11 +2,10 @@ using MedScan.Shared.Models;
 
 namespace MedScan.Shared.Services.Notifications;
 
-public interface IInAppDoseAlertService
-{
+public interface IInAppDoseAlertService {
     event Action? Changed;
     InAppDoseAlert? Current { get; }
     void Enqueue(InAppDoseAlert alert);
     void DismissCurrent();
-    void DismissByDose(int userMedicationId, TimeOnly scheduledTime);
+    void DismissByDose(int userMedicationId,TimeOnly scheduledTime);
 }

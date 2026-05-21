@@ -1,7 +1,6 @@
 namespace MedScan.Shared.Services.Platform;
 
-public interface IExternalNavigationService
-{
+public interface IExternalNavigationService {
     Task OpenUrlAsync(string url);
-    Task OpenEmailAsync(string emailAddress, string? subject = null, string? body = null);
+    Task OpenEmailAsync(string emailAddress,string? subject = null,string? body = null);
 }
